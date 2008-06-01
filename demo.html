@@ -1,0 +1,114 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+  <title>DOMBuilder Demo Page</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="Author" content="Jonathan Buchanan">
+  <style type="text/css">
+  html { margin: 0; padding: 0; }
+  body { padding: 1em 5%; font-family: sans-serif; }
+  h1, h2 { color: #69c; font-family: sans-serif; border-bottom: 1px solid #000; }
+  h1 { font-size: 160%; margin: 0em 0 1em -3%; }
+  h2 { font-size: 140%; margin: 1em 0 1em -2%; }
+  </style>
+  <script type="text/javascript" src="DOMBuilder.js"></script>
+  <script type="text/javascript">
+  DOMBuilder.addEvent(window, "load", function()
+  {
+      DOMBuilder.apply(window);
+
+      document.getElementById("w3cExampleTable").appendChild(
+        TABLE({border: 2, frame: "hsides", rules: "groups",
+               summary: "Code page support in different versions of MS Windows.",
+               onclick: function(e)
+               {
+                   alert(["You clicked this ", this.tagName, " at (",
+                          e.screenX, ",", e.screenY, ")"].join(""));
+               }},
+          CAPTION("CODE-PAGE SUPPORT IN MICROSOFT WINDOWS"),
+          COLGROUP({align: "center"}),
+          COLGROUP({align: "left"}),
+          COLGROUP({align: "center", span: 2}),
+          COLGROUP({align: "center", span: 3}),
+          THEAD({valign: "top"},
+            TR(
+              TH("Code-Page", BR(), "ID"),
+              TH("Name"),
+              TH("ACP"),
+              TH("OEMCP"),
+              TH("Windows", BR(), "NT 3.1"),
+              TH("Windows", BR(), "NT 3.51"),
+              TH("Windows", BR(), "95")
+            )
+          ),
+          TBODY(
+            TR(TD(1200), TD("Unicode (BMP of ISO/IEC-10646)"), TD(),    TD(), TD("X"), TD("X"),  TD("*")),
+            TR(TD(1250), TD("Windows 3.1 Eastern European"),   TD("X"), TD(), TD("X"), TD("X"),  TD("X")),
+            TR(TD(1251), TD("Windows 3.1 Cyrillic"),           TD("X"), TD(), TD("X"), TD("X"),  TD("X")),
+            TR(TD(1252), TD("Windows 3.1 US (ANSI)"),          TD("X"), TD(), TD("X"), TD("X"),  TD("X")),
+            TR(TD(1253), TD("Windows 3.1 Greek"),              TD("X"), TD(), TD("X"), TD("X"),  TD("X")),
+            TR(TD(1254), TD("Windows 3.1 Turkish"),            TD("X"), TD(), TD("X"), TD("X"),  TD("X")),
+            TR(TD(1255), TD("Hebrew"),                         TD("X"), TD(), TD(),    TD(),     TD("X")),
+            TR(TD(1256), TD("Arabic"),                         TD("X"), TD(), TD(),    TD(),     TD("X")),
+            TR(TD(1257), TD("Baltic"),                         TD("X"), TD(), TD(),    TD(),     TD("X")),
+            TR(TD(1361), TD("Korean (Johab)"),                 TD("X"), TD(), TD(),    TD("**"), TD("X"))
+          ),
+          TBODY(
+            TR(TD(437), TD("MS-DOS United States"),        TD(), TD("X"), TD("X"), TD("X"), TD("X")),
+            TR(TD(708), TD("Arabic (ASMO 708)"),           TD(), TD("X"), TD(),    TD(),    TD("X")),
+            TR(TD(709), TD("Arabic (ASMO 449+, BCON V4)"), TD(), TD("X"), TD(),    TD(),    TD("X")),
+            TR(TD(710), TD("Arabic (Transparent Arabic)"), TD(), TD("X"), TD(),    TD(),    TD("X")),
+            TR(TD(720), TD("Arabic (Transparent ASMO)"),   TD(), TD("X"), TD(),    TD(),    TD("X"))
+          )
+        )
+      );
+
+      document.getElementById("demoForm").appendChild(
+        FORM({name: "testForm", method: "GET", action: "",
+              onsubmit: function()
+              {
+                  if (this.elements["testInput"].value ==
+                      this.elements["testInput"].defaultValue)
+                  {
+                      alert("Submitting with the default value set!");
+                  }
+              }},
+          DIV(
+            LABEL({"for": "testInput"}, "Test Input:"),
+            " ",
+            INPUT({type: "text", name: "testInput", id: "testInput",
+                   value: "testValue", defaultValue: "testValue",
+                   onfocus: function()
+                   {
+                      if (this.value == this.defaultValue)
+                      {
+                          this.value = "";
+                      }
+                   },
+                   onblur: function()
+                   {
+                      if (this.value == "")
+                      {
+                          this.value = this.defaultValue;
+                      }
+                   }}),
+            " ",
+            INPUT({"type": "submit", value: "Submit"})
+          )
+        )
+      );
+  });
+  </script>
+</head>
+<body>
+
+<h1>DOMBuilder Demo Page</h1>
+
+<h2>W3C Example Table</h2>
+<div id="w3cExampleTable"></div>
+
+<h2>Demo Form</h2>
+<div id="demoForm"></div>
+
+</body>
+</html>
