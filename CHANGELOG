@@ -1,12 +1,18 @@
-CHANGELOG
-=========
+====================
+DOMBuilder CHANGELOG
+====================
+
+Version 1.0
+===========
+
+Packaged from revision 5 in Subversion.
 
 2008-05-31
 ----------
 
-- Added support for more varieties of DOM element function arguments.
+- Added support for passing children to element creation function as Arrays.
 - Added more robust support for registering event handlers, including
   cross-browser event handling utility methods and context correction for IE
   when the event handler is fired.
 - IE detection is now performed once and once only, using conditional
-  compilation rather than userAgent string inspection.
+  compilation rather than useragent string inspection.
