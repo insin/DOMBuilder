@@ -1,0 +1,12 @@
+CHANGELOG
+=========
+
+2008-05-31
+----------
+
+- Added support for more varieties of DOM element function arguments.
+- Added more robust support for registering event handlers, including
+  cross-browser event handling utility methods and context correction for IE
+  when the event handler is fired.
+- IE detection is now performed once and once only, using conditional
+  compilation rather than userAgent string inspection.
