@@ -36,9 +36,9 @@
  * Event handlers can be specified as you would expect - supply an event name
  * (including the <code>"on"</code> prefix) as one of the element's attributes
  * and an event handling function as the corresponding value. DOMBuilder will
- * also ensure the element the event handler is registered for will be
- * accessible using <code>this</code> when the event handling function is
- * executed.
+ * also ensure the element the event handler is registered on will be accessible
+ * cross-browser using the <code>this</code> keyword when the event handling
+ * function is executed.
  * <p>
  * For example, the following will create a text input which displays a default
  * value, clearing it when the input is focused and restoring the default if the
