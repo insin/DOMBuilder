@@ -2,6 +2,16 @@
 DOMBuilder CHANGELOG
 ====================
 
+Trunk
+=====
+
+2008-06-22
+----------
+
+- Added more IE workarounds for:
+  - Creating multiple selects
+  - Creating pre-selected radio and checkbox inputs
+
 Version 1.0
 ===========
 
