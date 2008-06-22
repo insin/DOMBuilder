@@ -74,25 +74,44 @@
                   }
               }},
           DIV(
-            LABEL({"for": "testInput"}, "Test Input:"),
-            " ",
-            INPUT({type: "text", name: "testInput", id: "testInput",
-                   value: "testValue", defaultValue: "testValue",
-                   onfocus: function()
-                   {
-                      if (this.value == this.defaultValue)
-                      {
-                          this.value = "";
-                      }
-                   },
-                   onblur: function()
-                   {
-                      if (this.value == "")
-                      {
-                          this.value = this.defaultValue;
-                      }
-                   }}),
-            " ",
+            P(
+              LABEL({"for": "testInput"}, "Test Input:"),
+              " ",
+              INPUT({type: "text", name: "testInput", id: "testInput",
+                     value: "testValue", defaultValue: "testValue",
+                     onfocus: function()
+                     {
+                        if (this.value == this.defaultValue)
+                        {
+                            this.value = "";
+                        }
+                     },
+                     onblur: function()
+                     {
+                        if (this.value == "")
+                        {
+                            this.value = this.defaultValue;
+                        }
+                     }})
+            ),
+            P(
+              LABEL(INPUT({type: "checkbox", name: "testCheckbox", checked: true}), " Check this out")
+            ),
+            P(
+              UL(
+                LI(LABEL(INPUT({type: "radio", name: "testRadio"}), " Check this out")),
+                LI(LABEL(INPUT({type: "radio", name: "testRadio", checked: true}), " Or check this out"))
+              )
+            ),
+            P(
+              LABEL({"for": "testSelect"}, "Test Select:"),
+              SELECT({name: "testSelect", id: "testSelect"},
+                OPTION({value: ""}, "----------"),
+                OPTION({value: "1"}, "1"),
+                OPTION({value: "2", selected: true}, "2"),
+                OPTION({value: "3"}, "3")
+              )
+            ),
             INPUT({"type": "submit", value: "Submit"})
           )
         )
