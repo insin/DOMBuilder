@@ -375,12 +375,31 @@ var DOMBuilder = (function()
             attributes = attributes || {};
             children = children || [];
 
-            if (attributes.hasOwnProperty("name"))
+            // See http://channel9.msdn.com/Wiki/InternetExplorerProgrammingBugs
+            if (attributes.hasOwnProperty("name") ||
+                attributes.hasOwnProperty("checked") ||
+                attributes.hasOwnProperty("multiple"))
             {
-                // Name is not updateable in IE
+                var tagParts = ["<" + tagName];
+                if (attributes.hasOwnProperty("name"))
+                {
+                    tagParts[tagParts.length] =
+                        ' name="' + attributes.name + '"';
+                }
+                if (attributes.hasOwnProperty("checked") &&
+                    "" + attributes.checked == "true")
+                {
+                    tagParts[tagParts.length] = " checked";
+                }
+                if (attributes.hasOwnProperty("multiple") &&
+                    "" + attributes.multiple == "true")
+                {
+                    tagParts[tagParts.length] = " multiple";
+                }
+                tagParts[tagParts.length] = ">";
+
                 var element =
-                    document.createElement("<" + tagName +
-                                           " name=" + attributes.name + ">");
+                    document.createElement(tagParts.join(""));
             }
             else
             {

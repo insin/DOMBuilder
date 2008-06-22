@@ -105,7 +105,8 @@
             ),
             P(
               LABEL({"for": "testSelect"}, "Test Select:"),
-              SELECT({name: "testSelect", id: "testSelect"},
+              " ",
+              SELECT({name: "testSelect", id: "testSelect", multiple: true, size: 3},
                 OPTION({value: ""}, "----------"),
                 OPTION({value: "1"}, "1"),
                 OPTION({value: "2", selected: true}, "2"),
