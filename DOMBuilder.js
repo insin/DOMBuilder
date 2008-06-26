@@ -365,7 +365,7 @@ var DOMBuilder = (function()
         {
             for (var evts = el._evts || [], i = evts.length; i--; )
                 if (evts[i]._w === f)
-                    el.detachEvent("on" + ev, evts.splice(i, 1)[0]);
+                    el.detachEvent("on" + eventName, evts.splice(i, 1)[0]);
         };
 
         // This is a lot of copying and pasting - it's that or splitting out all
