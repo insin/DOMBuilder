@@ -5,6 +5,12 @@ DOMBuilder CHANGELOG
 Trunk
 =====
 
+2008-10-08
+----------
+
+- An ``NBSP`` property is now also added to the context object by
+  ``DOMBuilder.apply()``, for convenience.
+
 2008-10-07
 ----------
 

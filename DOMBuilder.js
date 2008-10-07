@@ -73,6 +73,10 @@ var DOMBuilder = (function()
         /**
          * Adds element creation functions to a given context object, or to a
          * new object if no context object was given.
+         * <p>
+         * An <code>NBSP</code> property corresponding to the Unicode character
+         * for a non-breaking space is also added to the context object, for
+         * convenience.
          *
          * @param {Object} [context] a context object to which element creation
          *                           functions should be added.
@@ -97,6 +101,8 @@ var DOMBuilder = (function()
             {
                 context[tagName.toUpperCase()] = this.createElementFunction(tagName);
             }
+
+            context.NBSP = "\u00A0";
 
             return context;
         },
