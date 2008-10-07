@@ -5,6 +5,13 @@ DOMBuilder CHANGELOG
 Trunk
 =====
 
+2008-10-07
+----------
+
+- Boolean attributes are now only set if they're ``true``. Added items to
+  the demo page to demonstrate that you can now create an *explicitly*
+  unchecked checkbox and an explicity non-multiple select.
+
 2008-06-22
 ----------
 

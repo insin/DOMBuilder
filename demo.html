@@ -95,7 +95,9 @@
                      }})
             ),
             P(
-              LABEL(INPUT({type: "checkbox", name: "testCheckbox", checked: true}), " Check this out")
+              LABEL(INPUT({type: "checkbox", name: "testCheckbox", checked: true}), " Check this out"),
+              " ",
+              LABEL(INPUT({type: "checkbox", name: "testCheckbox", checked: false}), " But not this")
             ),
             P(
               UL(
@@ -104,9 +106,19 @@
               )
             ),
             P(
-              LABEL({"for": "testSelect"}, "Test Select:"),
+              LABEL({"for": "testMultipleSelect"}, "Test Multiple Select:"),
               " ",
-              SELECT({name: "testSelect", id: "testSelect", multiple: true, size: 3},
+              SELECT({name: "testMultipleSelect", id: "testMultipleSelect", multiple: true, size: 3},
+                OPTION({value: ""}, "----------"),
+                OPTION({value: "1"}, "1"),
+                OPTION({value: "2", selected: true}, "2"),
+                OPTION({value: "3"}, "3")
+              )
+            ),
+            P(
+              LABEL({"for": "testSelectOne"}, "Test Single Select:"),
+              " ",
+              SELECT({name: "testSelectOne", id: "testSelectOne", multiple: false, size: 3},
                 OPTION({value: ""}, "----------"),
                 OPTION({value: "1"}, "1"),
                 OPTION({value: "2", selected: true}, "2"),

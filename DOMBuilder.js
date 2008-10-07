@@ -180,8 +180,8 @@ var DOMBuilder = (function()
             // If the first argument is not an attribute object but is a
             // valid child, assume all arguments are children.
             else if (args[0] && (args[0].nodeName ||
-                                 typeof(args[0]) == "string" ||
-                                 typeof(args[0]) == "number"))
+                                 typeof args[0] == "string" ||
+                                 typeof args[0] == "number"))
             {
                 children = args;
             }
@@ -230,17 +230,22 @@ var DOMBuilder = (function()
             {
                 if (attributes.hasOwnProperty(attr))
                 {
-                    if (typeof(attributes[attr]) == "function" &&
+                    var value = attributes[attr];
+                    var valueType = typeof value;
+                    if (valueType == "function" &&
                         attr.toLowerCase().indexOf("on") == 0)
                     {
                         // Trust the user with the event name
                         this.addEvent(element,
                                       attr.substr(2),
-                                      attributes[attr]);
+                                      value);
                     }
                     else
                     {
-                        element.setAttribute(attr, attributes[attr]);
+                        if (valueType != "boolean" || value === true)
+                        {
+                            element.setAttribute(attr, value);
+                        }
                     }
                 }
             }
@@ -248,7 +253,7 @@ var DOMBuilder = (function()
             for (var i = 0, l = children.length; i < l; i++)
             {
                 var child = children[i];
-                var childType = typeof(child);
+                var childType = typeof child;
 
                 if (childType == "string" || childType == "number")
                 {
@@ -322,7 +327,10 @@ var DOMBuilder = (function()
             }
             else
             {
-                element.setAttribute(attr, value);
+                if (typeof value != "boolean" || value === true)
+                {
+                    element.setAttribute(attr, value);
+                }
             }
         };
 
@@ -410,7 +418,7 @@ var DOMBuilder = (function()
             {
                 if (attributes.hasOwnProperty(attr))
                 {
-                    if (typeof(attributes[attr]) == "function" &&
+                    if (typeof attributes[attr] == "function" &&
                         attr.toLowerCase().indexOf("on") == 0)
                     {
                         // Trust the user with the event name
@@ -428,7 +436,7 @@ var DOMBuilder = (function()
             for (var i = 0, l = children.length; i < l; i++)
             {
                 var child = children[i];
-                var childType = typeof(child);
+                var childType = typeof child;
 
                 if (childType == "string" || childType == "number")
                 {
