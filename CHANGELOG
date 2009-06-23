@@ -2,6 +2,15 @@
 DOMBuilder CHANGELOG
 ====================
 
+2009-06-23
+----------
+
+- Added support for using the DOMBuilder API to generate HTML/XHTML output
+  instead of DOM elements. This is an experimental change for using the same
+  codebase to generate HTML on the backend and DOM elements on the frontend
+  with the same codebase, as is currently being implemented in
+  http://code.google.com/p/js-forms/
+
 Version 1.1
 ===========
 

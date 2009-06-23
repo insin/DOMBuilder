@@ -67,9 +67,157 @@
  */
 var DOMBuilder = (function()
 {
+    /**
+     * Escapes sensitive HTML characters.
+     */
+    var escapeHTML = (function()
+    {
+        var ampRe = /&/g;
+        var ltRe = /</g;
+        var gtRe = />/g;
+        var quoteRe1 = /"/g;
+        var quoteRe2 = /'/g;
+
+        return function(html)
+        {
+            return html.replace(ampRe, "&amp;").replace(ltRe, "&lt;").replace(gtRe, "&gt;").replace(quoteRe1, "&quot;").replace(quoteRe2, "&#39;");
+        };
+    })();
+
+    /**
+     * Escapes if the given input is not a SafeString, otherwise returns the
+     * value of the SafeString.
+     */
+    function conditionalEscape(html)
+    {
+        if (html instanceof SafeString)
+        {
+            return html.value;
+        }
+        // Ensure the value we're trying to escape is coerced to a String
+        return escapeHTML(""+html);
+    }
+
+    /**
+     * A quick lookup for names of empty tags.
+     */
+    var emptyTags = (function()
+    {
+        var lookup = {};
+        var tags = ["br", "col", "hr", "input", "img", "link", "param"];
+        for (var i = 0, l = tags.length; i < l; i++)
+        {
+            lookup[tags[i]] = true;
+        }
+        return lookup;
+    })();
+
+    /**
+     * String wrapper which marks the given string as safe for inclusion without
+     * escaping.
+     */
+    function SafeString(value)
+    {
+        this.value = value;
+    }
+
+    SafeString.prototype =
+    {
+        toString: function()
+        {
+            return this.value;
+        }
+    };
+
+    /**
+     * Marks a string as safe - this method will be exposed as
+     * DOMBUilder.markSafe for end users.
+     */
+    function markSafe(value)
+    {
+        return new SafeString(value);
+    }
+
+    /**
+     * Encapsulates logic for creating an HTML/XHTML representation of a tag
+     * structure.
+     */
+    function Tag(tagName, attributes, children)
+    {
+        this.tagName = tagName;
+        this.attributes = attributes || {};
+        this.children = children || [];
+    }
+
+    Tag.prototype =
+    {
+        appendChild: function(child)
+        {
+            this.children.push(child);
+        },
+
+        toString: function()
+        {
+            // Opening tag
+            var parts = ["<" + this.tagName];
+            for (var attr in this.attributes)
+            {
+                if (this.attributes.hasOwnProperty(attr))
+                {
+                    parts.push(" " + attr + "=\"" + conditionalEscape(this.attributes[attr]) + "\"");
+                }
+            }
+            parts.push(">");
+
+            if (typeof emptyTags[this.tagName] != "undefined")
+            {
+                if (o.mode == "XHTML")
+                {
+                    parts.splice(parts.length - 1, 1, " />");
+                }
+                return parts.join("");
+            }
+
+            // Contents
+            for (var i = 0, l = this.children.length; i < l; i++)
+            {
+                var child = this.children[i];
+                if (child instanceof Tag || child instanceof SafeString)
+                {
+                    parts.push(child.toString());
+                }
+                else if (child == "\u00A0")
+                {
+                    // Special case to convert these back to entities,
+                    parts.push("&nbsp;");
+                }
+                else
+                {
+                    // Coerce to string and escape
+                    parts.push(escapeHTML(""+child));
+                }
+            }
+
+            // Closing tag
+            parts.push("</" + this.tagName + ">");
+            return parts.join("");
+        }
+    };
+
     var o =
     /** @scope DOMBuilder */
     {
+        /**
+         * Determines which mode the createElement function will operate in.
+         * Supported values are:
+         * <dl>
+         * <dt>DOM</dt><dd>Create DOM Elements</dd>
+         * <dt>HTML</dt><dd>Create HTML Strings</dd>
+         * <dt>XHTML</dt><dd>Create XHTML Strings</dd>
+         * </dl>
+         */
+        mode: "DOM",
+
         /**
          * Adds element creation functions to a given context object, or to a
          * new object if no context object was given.
@@ -84,7 +232,7 @@ var DOMBuilder = (function()
          * @return the context object to which element creation functions were
          *         added.
          */
-        apply : function(context)
+        apply: function(context)
         {
             context = context || {};
             var tagNames = ["a", "abbr", "acronym", "address", "bdo",
@@ -122,7 +270,7 @@ var DOMBuilder = (function()
         {
             return function()
             {
-                if (arguments.length == 0)
+                if (arguments.length == 0 && this.mode == "DOM")
                 {
                     return document.createElement(tagName);
                 }
@@ -187,7 +335,9 @@ var DOMBuilder = (function()
             // valid child, assume all arguments are children.
             else if (args[0] && (args[0].nodeName ||
                                  typeof args[0] == "string" ||
-                                 typeof args[0] == "number"))
+                                 typeof args[0] == "number" ||
+                                 args[0] instanceof Tag ||
+                                 args[0] instanceof SafeString))
             {
                 children = args;
             }
@@ -229,6 +379,11 @@ var DOMBuilder = (function()
         {
             attributes = attributes || {};
             children = children || [];
+
+            if (this.mode != "DOM")
+            {
+                return new Tag(tagName, attributes, children);
+            }
 
             var element = document.createElement(tagName);
 
@@ -389,6 +544,11 @@ var DOMBuilder = (function()
             attributes = attributes || {};
             children = children || [];
 
+            if (this.mode != "DOM")
+            {
+                return new Tag(tagName, attributes, children);
+            }
+
             // See http://channel9.msdn.com/Wiki/InternetExplorerProgrammingBugs
             if (attributes.hasOwnProperty("name") ||
                 attributes.hasOwnProperty("checked") ||
@@ -458,6 +618,9 @@ var DOMBuilder = (function()
             return element;
         };
     }
+
+    // Expose utility functions
+    o.markSafe = markSafe;
 
     return o;
 })();
