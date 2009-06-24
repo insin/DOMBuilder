@@ -620,6 +620,7 @@ var DOMBuilder = (function()
     }
 
     // Expose utility functions
+    o.conditionalEscape = conditionalEscape;
     o.markSafe = markSafe;
 
     return o;
