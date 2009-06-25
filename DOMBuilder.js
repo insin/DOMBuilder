@@ -174,7 +174,7 @@ var DOMBuilder = (function()
             {
                 if (this.attributes.hasOwnProperty(attr))
                 {
-                    parts.push(" " + attr + "=\"" + conditionalEscape(this.attributes[attr]) + "\"");
+                    parts.push(" " + attr.toLowerCase() + "=\"" + conditionalEscape(this.attributes[attr]) + "\"");
                 }
             }
             parts.push(">");
