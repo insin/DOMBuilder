@@ -139,6 +139,16 @@ var DOMBuilder = (function()
     }
 
     /**
+     * Determines if a string is safe - this method will be exposed as
+     * DOMBuilder.isSafe to end users so they don't have to know about the
+     * implementation detail that is SafeString.
+     */
+    function isSafe(value)
+    {
+        return (value instanceof SafeString);
+    }
+
+    /**
      * Encapsulates logic for creating an HTML/XHTML representation of a tag
      * structure.
      */
@@ -622,6 +632,7 @@ var DOMBuilder = (function()
     // Expose utility functions
     o.conditionalEscape = conditionalEscape;
     o.markSafe = markSafe;
+    o.isSafe = isSafe;
 
     return o;
 })();
