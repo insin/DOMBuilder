@@ -2,6 +2,13 @@
 DOMBuilder CHANGELOG
 ====================
 
+2009-06-25
+----------
+
+- Attributes are now lowercased when generating HTML.
+- Added and exposed an isSafe function - isSafe and markSafe are the public
+  API for managing escaping of strings when generating HTML.
+
 2009-06-23
 ----------
 

@@ -141,7 +141,7 @@ var DOMBuilder = (function()
     /**
      * Determines if a string is safe - this method will be exposed as
      * DOMBuilder.isSafe to end users so they don't have to know about the
-     * implementation detail that is SafeString.
+     * implementation details of escaping.
      */
     function isSafe(value)
     {
@@ -629,10 +629,9 @@ var DOMBuilder = (function()
         };
     }
 
-    // Expose utility functions
-    o.conditionalEscape = conditionalEscape;
-    o.markSafe = markSafe;
+    // Expose escaping-related utility functions
     o.isSafe = isSafe;
+    o.markSafe = markSafe;
 
     return o;
 })();
