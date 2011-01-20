@@ -40,7 +40,7 @@
             }
             if (typeof value == "undefined" || value === null)
             {
-              value = "-"
+              value = NBSP
             }
             return TD(value);
           }))
@@ -99,14 +99,16 @@
       );
 
       // Generate some HTML to demonstrate withMode
-      document.getElementById("htmlGeneration").appendChild(DIV(DOMBuilder.withMode("HTML", function()
+      document.getElementById("htmlGeneration").innerHTML = DOMBuilder.withMode("XHTML", function()
       {
           return DIV({"class": "article"},
-            H2("This HTML was generated using DOMBuilder.withNode"),
-            P("If something has gone wrong..."),
-            P("...things should start to go bad right about... NOW.")
+            H3("This HTML was generated using DOMBuilder.withNode"),
+            P("Special characters should be escaped by default: < > \" ' &"),
+            P(DOMBuilder.markSafe("But you can <strong>prevent Strings being escaped</strong> using <code>DOMBuilder.markSafe</code>")),
+            P("This should have an XHTML-style slash: ", BR().toString(), BR()),
+            DOMBuilder.withMode("HTML", function() { return P("This one shouldn't: ", BR().toString(), BR()); })
           );
-      }).toString()));
+      }).toString();
 
       document.getElementById("demoForm").appendChild(
         FORM({name: "testForm", method: "GET", action: "",

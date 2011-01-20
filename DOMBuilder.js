@@ -157,6 +157,9 @@ var DOMBuilder = (function()
         this.tagName = tagName;
         this.attributes = attributes || {};
         this.children = children || [];
+        // Keep a record of whether or not closing slashes are needed, as the
+        // mode could change mefore this object is coerced to a String.
+        this.xhtml = (DOMBuilder.mode == "XHTML");
     }
 
     Tag.prototype =
@@ -181,7 +184,7 @@ var DOMBuilder = (function()
 
             if (typeof emptyTags[this.tagName] != "undefined")
             {
-                if (o.mode == "XHTML")
+                if (this.xhtml)
                 {
                     parts.splice(parts.length - 1, 1, " />");
                 }
@@ -368,7 +371,9 @@ var DOMBuilder = (function()
             {
                 children = firstArg; // ([child1, ...])
             }
-            else if (firstArg.constructor == Object)
+            else if (firstArg.constructor == Object &&
+                     !(firstArg instanceof Tag) &&
+                     !(firstArg instanceof SafeString))
             {
                 attributes = firstArg;
                 children = (argsLength == 2 && args[1] instanceof Array
