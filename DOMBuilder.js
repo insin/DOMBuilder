@@ -280,9 +280,18 @@ var DOMBuilder = (function()
         {
             return function()
             {
-                if (arguments.length == 0 && this.mode == "DOM")
+                if (arguments.length == 0)
                 {
-                    return document.createElement(tagName);
+                    // Short circuit if there are no arguments, to avoid further
+                    // argument inspection.
+                    if (DOMBuilder.mode == "DOM")
+                    {
+                        return document.createElement(tagName);
+                    }
+                    else
+                    {
+                        return new Tag(tagName);
+                    }
                 }
                 else
                 {
@@ -299,23 +308,23 @@ var DOMBuilder = (function()
          * Supported argument formats are:
          * <ol>
          * <li>
-         *   <code>attributes, child1, ...</code> - an attributes object
+         *   <code>(attributes, child1, ...)</code> - an attributes object
          *   followed by an arbitrary number of children.
          * </li>
          * <li>
-         *   <code>attributes, [child1, ...]</code> - an attributes object and
+         *   <code>(attributes, [child1, ...])</code> - an attributes object and
          *   an <code>Array</code> of children.
          * </li>
          * <li>
-         *   <code>child1, ...</code> - an arbitrary number of children.
+         *   <code>(child1, ...)</code> - an arbitrary number of children.
          * </li>
          * <li>
-         *   <code>[child1, ...]</code> - an <code>Array</code> of children.
+         *   <code>([child1, ...])</code> - an <code>Array</code> of children.
          * </li>
          * </ol>
          * <p>
-         * The official store policy on passing invalid argument lists is "You
-         * Break It, You Get To Keep The Pieces."
+         * The official  policy on passing invalid argument lists is "You Break
+         * It, You Get To Keep The Pieces."
          *
          * @param {String} tagName an HTML tag name.
          * @param {Array} args a list of arguments, which may not be empty.
@@ -324,39 +333,26 @@ var DOMBuilder = (function()
          */
         createElementFromArguments: function(tagName, args)
         {
-            var attributes;
-            var children;
+            var attributes, children;
+            // The short circuit in createElementFunction ensures we will always
+            // have at least one argument.
+            var argsLength = args.length, firstArg = args[0];
 
-            // List of children
-            if (args.length == 1 &&
-                args[0] instanceof Array)
+            if (argsLength == 1 &&
+                firstArg instanceof Array)
             {
-                children = args[0];
+                children = firstArg; // ([child1, ...])
             }
-            // Attributes and list of children
-            else if (args.length == 2 &&
-                     args[0] && args[0].constructor == Object &&
-                     args[1] instanceof Array)
+            else if (firstArg.constructor == Object)
             {
-                attributes = args[0];
-                children = args[1];
+                attributes = firstArg;
+                children = (argsLength == 2 && args[1] instanceof Array
+                            ? args[1]                               // (attributes, [child1, ...])
+                            : Array.prototype.slice.call(args, 1)); // (attributes, child1, ...)
             }
-            // If the first argument is not an attribute object but is a
-            // valid child, assume all arguments are children.
-            else if (args[0] && (args[0].nodeName ||
-                                 typeof args[0] == "string" ||
-                                 typeof args[0] == "number" ||
-                                 args[0] instanceof Tag ||
-                                 args[0] instanceof SafeString))
-            {
-                children = Array.prototype.slice.call(args);
-            }
-            // Default - assume the first argument is an attributes object
-            // and all remaining arguments are children.
             else
             {
-                attributes = args[0];
-                children = Array.prototype.slice.call(args, 1);
+                children = Array.prototype.slice.call(args); // (child1, ...)
             }
 
             return this.createElement(tagName, attributes, children);
