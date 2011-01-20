@@ -229,6 +229,31 @@ var DOMBuilder = (function()
         mode: "DOM",
 
         /**
+         * Calls a function using DOMBuilder temporarily in the given mode.
+         * <p>
+         * This is primarily intended for using DOMBuilder to generate HTML
+         * strings when running in the browser without having to manage the
+         * mode flag yourself.
+         *
+         * @param {String} mode the mode to set DOMBuilder in temporarily.
+         * @param {Function} func the function to be executed once the mode has
+         *                        been temporarily changed.
+         */
+        withMode: function(mode, func)
+        {
+            var originalMode = this.mode;
+            this.mode = mode;
+            try
+            {
+                return func();
+            }
+            finally
+            {
+                this.mode = originalMode;
+            }
+        },
+
+        /**
          * Adds element creation functions to a given context object, or to a
          * new object if no context object was given.
          * <p>

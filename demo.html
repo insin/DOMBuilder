@@ -98,6 +98,16 @@
         )
       );
 
+      // Generate some HTML to demonstrate withMode
+      document.getElementById("htmlGeneration").appendChild(DIV(DOMBuilder.withMode("HTML", function()
+      {
+          return DIV({"class": "article"},
+            H2("This HTML was generated using DOMBuilder.withNode"),
+            P("If something has gone wrong..."),
+            P("...things should start to go bad right about... NOW.")
+          );
+      }).toString()));
+
       document.getElementById("demoForm").appendChild(
         FORM({name: "testForm", method: "GET", action: "",
               onsubmit: function()
@@ -183,6 +193,9 @@
 
 <h2>W3C Example Table</h2>
 <div id="w3cExampleTable"></div>
+
+<h2>HTML Generation</h2>
+<div id="htmlGeneration"></div>
 
 <h2>Demo Form</h2>
 <div id="demoForm"></div>
