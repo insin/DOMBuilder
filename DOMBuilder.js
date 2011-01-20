@@ -349,7 +349,7 @@ var DOMBuilder = (function()
                                  args[0] instanceof Tag ||
                                  args[0] instanceof SafeString))
             {
-                children = args;
+                children = Array.prototype.slice.call(args);
             }
             // Default - assume the first argument is an attributes object
             // and all remaining arguments are children.
