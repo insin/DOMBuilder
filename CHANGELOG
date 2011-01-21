@@ -2,12 +2,24 @@
 DOMBuilder CHANGELOG
 ====================
 
+2011-01-20
+----------
+
+- ``Tag`` objects created when in HTML mode now remember which mode was
+  active when they were created, as they may not be coerced until a later
+  time, when the mode may have changed.
+- Added ``DOMBuilder.withMode`` to switch to HTML mode for the scope of a
+  function call.
+- Fixed short circuiting in element creation functions and decreased the
+  number of checks required to determine which of the 4 supported argument
+  combinations the user passed in.
+
 2009-06-25
 ----------
 
 - Attributes are now lowercased when generating HTML.
-- Added and exposed an isSafe function - isSafe and markSafe are the public
-  API for managing escaping of strings when generating HTML.
+- Added and exposed an ``isSafe`` function - ``isSafe`` and ``markSafe``
+  are the public API for managing escaping of strings when generating HTML.
 
 2009-06-23
 ----------

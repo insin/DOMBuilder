@@ -1,69 +1,8 @@
 /**
- * Provides utility methods for creating DOM elements in a more declarative
- * manner.
- * <p>
- * <strong>Usage</strong>
- * <p>
- * Use <code>DOMBuilder.apply()</code> to add DOM creation functions to a given
- * context object. A function will be added for each HTML tag, with its name
- * being the tag name in upper case. If you don't pass in a context object, one
- * will be created for you. For example, the following code:
- * <pre><code>var html = DOMBuilder.apply();
- * var article =
- *   html.DIV({"class": "article"},
- *     html.H2("Article title"),
- *     html.P("Paragraph one"),
- *     html.P("Paragraph two")
- *   );</code></pre>
- * <p>
- * Will produce a DOM element corresponding to the following HTML:
- * <pre><code>&lt;div class="article"&gt;
- *   &lt;h2&gt;Article title&lt;/h2&gt;
- *   &lt;p&gt;Paragraph one&lt;/p&gt;
- *   &lt;p&gt;Paragraph two&lt;/p&gt;
- * &lt;/div&gt;</code></pre>
- * <p>
- * General usage of DOM creation functions is that an object specifying
- * attributes for the element is passed as the first argument and child elements
- * are passed as further arguments. The attribute object is optional and, for
- * the sake of flexibility, children may also be passed in an
- * <code>Array</code>.
- * <p>
- * For convenience, you may want to create the utility methods in the global
- * scope, which is done like so:
- * <pre><code>DOMBuilder.apply(window);</code></pre>
- * <p>
- * Event handlers can be specified as you would expect - supply an event name
- * (including the <code>"on"</code> prefix) as one of the element's attributes
- * and an event handling function as the corresponding value. DOMBuilder will
- * also ensure the element the event handler is registered on will be accessible
- * cross-browser using the <code>this</code> keyword when the event handling
- * function is executed.
- * <p>
- * For example, the following will create a text input which displays a default
- * value, clearing it when the input is focused and restoring the default if the
- * input is left blank:
- * <pre><code>var defaultInput =
- *   INPUT({type: "text", name: "test",
- *          value: "Type Here!", defaultValue: "Type Here!",
- *          onfocus: function()
- *          {
- *             if (this.value == this.defaultValue)
- *             {
- *                 this.value = "";
- *             }
- *          },
- *          onblur: function()
- *          {
- *             if (this.value == "")
- *             {
- *                 this.value = this.defaultValue;
- *             }
- *          }});</code></pre>
- *
  * @class
  * @static
  * @author Jonathan Buchanan
+ * @version 1.2
  */
 var DOMBuilder = (function()
 {
@@ -113,21 +52,22 @@ var DOMBuilder = (function()
     })();
 
     /**
-     * String wrapper which marks the given string as safe for inclusion without
-     * escaping.
+     * String subclass which marks the given string as safe for inclusion
+     * without escaping.
      */
     function SafeString(value)
     {
         this.value = value;
     }
 
-    SafeString.prototype =
+    SafeString.prototype = new String();
+    with (SafeString.prototype  = new String())
     {
-        toString: function()
+        toString = valueOf = function()
         {
             return this.value;
         }
-    };
+    }
 
     /**
      * Marks a string as safe - this method will be exposed as
@@ -300,6 +240,7 @@ var DOMBuilder = (function()
          * See <code>DOMBuilder.createElementFromArguments</code> for the input
          * argument formats supported by the resulting function.
          *
+         * @private
          * @param {String} tagName an HTML tag name.
          *
          * @return {Function} an element creation function.
@@ -354,6 +295,7 @@ var DOMBuilder = (function()
          * The official  policy on passing invalid argument lists is "You Break
          * It, You Get To Keep The Pieces."
          *
+         * @private
          * @param {String} tagName an HTML tag name.
          * @param {Array} args a list of arguments, which may not be empty.
          *
@@ -655,7 +597,8 @@ var DOMBuilder = (function()
         };
     }
 
-    // Expose escaping-related utility functions
+    // Expose tag and escaping-related utility functions
+    o.Tag = Tag
     o.isSafe = isSafe;
     o.markSafe = markSafe;
 
