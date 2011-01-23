@@ -10,6 +10,7 @@
   h1, h2 { color: #69c; font-family: sans-serif; border-bottom: 1px solid #000; }
   h1 { font-size: 160%; margin: 0em 0 1em -3%; }
   h2 { font-size: 140%; margin: 1em 0 1em -2%; }
+  .testClass { background-color: #ddd; }
   </style>
   <script type="text/javascript" src="DOMBuilder.js"></script>
   <script type="text/javascript">
@@ -111,7 +112,7 @@
       }).toString();
 
       document.getElementById("demoForm").appendChild(
-        FORM({name: "testForm", method: "GET", action: "",
+        FORM({name: "testForm", method: "POST", action: "",
               onsubmit: function()
               {
                   if (this.elements["testInput"].value ==
@@ -120,12 +121,12 @@
                       alert("Submitting with the default value set!");
                   }
               }},
-          DIV(
+          DIV({"class": "testClass"},
             P(
-              LABEL({"for": "testInput"}, "Test Input:"),
+              LABEL({"for": "testInput1"}, "defaultValue: \"defaultValue\""),
               " ",
-              INPUT({type: "text", name: "testInput", id: "testInput",
-                     value: "testValue", defaultValue: "testValue",
+              INPUT({type: "text", name: "testInput1", id: "testInput1",
+                     defaultValue: "defaultValue",
                      onfocus: function()
                      {
                         if (this.value == this.defaultValue)
@@ -139,12 +140,35 @@
                         {
                             this.value = this.defaultValue;
                         }
-                     }})
+                     }
+                }),
+                BR(),
+                LABEL({"for": "testInput2"}, "value: \"value\""),
+                " ",
+                INPUT({type: "text", name: "testInput2", id: "testInput2",
+                     value: "value",
+                     onfocus: function()
+                     {
+                        if (this.value == this.defaultValue)
+                        {
+                            this.value = "";
+                        }
+                     },
+                     onblur: function()
+                     {
+                        if (this.value == "")
+                        {
+                            this.value = this.defaultValue;
+                        }
+                     }
+                 })
             ),
-            P(
-              LABEL(INPUT({type: "checkbox", name: "testCheckbox", checked: true}), " Check this out"),
-              " ",
-              LABEL(INPUT({type: "checkbox", name: "testCheckbox", checked: false}), " But not this")
+            P({style: "background-color: #ccc"},
+              LABEL(INPUT({type: "checkbox", name: "testCheckbox", checked: true}), "checked: true"),
+              BR(),
+              LABEL(INPUT({type: "checkbox", name: "testCheckbox", defaultChecked: true}), "defaultChecked: true"),
+              BR(),
+              LABEL(INPUT({type: "checkbox", name: "testCheckbox"}), "The unloved checkbox")
             ),
             P(
               UL(
@@ -157,8 +181,8 @@
               " ",
               SELECT({name: "testMultipleSelect", id: "testMultipleSelect", multiple: true, size: 3},
                 OPTION({value: ""}, "----------"),
-                OPTION({value: "1"}, "1"),
-                OPTION({value: "2", selected: true}, "2"),
+                OPTION({value: "1", defaultSelected: true}, "defaultSelected: true"),
+                OPTION({value: "2", selected: true}, "selected: true"),
                 OPTION({value: "3"}, "3")
               )
             ),
@@ -167,12 +191,13 @@
               " ",
               SELECT({name: "testSelectOne", id: "testSelectOne", multiple: false, size: 3},
                 OPTION({value: ""}, "----------"),
-                OPTION({value: "1"}, "1"),
+                OPTION({value: "1", defaultSelected: true}, "1"),
                 OPTION({value: "2", selected: true}, "2"),
                 OPTION({value: "3"}, "3")
               )
             ),
-            INPUT({"type": "submit", value: "Submit"})
+            INPUT({"type": "submit", value: "Submit"}),
+            INPUT({"type": "reset", value: "Reset"})
           )
         )
       );

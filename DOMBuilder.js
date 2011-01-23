@@ -6,6 +6,18 @@
  */
 var DOMBuilder = (function()
 {
+    function extend(dest, source)
+    {
+        for (attr in source)
+        {
+            if (source.hasOwnProperty(attr))
+            {
+                dest[attr] = source[attr];
+            }
+        }
+        return dest;
+    }
+
     /**
      * Escapes sensitive HTML characters.
      */
@@ -160,6 +172,28 @@ var DOMBuilder = (function()
     var o =
     /** @scope DOMBuilder */
     {
+        /** Attribute names which should be translated before use. */
+        _attrTranslations: null,
+
+        /**
+         * Custom element creation function, will be called with
+         * (tagName, attributes) if present.
+         */
+        _customCreateElement: null,
+
+        /** Functions to deal with special case attributes. */
+        _specialCaseAttrs: null,
+
+        /**
+         * Attributes for which property access should be used instead of
+         * <code>setAttribute()</code>.
+         */
+        _usePropertyAccess: {
+            defaultChecked: true,
+            defaultSelected: true,
+            defaultValue: true
+        },
+
         /**
          * Determines which mode the createElement function will operate in.
          * Supported values are:
@@ -375,7 +409,6 @@ var DOMBuilder = (function()
                 }
                 else
                 {
-                    console.log(child);
                     // Trust the user to pass DOM elements
                     fragment.appendChild(child);
                 }
@@ -417,28 +450,54 @@ var DOMBuilder = (function()
                 return new Tag(tagName, attributes, children);
             }
 
-            var element = document.createElement(tagName);
+            // Create the element
+            var element = (this._customCreateElement === null
+                           ? document.createElement(tagName)
+                           : this._customCreateElement(tagName, attributes));
 
+            // Set its attributes/attach event listeners
             for (var attr in attributes)
             {
-                if (attributes.hasOwnProperty(attr))
+                if (!attributes.hasOwnProperty(attr))
                 {
-                    var value = attributes[attr];
-                    var valueType = typeof value;
-                    if (valueType == "function" &&
-                        attr.toLowerCase().indexOf("on") == 0)
+                    continue;
+                }
+
+                var value = attributes[attr];
+                var valueType = typeof value;
+                if (valueType == "function" &&
+                    attr.toLowerCase().indexOf("on") == 0)
+                {
+                    // Trust the user with the event name
+                    this.addEvent(element,
+                                  attr.substr(2),
+                                  value);
+                }
+                else
+                {
+                    // Translate attribute name if necessary
+                    if (this._attrTranslations !== null &&
+                        this._attrTranslations.hasOwnProperty(attr))
                     {
-                        // Trust the user with the event name
-                        this.addEvent(element,
-                                      attr.substr(2),
-                                      value);
+                        attr = this._attrTranslations[attr];
                     }
-                    else
+
+                    // Use property access if necessary
+                    if (this._usePropertyAccess !== null &&
+                        typeof this._usePropertyAccess[attr] != "undefined")
                     {
-                        if (valueType != "boolean" || value === true)
-                        {
-                            element.setAttribute(attr, value);
-                        }
+                        element[attr] = value;
+                    }
+                    // If any attributes need really weird handling, this is
+                    // the place to do it.
+                    else if (this._specialCaseAttrs != null &&
+                             typeof this._specialCaseAttrs[attr] == "function")
+                    {
+                        this._specialCaseAttrs[attr](element, value);
+                    }
+                    else if (valueType != "boolean" || value === true)
+                    {
+                        element.setAttribute(attr, value);
                     }
                 }
             }
@@ -489,166 +548,102 @@ var DOMBuilder = (function()
         }
     };
 
-    // Detect IE and modify DOMBuilder as required
+    // Detect IE and modify DOMBuilder as required to work around any issues,
+    // depending on the IE version and document mode for IE8 and up.
     if (/*@cc_on @*//*@if (@_win32)!/*@end @*/false)
     {
-        /**
-         * Translations for attribute names which IE would otherwise choke on.
-         */
-        o.ATTR_TRANSLATIONS =
+        var jscriptVersion/*@cc_on @*//*@if (@_win32)= @_jscript_version/*@end @*/;
+
+        // IE8 fixed many longstanding attribute problems.
+        if (jscriptVersion < 5.8 || document.documentMode < 8)
         {
-            "class": "className",
-            "for": "htmlFor"
-        };
+            o._attrTranslations = extend(o._attrTranslations || {}, {
+                "class": "className",
+                "for": "htmlFor"
+            });
 
-        /**
-         * Deals with special cases related to setting attributes in IE.
-         *
-         * @param element a DOM element.
-         * @param {String} attr an attribute name.
-         * @param {String} value a value for the attribute.
-         */
-        o.setAttribute = function(element, attr, value)
-        {
-            if (this.ATTR_TRANSLATIONS.hasOwnProperty(attr))
+            o._specialCaseAttrs = extend(o._specialCaseAttrs || {}, {
+                "style": function(el, val) { el.style.cssText = val; }
+            });
+
+            o._customCreateElement = function(tagName, attributes)
             {
-                element[this.ATTR_TRANSLATIONS[attr]] = value;
-            }
-            else if (attr == "style")
-            {
-                element.style.cssText = value;
-            }
-            else
-            {
-                if (typeof value != "boolean" || value === true)
+                if (attributes.hasOwnProperty("name") ||
+                    attributes.hasOwnProperty("checked") ||
+                    attributes.hasOwnProperty("multiple"))
                 {
-                    element.setAttribute(attr, value);
-                }
-            }
-        };
-
-        /**
-         * Adds an event handler to a DOM element in IE.
-         * <p>
-         * This function is taken from http://fn-js.info/snippets/addevent
-         *
-         * @param element a DOM element.
-         * @param {String} eventName an event name, without the
-         *                           <code>"on"</code> prefix.
-         * @param {Function} handler an event handling function.
-         */
-        o.addEvent = function(element, eventName, handler)
-        {
-            // This is to work around a bug in IE whereby the current element
-            // doesn't get passed as context.
-            // We pass it via closure instead and set it as the context using
-            // call().
-            // This needs to be stored for removeEvent().
-            // We also store the original wrapped function as a property, _w.
-            ((element._evts = element._evts || [])[element._evts.length]
-                = function(e) { return handler.call(element, e); })._w = handler;
-
-            return element.attachEvent("on" + eventName,
-                                       element._evts[element._evts.length - 1]);
-        };
-
-        /**
-         * Removes an event handler from a DOM element in IE.
-         * <p>
-         * This function is taken from http://fn-js.info/snippets/addevent
-         *
-         * @param element a DOM element.
-         * @param {String} eventName an event name, without the
-         *                           <code>"on"</code> prefix.
-         * @param {Function} handler an event handling function.
-         */
-        o.removeEvent = function(element, eventName, handler)
-        {
-            for (var evts = el._evts || [], i = evts.length; i--; )
-                if (evts[i]._w === f)
-                    el.detachEvent("on" + eventName, evts.splice(i, 1)[0]);
-        };
-
-        // This is a lot of copying and pasting - it's that or splitting out all
-        // the common parts into needless function calls just because IE exists.
-        o.createElement = function(tagName, attributes, children)
-        {
-            attributes = attributes || {};
-            children = children || [];
-
-            if (this.mode != "DOM")
-            {
-                return new Tag(tagName, attributes, children);
-            }
-
-            // See http://channel9.msdn.com/Wiki/InternetExplorerProgrammingBugs
-            if (attributes.hasOwnProperty("name") ||
-                attributes.hasOwnProperty("checked") ||
-                attributes.hasOwnProperty("multiple"))
-            {
-                var tagParts = ["<" + tagName];
-                if (attributes.hasOwnProperty("name"))
-                {
-                    tagParts[tagParts.length] =
-                        ' name="' + attributes.name + '"';
-                }
-                if (attributes.hasOwnProperty("checked") &&
-                    "" + attributes.checked == "true")
-                {
-                    tagParts[tagParts.length] = " checked";
-                }
-                if (attributes.hasOwnProperty("multiple") &&
-                    "" + attributes.multiple == "true")
-                {
-                    tagParts[tagParts.length] = " multiple";
-                }
-                tagParts[tagParts.length] = ">";
-
-                var element =
-                    document.createElement(tagParts.join(""));
-            }
-            else
-            {
-                var element = document.createElement(tagName);
-            }
-
-            for (var attr in attributes)
-            {
-                if (attributes.hasOwnProperty(attr))
-                {
-                    if (typeof attributes[attr] == "function" &&
-                        attr.toLowerCase().indexOf("on") == 0)
+                    var tagParts = ["<" + tagName];
+                    if (attributes.hasOwnProperty("name"))
                     {
-                        // Trust the user with the event name
-                        this.addEvent(element,
-                                      attr.substr(2),
-                                      attributes[attr]);
+                        tagParts[tagParts.length] =
+                            ' name="' + attributes.name + '"';
                     }
-                    else
+                    if (attributes.hasOwnProperty("checked") &&
+                        "" + attributes.checked == "true")
                     {
-                        this.setAttribute(element, attr, attributes[attr]);
+                        tagParts[tagParts.length] = " checked";
                     }
-                }
-            }
+                    if (attributes.hasOwnProperty("multiple") &&
+                        "" + attributes.multiple == "true")
+                    {
+                        tagParts[tagParts.length] = " multiple";
+                    }
+                    tagParts[tagParts.length] = ">";
 
-            for (var i = 0, l = children.length; i < l; i++)
-            {
-                var child = children[i];
-                var childType = typeof child;
-
-                if (childType == "string" || childType == "number")
-                {
-                    element.appendChild(document.createTextNode(child));
+                    return document.createElement(tagParts.join(""));
                 }
                 else
                 {
-                    // Trust the user to pass DOM elements
-                    element.appendChild(child);
+                    return document.createElement(tagName);
                 }
-            }
+            };
+        }
 
-            return element;
-        };
+        // IE9 will add addEventListener and removeEventListener support
+        if (jscriptVersion < 9 || document.documentMode < 9)
+        {
+            /**
+             * Adds an event handler to a DOM element in IE.
+             * <p>
+             * This function is taken from http://fn-js.info/snippets/addevent
+             *
+             * @param element a DOM element.
+             * @param {String} eventName an event name, without the
+             *                           <code>"on"</code> prefix.
+             * @param {Function} handler an event handling function.
+             */
+            o.addEvent = function(element, eventName, handler)
+            {
+                // This is to work around a bug in IE whereby the current element
+                // doesn't get passed as context.
+                // We pass it via closure instead and set it as the context using
+                // call().
+                // This needs to be stored for removeEvent().
+                // We also store the original wrapped function as a property, _w.
+                ((element._evts = element._evts || [])[element._evts.length]
+                    = function(e) { return handler.call(element, e); })._w = handler;
+
+                return element.attachEvent("on" + eventName,
+                                           element._evts[element._evts.length - 1]);
+            };
+
+            /**
+             * Removes an event handler from a DOM element in IE.
+             * <p>
+             * This function is taken from http://fn-js.info/snippets/addevent
+             *
+             * @param element a DOM element.
+             * @param {String} eventName an event name, without the
+             *                           <code>"on"</code> prefix.
+             * @param {Function} handler an event handling function.
+             */
+            o.removeEvent = function(element, eventName, handler)
+            {
+                for (var evts = el._evts || [], i = evts.length; i--; )
+                    if (evts[i]._w === f)
+                        el.detachEvent("on" + eventName, evts.splice(i, 1)[0]);
+            };
+        }
     }
 
     // Expose tag and escaping-related utility functions
