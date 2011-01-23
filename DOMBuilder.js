@@ -331,6 +331,60 @@ var DOMBuilder = (function()
         },
 
         /**
+         * Creates a DocumentFragment with the given children. A
+         * DocumentFragment conveniently allows you to append its contents with
+         * a single call. If you're thinking of adding a wrapper
+         * <code>&lt;div&gt;</code> solely to be able to insert a number of
+         * sibling elements at the same time, a DocumentFragment will do the
+         * same job without the need for a wrapper element.
+         * <p>
+         * See http://ejohn.org/blog/dom-documentfragments/ for more info.
+         * <p>
+         * Supported argument formats are:
+         * <ol>
+         * <li>
+         *   <code>(child1, ...)</code> - an arbitrary number of children.
+         * </li>
+         * <li>
+         *   <code>([child1, ...])</code> - an <code>Array</code> of children.
+         * </li>
+         * </ol>
+         */
+        fragment: function(children)
+        {
+            var children;
+            if (arguments.length == 1 &&
+                arguments[0] instanceof Array)
+            {
+                children = arguments[0]; // ([child1, ...])
+            }
+            else
+            {
+                children = Array.prototype.slice.call(arguments) // (child1, ...)
+            }
+
+            var fragment = document.createDocumentFragment();
+            for (var i = 0, l = children.length; i < l; i++)
+            {
+                var child = children[i];
+                var childType = typeof child;
+
+                if (childType == "string" || childType == "number")
+                {
+                    fragment.appendChild(document.createTextNode(child));
+                }
+                else
+                {
+                    console.log(child);
+                    // Trust the user to pass DOM elements
+                    fragment.appendChild(child);
+                }
+            }
+
+            return fragment;
+        },
+
+        /**
          * Creates a DOM element with the given tag name and optionally,
          * attributes and children.
          * <p>

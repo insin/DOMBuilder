@@ -57,8 +57,8 @@ functions to a context object.
 
       DOMBuilder.apply(window);
 
-Example Usage
-~~~~~~~~~~~~~
+Using Element Creation Functions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For a simple example, the following code...
 
@@ -191,8 +191,11 @@ the input is left blank::
                }
             }});
 
+Manual Element Creation
+~~~~~~~~~~~~~~~~~~~~~~~
+
 The function which does the majority of the work when you call an element
-creation function is also available for use - the main difference is that
+creation function is available for your own use - the main difference is that
 it's inflexible with the arguments it accepts, but it's still more
 convenient than creating and populating elements manually using DOM methods.
 
@@ -222,6 +225,13 @@ convenient than creating and populating elements manually using DOM methods.
    .. versionchanged:: 1.2
       Now generates :js:class:`DOMBuilder.Tag` objects if
       :js:attr:`DOMBuilder.mode` is set to anything but ``"DOM"``.
+
+Document Fragments
+~~~~~~~~~~~~~~~~~~
+
+..versionadded:: 1.3
+
+TODO
 
 HTML Mode
 ---------
