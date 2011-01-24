@@ -2,6 +2,22 @@
 DOMBuilder CHANGELOG
 ====================
 
+2011-01-24
+----------
+
+- Added ``DOMBuilder.map``.
+
+2011-01-23
+----------
+
+- Now detects which fixes are needed based on the version and document
+  mode of IE.
+- Folded special case handling into ``createElement`` as parts of it were
+  needed to correct ``defaultValue`` and others in the nice browsers.
+  Added private properties to DOMBuilder to support special cases.
+- Added ``Added DOMBuilder.fragment``, a utility method for creating and
+  populating ``DocumentFragment`` objects.
+
 Version 1.2
 ===========
 

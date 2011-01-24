@@ -30,22 +30,24 @@
   function createTable(headers, objects, properties)
   {
       return TABLE({cellSpacing: 1, border: 1, "class": "data sortable"},
-        THEAD(TR(headers.map(function(header) { return TH(header); }))),
-        TBODY(objects.map(function(obj)
-        {
-          return TR(properties.map(function(prop) {
-            var value = obj[prop];
-            if (typeof value == "boolean")
-            {
-              value = value ? "Yes" : "No";
-            }
-            if (typeof value == "undefined" || value === null)
-            {
-              value = NBSP
-            }
-            return TD(value);
-          }))
-        }))
+        THEAD(TR(TH.map(headers))),
+        TBODY(
+          TR.map(objects, function(obj)
+          {
+            return TD.map(properties, function(prop) {
+                var value = obj[prop];
+                if (typeof value == "boolean")
+                {
+                  value = value ? "Yes" : "No";
+                }
+                if (typeof value == "undefined" || value === null)
+                {
+                  value = NBSP
+                }
+                return value;
+            })
+          })
+        )
       );
   }
 

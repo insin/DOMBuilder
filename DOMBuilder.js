@@ -1,9 +1,3 @@
-/**
- * @class
- * @static
- * @author Jonathan Buchanan
- * @version 1.2
- */
 var DOMBuilder = (function()
 {
     function extend(dest, source)
@@ -23,12 +17,7 @@ var DOMBuilder = (function()
      */
     var escapeHTML = (function()
     {
-        var ampRe = /&/g;
-        var ltRe = /</g;
-        var gtRe = />/g;
-        var quoteRe1 = /"/g;
-        var quoteRe2 = /'/g;
-
+        var ampRe = /&/g, ltRe = /</g, gtRe = />/g, quoteRe1 = /"/g, quoteRe2 = /'/g;
         return function(html)
         {
             return html.replace(ampRe, "&amp;").replace(ltRe, "&lt;").replace(gtRe, "&gt;").replace(quoteRe1, "&quot;").replace(quoteRe2, "&#39;");
@@ -36,8 +25,8 @@ var DOMBuilder = (function()
     })();
 
     /**
-     * Escapes if the given input is not a SafeString, otherwise returns the
-     * value of the SafeString.
+     * Escapes if the given input is not a ``SafeString``, otherwise returns its
+     * value.
      */
     function conditionalEscape(html)
     {
@@ -54,8 +43,8 @@ var DOMBuilder = (function()
      */
     var emptyTags = (function()
     {
-        var lookup = {};
-        var tags = ["br", "col", "hr", "input", "img", "link", "param"];
+        var lookup = {},
+            tags = ["br", "col", "hr", "input", "img", "link", "param"];
         for (var i = 0, l = tags.length; i < l; i++)
         {
             lookup[tags[i]] = true;
@@ -64,26 +53,22 @@ var DOMBuilder = (function()
     })();
 
     /**
-     * String subclass which marks the given string as safe for inclusion
+     * ``String`` subclass which marks the given string as safe for inclusion
      * without escaping.
      */
     function SafeString(value)
     {
         this.value = value;
     }
-
     SafeString.prototype = new String();
-    with (SafeString.prototype  = new String())
+    SafeString.prototype.toString = SafeString.prototype.valueOf = function()
     {
-        toString = valueOf = function()
-        {
-            return this.value;
-        }
-    }
+        return this.value;
+    };
 
     /**
      * Marks a string as safe - this method will be exposed as
-     * DOMBUilder.markSafe for end users.
+     * ``DOMBUilder.markSafe`` for end users.
      */
     function markSafe(value)
     {
@@ -92,8 +77,7 @@ var DOMBuilder = (function()
 
     /**
      * Determines if a string is safe - this method will be exposed as
-     * DOMBuilder.isSafe to end users so they don't have to know about the
-     * implementation details of escaping.
+     * ``DOMBuilder.isSafe`` for end users.
      */
     function isSafe(value)
     {
@@ -170,14 +154,13 @@ var DOMBuilder = (function()
     };
 
     var o =
-    /** @scope DOMBuilder */
     {
         /** Attribute names which should be translated before use. */
         _attrTranslations: null,
 
         /**
          * Custom element creation function, will be called with
-         * (tagName, attributes) if present.
+         * ``(tagName, attributes)`` if present.
          */
         _customCreateElement: null,
 
@@ -186,7 +169,7 @@ var DOMBuilder = (function()
 
         /**
          * Attributes for which property access should be used instead of
-         * <code>setAttribute()</code>.
+         * ``setAttribute()``.
          */
         _usePropertyAccess: {
             defaultChecked: true,
@@ -197,24 +180,23 @@ var DOMBuilder = (function()
         /**
          * Determines which mode the createElement function will operate in.
          * Supported values are:
-         * <dl>
-         * <dt>DOM</dt><dd>Create DOM Elements</dd>
-         * <dt>HTML</dt><dd>Create HTML Strings</dd>
-         * <dt>XHTML</dt><dd>Create XHTML Strings</dd>
-         * </dl>
+         *
+         * ``"DOM"``
+         *    create DOM Elements.
+         * ``"HTML"``
+         *    create HTML Strings.
+         * ``"XHTML"``
+         *    create XHTML Strings.
          */
         mode: "DOM",
 
         /**
-         * Calls a function using DOMBuilder temporarily in the given mode.
-         * <p>
+         * Calls a function using DOMBuilder temporarily in the given mode and
+         * returns its output.
+         *
          * This is primarily intended for using DOMBuilder to generate HTML
          * strings when running in the browser without having to manage the
          * mode flag yourself.
-         *
-         * @param {String} mode the mode to set DOMBuilder in temporarily.
-         * @param {Function} func the function to be executed once the mode has
-         *                        been temporarily changed.
          */
         withMode: function(mode, func)
         {
@@ -231,18 +213,13 @@ var DOMBuilder = (function()
         },
 
         /**
-         * Adds element creation functions to a given context object, or to a
-         * new object if no context object was given.
-         * <p>
-         * An <code>NBSP</code> property corresponding to the Unicode character
-         * for a non-breaking space is also added to the context object, for
+         * Adds element creation functions to a given context ``Object``, or to
+         * a new object if none was given. Returns the object the functions were
+         * added to, either way.
+         *
+         * An ``NBSP`` property corresponding to the Unicode character for a
+         * non-breaking space is also added to the context object, for
          * convenience.
-         *
-         * @param {Object} [context] a context object to which element creation
-         *                           functions should be added.
-         *
-         * @return the context object to which element creation functions were
-         *         added.
          */
         apply: function(context)
         {
@@ -270,18 +247,13 @@ var DOMBuilder = (function()
         /**
          * Creates a function which, when called, uses DOMBuilder to create a
          * DOM element with the given tagName.
-         * <p>
-         * See <code>DOMBuilder.createElementFromArguments</code> for the input
-         * argument formats supported by the resulting function.
          *
-         * @private
-         * @param {String} tagName an HTML tag name.
-         *
-         * @return {Function} an element creation function.
+         * See ``DOMBuilder.createElementFromArguments`` for the input argument
+         * formats supported by the resulting function.
          */
         createElementFunction: function(tagName)
         {
-            return function()
+            var elementFunction = function()
             {
                 if (arguments.length == 0)
                 {
@@ -302,38 +274,29 @@ var DOMBuilder = (function()
                                                                  arguments);
                 }
             };
+
+            elementFunction.map = function()
+            {
+                var mapArgs = Array.prototype.slice.call(arguments);
+                mapArgs.unshift(tagName);
+                return DOMBuilder.map.apply(DOMBuilder, mapArgs);
+            };
+
+            return elementFunction;
         },
 
         /**
          * Normalises a list of arguments in order to create a new DOM element
-         * using <code>DOMBuilder.createElement</code>.
-         * <p>
-         * Supported argument formats are:
-         * <ol>
-         * <li>
-         *   <code>(attributes, child1, ...)</code> - an attributes object
-         *   followed by an arbitrary number of children.
-         * </li>
-         * <li>
-         *   <code>(attributes, [child1, ...])</code> - an attributes object and
-         *   an <code>Array</code> of children.
-         * </li>
-         * <li>
-         *   <code>(child1, ...)</code> - an arbitrary number of children.
-         * </li>
-         * <li>
-         *   <code>([child1, ...])</code> - an <code>Array</code> of children.
-         * </li>
-         * </ol>
-         * <p>
-         * The official  policy on passing invalid argument lists is "You Break
-         * It, You Get To Keep The Pieces."
+         * using ``DOMBuilder.createElement``. Supported argument formats are:
          *
-         * @private
-         * @param {String} tagName an HTML tag name.
-         * @param {Array} args a list of arguments, which may not be empty.
-         *
-         * @return a DOM element.
+         * ``(attributes, child1, ...)``
+         *    an attributes object followed by an arbitrary number of children.
+         * ``(attributes, [child1, ...])``
+         *    an attributes object and an ``Array`` of children.
+         * ``(child1, ...)``
+         *    an arbitrary number of children.
+         * ``([child1, ...])``
+         *    an <code>Array</code> of children.
          */
         createElementFromArguments: function(tagName, args)
         {
@@ -365,24 +328,22 @@ var DOMBuilder = (function()
         },
 
         /**
-         * Creates a DocumentFragment with the given children. A
-         * DocumentFragment conveniently allows you to append its contents with
-         * a single call. If you're thinking of adding a wrapper
-         * <code>&lt;div&gt;</code> solely to be able to insert a number of
-         * sibling elements at the same time, a DocumentFragment will do the
-         * same job without the need for a wrapper element.
-         * <p>
-         * See http://ejohn.org/blog/dom-documentfragments/ for more info.
-         * <p>
-         * Supported argument formats are:
-         * <ol>
-         * <li>
-         *   <code>(child1, ...)</code> - an arbitrary number of children.
-         * </li>
-         * <li>
-         *   <code>([child1, ...])</code> - an <code>Array</code> of children.
-         * </li>
-         * </ol>
+         * Creates a ``DocumentFragment`` with the given children. Supported
+         * argument formats are:
+         *
+         * ``(child1, ...)``
+         *    an arbitrary number of children.
+         * ``([child1, ...])``
+         *    an ``Array`` of children.
+         *
+         * A ``DocumentFragment`` conveniently allows you to append its contents
+         * with a single call. If you're thinking of adding a wrapper ``<div>``
+         * solely to be able to insert a number of sibling elements at the same
+         * time, a ``DocumentFragment`` will do the same job without the need for
+         * a redundant wrapper element.
+         *
+         * See http://ejohn.org/blog/dom-documentfragments/ for more information
+         * about ``DocumentFragment`` objects.
          */
         fragment: function(children)
         {
@@ -419,26 +380,16 @@ var DOMBuilder = (function()
 
         /**
          * Creates a DOM element with the given tag name and optionally,
-         * attributes and children.
-         * <p>
-         * If the <code>attributes</code> argument is given, any properties of
-         * the attributes object which have names starting with "on" and which
-         * have a <code>Function</code> as their value will be assigned as event
-         * listeners on the new element. It is assumed that a valid event name
-         * is set as the attribute name in this case.
-         * <p>
-         * If the <code>children</code> argument is given, its contents will be
-         * added to the new element. Strings or Numbers will be added as text
-         * nodes. It is assumed that any child passed which is not a String or
-         * Number will be a DOM node.
+         * the given attributes and children.
          *
-         * @param {String} tagName an HTML tag name.
-         * @param {Object} [attributes] an object whose properties specify
-         *                              attributes of the new element.
-         * @param {Array} [children] a list of child contents, made up of mixed
-         *                           Strings, Numbers or DOM elements.
+         * If an attributes ``Object`` is given, any of its properties which have
+         * names starting with ``"on"`` which have a ``Function`` as their value
+         * will be assigned as event listeners on the new element. It is assumed
+         * that a valid event name is set as the attribute name in this case.
          *
-         * @return a DOM element.
+         * If a ``children`` ``Array`` is given, its contents will be appended to
+         * the new element. In DOM mode, children may be of type ``Element``,
+         * ``DocumentFragment`, ``String`` or ``Number``.
          */
         createElement: function(tagName, attributes, children)
         {
@@ -504,9 +455,7 @@ var DOMBuilder = (function()
 
             for (var i = 0, l = children.length; i < l; i++)
             {
-                var child = children[i];
-                var childType = typeof child;
-
+                var child = children[i], childType = typeof child;
                 if (childType == "string" || childType == "number")
                 {
                     element.appendChild(document.createTextNode(child));
@@ -522,12 +471,84 @@ var DOMBuilder = (function()
         },
 
         /**
-         * Utility method for adding event handlers
+         * Creates an element for (potentially) every item in a list. Supported
+         * argument formats are:
          *
-         * @param element a DOM element.
-         * @param {String} eventName an event name, without the
-         *                           <code>"on"</code> prefix.
-         * @param {Function} handler an event handling function.
+         * 1. ``(tagName, defaultAttributes, [item1, ...], mappingFunction)``
+         * 2. ``(tagName, [item1, ...], mappingFunction)``
+         *
+         * Arguments are as follows:
+         *
+         * ``tagName``
+         *    the name of the element to create.
+         * ``defaultAttributes`` (optional)
+         *    default attributes for the element.
+         * ``items``
+         *    the list of items to use as the basis for creating elements.
+         * ``mappingFunction`` (optional)
+         *    a function to be called with each item in the list to provide
+         *    contents for the element which will be created for that item.
+         *
+         *    Contents can consist of a single value (in DOM mode: an
+         *    ``Element``, ``DocumentFragment``, ``String`` or ``Number``) or a
+         *    mixed ``Array`` of the same.
+         *
+         *    If provided, the function will be called with the following
+         *    arguments::
+         *
+         *       func(item, attributes, itemIndex)
+         *
+         *    Attributes on the element which will be created can be altered by
+         *    modifying the ``attributes argument, which will initially contain
+         *    the contents of ``defaultAttributes``, if it was provided.
+         *
+         *    The function can prevent an element being generated for a given
+         *    item by returning ``null``.
+         *
+         *    If not provided, each item will result in the creation of a new
+         *    element and the item itself will be used as the only contents.
+         */
+        map: function(tagName)
+        {
+            // Determine how the function was called
+            if (arguments[1] instanceof Array)
+            {
+                var defaultAttrs = {},
+                    items = arguments[1],
+                    func = arguments[2] || null; // (tagName, items, func)
+            }
+            else
+            {
+                var defaultAttrs = arguments[1],
+                    items = arguments[2],
+                    func = arguments[3] || null; // (tagName, attrs, items, func)
+            }
+
+            var results = [];
+            for (var i = 0, l = items.length; i < l; i++)
+            {
+                // If we weren't given a mapping function, use the item as the
+                // contents.
+                if (func === null)
+                {
+                    results.push(this.createElement(tagName, defaultAttrs, items[i]));
+                    continue;
+                }
+
+                // Otherwise, call the mapping function and use the return value
+                // as the contents, unless the function specifies that the item
+                // shouldn't generate an element by explicity returning null.
+                var children = func(items[i], extend({}, defaultAttrs), i);
+                if (children !== null)
+                {
+                    results.push(this.createElement(tagName, defaultAttrs, children));
+                }
+            }
+            return results;
+        },
+
+        /**
+         * Utility method for adding event handlers.
          */
         addEvent: function(element, eventName, handler)
         {
@@ -535,12 +556,7 @@ var DOMBuilder = (function()
         },
 
         /**
-         * Utility method for removing event handlers added using DOMBuilder.
-         *
-         * @param element a DOM element.
-         * @param {String} eventName an event name, without the
-         *                           <code>"on"</code> prefix.
-         * @param {Function} handler an event handling function.
+         * Utility method for removing event handlers.
          */
         removeEvent: function(element, eventName, handler)
         {
@@ -554,7 +570,7 @@ var DOMBuilder = (function()
     {
         var jscriptVersion/*@cc_on @*//*@if (@_win32)= @_jscript_version/*@end @*/;
 
-        // IE8 fixed many longstanding attribute problems.
+        // IE8 fixed many longstanding attribute problems
         if (jscriptVersion < 5.8 || document.documentMode < 8)
         {
             o._attrTranslations = extend(o._attrTranslations || {}, {
@@ -604,13 +620,8 @@ var DOMBuilder = (function()
         {
             /**
              * Adds an event handler to a DOM element in IE.
-             * <p>
-             * This function is taken from http://fn-js.info/snippets/addevent
              *
-             * @param element a DOM element.
-             * @param {String} eventName an event name, without the
-             *                           <code>"on"</code> prefix.
-             * @param {Function} handler an event handling function.
+             * This function is taken from http://fn-js.info/snippets/addevent
              */
             o.addEvent = function(element, eventName, handler)
             {
@@ -622,20 +633,14 @@ var DOMBuilder = (function()
                 // We also store the original wrapped function as a property, _w.
                 ((element._evts = element._evts || [])[element._evts.length]
                     = function(e) { return handler.call(element, e); })._w = handler;
-
                 return element.attachEvent("on" + eventName,
                                            element._evts[element._evts.length - 1]);
             };
 
             /**
              * Removes an event handler from a DOM element in IE.
-             * <p>
-             * This function is taken from http://fn-js.info/snippets/addevent
              *
-             * @param element a DOM element.
-             * @param {String} eventName an event name, without the
-             *                           <code>"on"</code> prefix.
-             * @param {Function} handler an event handling function.
+             * This function is taken from http://fn-js.info/snippets/addevent
              */
             o.removeEvent = function(element, eventName, handler)
             {

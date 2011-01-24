@@ -3,13 +3,23 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-DOMBuilder - declarative DOM element and HTML creation
-======================================================
+DOMBuilder --- declarative DOM element and HTML creation
+========================================================
 
-DOMBuilder is a standalone script which provides utility methods for
-creating DOM elements and HTML in code in a more declarative manner than
-repeated ``document.createElement()`` and ``appendChild`` calls or
-string manipulation.
+DOMBuilder takes some of the pain out of programatically creating HTML in
+JavaScript. Usually, this involves copious amounts of creating DOM
+elements with ``document.createElement()`` and putting them in place with
+``appendChild()`` and friends, or lots of ``String`` wrangling if you're
+generating HTML text for use with ``innerHTML``.
+
+There are also a bunch of quite annoying *Internet* cross-browse
+*Explorer* issues which must be dealt with when creating DOM elements
+manually, and usually necessitate your own library of workarounds unless
+you're leveraging one of the many fine JavaScript frameworks.
+
+DOMBuilder's element creation functions give you a more declarative,
+compact API to work with when creating content in code, while taking care
+of cross-browser issues for you behind the scenes.
 
 .. contents::
 
@@ -22,7 +32,7 @@ functions to a context object.
 .. js:function:: DOMBuilder.apply([context])
 
    :param Object context:
-       An object to have element creation functions added to it.
+       an object to have element creation functions added to it.
        If not provided, a new Object will be created and used.
    :returns: The context Object which was passed in or created.
 
@@ -86,12 +96,13 @@ When you're writig a a web application you're more likely to be creating
 dynamic content based on some sort of input.
 
 .. note::
-   This example assumes that element creation functions are available in the
-   global scope.
+   This example assumes that element creation functions are available in
+   the global scope.
 
-The following function programmatically creates a ``<table>``
-representation of a list of objects, taking advantage of the flexible
-combinations of arguments accepted by element creation functions::
+The following function (which assumes the existence of an ``Array``
+`map function`_) programmatically creates a ``<table>`` representation of
+a list of objects, taking advantage of the flexible combinations of
+arguments accepted by element creation functions::
 
    /**
     * @param headers a list of column headings.
@@ -103,8 +114,7 @@ combinations of arguments accepted by element creation functions::
    {
        return TABLE({cellSpacing: 1, "class": "data sortable"},
            THEAD(TR(headers.map(function(header) { return TH(header); }))),
-           TBODY(objects.map(function(obj)
-           {
+           TBODY(objects.map(function(obj) {
               return TR(properties.map(function(prop) {
                   var value = obj[prop];
                   if (typeof value == "boolean")
@@ -160,8 +170,83 @@ Given this function, the following code...
      </tbody>
    </table>
 
+.. _`map function`: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/map
+
+Map Function
+############
+
+.. versionadded:: 1.3
+
+DOMBuilder provides a shorthand for creating an element for each item in a
+list via its :js:func:`DOMBuilder.map` function.
+
+.. js:function:: DOMBuilder.map(tagName[, defaultAttributes], items[, mappingFunction])
+
+   Creates an element for (potentially) every item in a list.
+
+   :param String tagName:
+      the name of the element to create for each item in the list.
+   :param Object attributes: default attributes for the element.
+   :param Array items:
+      the list of items to use as the basis for creating elements.
+   :param Function mappingFunction:
+      a function to be called with each item in the list, to provide
+      contents for the element which will be created for that item.
+
+   If provided, the mapping function will be called with the following
+   arguments::
+
+      mappingFunction(item, attributes, itemIndex)
+
+   Contents created by the function can consist of a single value (in DOM
+   mode: an ``Element``, ``DocumentFragment``, ``String`` or ``Number``)
+   or a mixed ``Array`` of these types.
+
+   Attributes for the created element can be altered per-item by
+   modifying the ``attributes`` argument, which will initially contain
+   the contents of ``defaultAttributes``, if it was provided.
+
+   The mapping function can prevent an element from being created for a
+   given item altogether by returning ``null``.
+
+   If a mapping function is not provided, a new element will be created
+   for each item in the list and the item itself will be used as the
+   contents.
+
+This function is also exposed via element creation functions. Each
+element creation function has its own ``map`` function, which takes the
+same arguments as :js:func:`DOMBuilder.map` excluding the ``tagName``
+argument, which is taken from the element creation function itself.
+
+For example, the table code we looked at earlier could also be written
+like so, making use of ``map`` on element creation functions::
+
+   function createTable(headers, objects, properties)
+   {
+       return TABLE({cellSpacing: 1, border: 1, "class": "data sortable"},
+         THEAD(TR(TH.map(headers))),
+         TBODY(
+           TR.map(objects, function(obj) {
+             return TD.map(properties, function(prop) {
+                 var value = obj[prop];
+                 if (typeof value == "boolean")
+                 {
+                   value = value ? "Yes" : "No";
+                 }
+                 return value;
+             })
+           })
+         )
+       );
+   }
+
+This isn't essentially any less complex than the previous method, but
+there is a decrease in the number of nested method calls and you can see
+how the default behaviour in the absence of a mapping function simplified
+creation of the table headers.
+
 Event Handlers
-~~~~~~~~~~~~~~
+##############
 
 Event handlers can be specified as you would expect - supply an event name
 (including an ``"on"`` prefix) as one of the element's attributes and an event
@@ -201,12 +286,11 @@ convenient than creating and populating elements manually using DOM methods.
 
 .. js:function:: DOMBuilder.createElement(tagName[, attributes[, children]])
 
-   :param String tagName: The name of the element to be created.
-   :param Object attributes: Attributes to be applied to the new element.
+   :param String tagName: the name of the element to be created.
+   :param Object attributes: attributes to be applied to the new element.
    :param Array children:
-       Childen to be appended to the new element; may be composed of mixed
-       ``String``, ``Number`` and DOM elements.
-   :returns: The created element.
+       childen to be appended to the new element; may be composed of mixed
+       ``String``, ``Number``, ``Element`` or ``DocumentFragment``.
 
    Creates a DOM element or :js:class:`DOMBuilder.Tag` object with the given tag name,
    attributes and children - this is the underlying function used by the
@@ -229,7 +313,7 @@ convenient than creating and populating elements manually using DOM methods.
 Document Fragments
 ~~~~~~~~~~~~~~~~~~
 
-..versionadded:: 1.3
+.. versionadded:: 1.3
 
 TODO
 
@@ -288,8 +372,8 @@ creation functions create :js:class:`DOMBuilder.Tag` objects.
 .. js:function:: DOMBuilder.Tag.toString()
 
    Creates a ``String`` containing the HTML representation of this object
-   and its children. By default, any ``String`` children will be escaped to
-   prevent the use of sensitive HTML characters - see the `Escaping`_
+   and its children. By default, any ``String`` children will be escaped
+   to prevent the use of sensitive HTML characters - see the `Escaping`_
    section for details on controlling escaping.
 
 If you're going to be working with mixed output types, forgetting to reset
@@ -298,15 +382,8 @@ If you're going to be working with mixed output types, forgetting to reset
 
 .. js:function:: DOMBuilder.withNode(mode, func)
 
-   Calls a function with :js:attr:`DOMBuilder.mode` set to the given value for
-   the duration of the function call.
-
-   :param String mode: The mode to be used.
-   :param Function func: The ``Function`` to be called.
-
-It will take the piece of work you want to do as a function, flip to the
-appropriate output mode, execute the function then flip the output mode back
-again before returning the result of the function call.
+   Calls a function, with :js:attr:`DOMBuilder.mode` set to the given value
+   for the duration of the function call, and returns its output.
 
 The following `FireBug`_ console session shows :js:func:`DOMBuilder.withNode` in action::
 
@@ -317,7 +394,7 @@ The following `FireBug`_ console session shows :js:func:`DOMBuilder.withNode` in
     "<p>Bed and<br>BReakfast</p>"
     >>> DOMBuilder.withMode("XHTML", createParagraph).toString();
     "<p>Bed and<br />BReakfast</p>"
-    >>> DOMBuilder.withMode("HTML", function() { return createParagraph() + " " + DOMBuilder.withMode("XHTML", createParagraph); }) // What is this I don't even
+    >>> DOMBuilder.withMode("HTML", function() { return createParagraph() + " " + DOMBuilder.withMode("XHTML", createParagraph); })
     "<p>Bed and<br>BReakfast</p> <p>Bed and<br />BReakfast</p>"
 
 .. _Firebug: http://www.getfirebug.com
@@ -334,7 +411,7 @@ finds, replacing them with their equivalent HTML entities::
 
    < > & ' "
 
-If you have a `String` which is known to be safe for inclusion without
+If you have a ``String`` which is known to be safe for inclusion without
 escaping, pass it through :js:func:`DOMBuilder.markSafe` before adding it
 to a :js:class:`DOMBuilder.Tag`.
 
