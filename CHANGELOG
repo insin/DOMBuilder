@@ -5,6 +5,16 @@ DOMBuilder CHANGELOG
 2011-01-24
 ----------
 
+- ``document`` is now passed in so code shrinkers can munge it.
+- Added ``"value"`` to the property access for IE7 proper.
+- Fixed a horrible IE bug in the ``extend`` utility method :(
+- Fixed a bug in ``DOMBuilder.map`` - ``DOMBuilder.createElement`` expects
+  children to be in an array.
+- Extracted ``HTMLNode`` base class to contain common logic from
+  ``HTMLElement`` and ``HTMLFragment``. 
+- Renamed ``Tag`` to ``HTMLElement``.
+- ``DOMBuilder.fragment`` now works in HTML mode - ``HTMLFragment`` objects
+  lightly mimic the ``DocumentFragment`` API.
 - Added ``DOMBuilder.map``.
 
 2011-01-23
@@ -15,7 +25,7 @@ DOMBuilder CHANGELOG
 - Folded special case handling into ``createElement`` as parts of it were
   needed to correct ``defaultValue`` and others in the nice browsers.
   Added private properties to DOMBuilder to support special cases.
-- Added ``Added DOMBuilder.fragment``, a utility method for creating and
+- Added ``DOMBuilder.fragment``, a utility method for creating and
   populating ``DocumentFragment`` objects.
 
 Version 1.2

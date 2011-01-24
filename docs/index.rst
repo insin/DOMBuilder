@@ -292,9 +292,10 @@ convenient than creating and populating elements manually using DOM methods.
        childen to be appended to the new element; may be composed of mixed
        ``String``, ``Number``, ``Element`` or ``DocumentFragment``.
 
-   Creates a DOM element or :js:class:`DOMBuilder.Tag` object with the given tag name,
-   attributes and children - this is the underlying function used by the
-   element creation functions created by :js:func:`DOMBuilder.apply`.
+   Creates a DOM ``Element`` or :js:class:`DOMBuilder.HTMLElement` object
+   with the given tag name, attributes and children - this is the underlying
+   function used by the element creation functions created by
+   :js:func:`DOMBuilder.apply`.
 
    If attributes are provided, any properties of the given object which have
    names starting with ``"on"`` and which have a ``Function`` as their value
@@ -304,10 +305,10 @@ convenient than creating and populating elements manually using DOM methods.
    If children are provided, they will be added to the new element.
    ``String`` or ``Number`` children will be added as text nodes. It is
    assumed that any child passed which is not a ``String`` or ``Number``
-   will be a DOM element or :js:class:`DOMBuilder.Tag`.
+   will be a DOM element or :js:class:`DOMBuilder.HTMLElement`.
 
    .. versionchanged:: 1.2
-      Now generates :js:class:`DOMBuilder.Tag` objects if
+      Now generates :js:class:`DOMBuilder.HTMLElement` objects if
       :js:attr:`DOMBuilder.mode` is set to anything but ``"DOM"``.
 
 Document Fragments
@@ -315,7 +316,42 @@ Document Fragments
 
 .. versionadded:: 1.3
 
-TODO
+A ``DocumentFragment`` conveniently allows you to append its entire
+contents with a single call to the target node's ``appendChild()``
+method.
+
+If you're thinking of adding a wrapper ``<div>`` solely to be able to
+insert a number of sibling elements at the same time, a
+``DocumentFragment`` will do the same job without the need for a redundant
+wrapper element. This single append functionality also makes it a
+handy container for content which needs to be inserted repeatedly, calling
+``cloneNode(true)`` for every insertion.
+
+DOMBuilder provides a :js:func:`DOMBuilder.fragment` wrapper function,
+which allows you to pass all the contents you want into a
+``DocumentFragment`` in one call, and also allows you make use of this
+functionality in HTML mode by creating equivalent `Mock DOM Objects`_
+instead. This will allow you to, for example, unit test functionality
+you've written which makes use of ``DocumentFragment`` objects by using
+HTML mode to verify output against strings, rather than against DOM
+trees.
+
+.. js:function:: DOMBuilder.fragment()
+
+   Creates a DOM ``DocumentFragment`` object or
+   :js:class:`DOMBuilder.HTMLFragment` with the given children. Supported
+   argument formats are:
+
+   +--------------------------------------------------------+
+   | Fragment Creation Arguments                            |
+   +=================================+======================+
+   | ``(child1, ...)``   | an arbitrary number of children. |
+   +---------------------------------+----------------------+
+   + ``([child1, ...])`` | an ``Array`` of children.        |
+   +---------------------------------+----------------------+
+
+See http://ejohn.org/blog/dom-documentfragments/ for more information about
+``DocumentFragment`` objects.
 
 HTML Mode
 ---------
@@ -324,7 +360,7 @@ HTML Mode
 
 DOMBuilder can also be used to generate HTML without having to engage in
 extensive ``String`` wrangling. The type of output it generates is controlled
-by the :js:attr:`DOMBuilder.mode` flag.
+by the :js:attr:`DOMBuilder.mode` attribute.
 
 .. js:attribute:: DOMBuilder.mode
 
@@ -333,48 +369,103 @@ by the :js:attr:`DOMBuilder.mode` flag.
 
    The allowable values are:
 
-   +-------------+------------------------------------------------------------------+
-   | Value       | Output                                                           |
-   +=============+==================================================================+
-   | ``"DOM"``   | DOM elements (default value)                                     |
-   +-------------+------------------------------------------------------------------+
-   | ``"HTML"``  | :js:class:`DOMBuilder.Tag` objects which ``toString()`` to HTML4 |
-   +-------------+------------------------------------------------------------------+
-   | ``"XHTML"`` | :js:class:`DOMBuilder.Tag` objects which ``toString()`` to XHTML |
-   +-------------+------------------------------------------------------------------+
+   +-------------+--------------------------------------------------------------------------+
+   | Value       | Output                                                                   |
+   +=============+==========================================================================+
+   | ``"DOM"``   | DOM elements (default value)                                             |
+   +-------------+--------------------------------------------------------------------------+
+   | ``"HTML"``  | :js:class:`DOMBuilder.HTMLElement` objects which ``toString()`` to HTML4 |
+   +-------------+--------------------------------------------------------------------------+
+   | ``"XHTML"`` | :js:class:`DOMBuilder.HTMLElement` objects which ``toString()`` to XHTML |
+   +-------------+--------------------------------------------------------------------------+
 
 Yes, that is pretty ugly, but the majority of your usage will depend on the
-environment your JavaScript is executing in. If you're on the browser, you're
+environment your JavaScript is executing in. If you're in the browser, you're
 more likely to want to create DOM elements which are easy to attach event
 handlers to, while on the backend you'll probably stick exclusively to one
 of the HTML modes.
 
 Of course, there are plenty of scenarios where you would want to generate
-HTML in a browser. For example, inserting new content using ``innerHTML``
+HTML in the browser. For example, inserting new content using ``innerHTML``
 can be a lot faster than using the DOM methods in scenarios where none of
 its limitations or side-effects apply.
 
 To change to HTML mode, set :js:attr:`DOMBuilder.mode` to the appropriate
-type of HTML output you want and use it as normal. In HTML mode, element
-creation functions create :js:class:`DOMBuilder.Tag` objects.
+type of HTML output you want and use DOMBuilder as normal.
 
-.. js:class:: DOMBuilder.Tag(tagName[, attributes[, children]])
+Mock DOM Objects
+~~~~~~~~~~~~~~~~
 
-   A representation of an HTML tag, its attributes and child contents.
+In HTML mode:
+
+* element creation functions will create :js:class:`DOMBuilder.HTMLElement`
+  objects. Calling the :js:class:`DOMBuilder.HTMLElement.toString()` method
+  on these objects will produce the appropriate type of HTML based on the
+  mode at the time they were created.
+
+* :js:func:`DOMBuilder.fragment` will create :js:class:`DOMBuilder.HTMLFragment`
+  objects which mimic the behaviour of DOM ``DocumentFragment`` when
+  appended to another fragment or an :js:class:`DOMBuilder.HTMLElement`.
+
+These mock DOM objects implement a very small subset of the ``Node``
+operations available on their real counterparts - with foreknowledge of tbe
+available operations (and requests for additional operations which would be
+useful), it's possible to write complex content creation code which works
+seamlessly in both DOM and HTML modes.
+
+.. js:class:: DOMBuilder.HTMLElement(tagName[, attributes[, childNodes]])
+
+   A representation of a DOM ``Element``, its attributes and child nodes.
 
    Arguments are as per :js:func:`DOMBuilder.createElement`.
 
-.. js:function:: DOMBuilder.Tag.appendChild(child)
+   .. versionchanged:: 1.3
+      Renamed from "Tag" to "HTMLElement"
 
-   Adds to the list of children, for cases where the desired structure
-   cannot be built up at Tag creation time.
+.. js:function:: DOMBuilder.HTMLElement.appendChild(node)
 
-.. js:function:: DOMBuilder.Tag.toString()
+   Adds to the list of child nodes, for cases where the desired structure
+   cannot be built up at creation time.
 
-   Creates a ``String`` containing the HTML representation of this object
-   and its children. By default, any ``String`` children will be escaped
-   to prevent the use of sensitive HTML characters - see the `Escaping`_
+   .. versionchanged:: 1.3
+      Appending a :js:class:`DOMBuilder.HTMLFragment` will append its
+      child nodes and clear them from the fragment.
+
+.. js:function:: DOMBuilder.HTMLElement.cloneNode(deep)
+
+   Clones the tag and its attributes - if deep is ``true`` its child nodes
+   will also be cloned.
+
+   .. versionadded:: 1.3
+      Added to support cloning by an :js:class:`DOMBuilder.HTMLFragment`.
+
+.. js:function:: DOMBuilder.HTMLElement.toString()
+
+   Creates a ``String`` containing the HTML representation of the tag and
+   its children. By default, any ``String`` children will be escaped to
+   prevent the use of sensitive HTML characters - see the `Escaping`_
    section for details on controlling escaping.
+
+.. js:class:: DOMBuilder.HTMLFragment([childNodes])
+
+   A representation of a DOM ``DocumentFragment`` and its child nodes.
+
+   :param Array children: initial child nodes
+
+   .. versionadded:: 1.3
+
+.. js:function:: DOMBuilder.HTMLFragment.appendChild(node)
+
+   Adds to the list of child nodes - appending another fragment will
+   append its child nodes and clear them from the fragment.
+
+.. js:function:: DOMBuilder.HTMLFragment.cloneNode(deep)
+
+   Clones the fragment - if deep is ``true``, its child nodes will also
+   be cloned.
+
+Temporarily Switching Mode
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you're going to be working with mixed output types, forgetting to reset
 :js:attr:`DOMBuilder.mode` would be catastrophic, so DOMBuilder provides
@@ -405,7 +496,7 @@ Escaping
 HTML mode was initially introduced with backend use in mind - specifically,
 for generating forms and working with user input. As such, autoescaping was
 implemented to protect the developer from malicious user input. The same can
-still apply on the frontend, so :js:func:`DOMBuilder.Tag.toString`
+still apply on the frontend, so :js:func:`DOMBuilder.HTMLElement.toString`
 automatically escapes the following characters in any ``String`` contents it
 finds, replacing them with their equivalent HTML entities::
 
@@ -413,7 +504,7 @@ finds, replacing them with their equivalent HTML entities::
 
 If you have a ``String`` which is known to be safe for inclusion without
 escaping, pass it through :js:func:`DOMBuilder.markSafe` before adding it
-to a :js:class:`DOMBuilder.Tag`.
+to a :js:class:`DOMBuilder.HTMLElement`.
 
 .. js:function:: DOMBuilder.markSafe(value)
 
@@ -447,8 +538,8 @@ response::
 
 .. warning::
 
-   String operations performed on a String which was marked safe will
-   produce a String which is not marked as safe.
+   ``String`` operations performed on a ``String`` which was marked safe will
+   produce a ``String`` which is no longer marked as safe.
 
 To avoid accidentally removing safe status from a ``String``, try not to mark it
 safe until it's ready for use::

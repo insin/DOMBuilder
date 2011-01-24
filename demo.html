@@ -55,7 +55,10 @@
   {
       DOMBuilder.apply(window);
 
-      document.getElementById("w3cExampleTable").appendChild(
+      var fragment = DOMBuilder.fragment(STRONG("Hello from a DocumentFragment"));
+
+      document.getElementById("w3cExampleTable").appendChild(DOMBuilder.fragment(
+        fragment.cloneNode(true),
         TABLE({border: 2, frame: "hsides", rules: "groups",
                summary: "Code page support in different versions of MS Windows.",
                onclick: function(e)
@@ -99,17 +102,23 @@
             TR(TD(720), TD("Arabic (Transparent ASMO)"),   TD(), TD("X"), TD(),    TD(),    TD("X"))
           )
         )
-      );
+      ));
 
       // Generate some HTML to demonstrate withMode
       document.getElementById("htmlGeneration").innerHTML = DOMBuilder.withMode("XHTML", function()
       {
+          var fragment = DOMBuilder.fragment(STRONG("Hello from an ", CODE("HTMLFragment")), " with sibling nodes");
           return DIV({"class": "article"},
-            H3("This HTML was generated using DOMBuilder.withNode"),
+            H3("This section was generated using ", CODE("DOMBuilder.withNode"), " and ", CODE("innerHTML")),
             P("Special characters should be escaped by default: < > \" ' &"),
             P(DOMBuilder.markSafe("But you can <strong>prevent Strings being escaped</strong> using <code>DOMBuilder.markSafe</code>")),
             P("This should have an XHTML-style slash: ", BR().toString(), BR()),
-            DOMBuilder.withMode("HTML", function() { return P("This one shouldn't: ", BR().toString(), BR()); })
+            DOMBuilder.withMode("HTML", function() { return P("This one shouldn't: ", BR().toString(), BR()); }),
+            H3(CODE("HTMLFragment"), " section"),
+            P("Cloned fragment: ", fragment.cloneNode(true)),
+            P("Original fragment has a length of: ", STRONG(fragment.childNodes.length)),
+            P("Original fragment: ", fragment),
+            P("Original fragment now has a length of: ", STRONG(fragment.childNodes.length))
           );
       }).toString();
 
@@ -124,6 +133,7 @@
                   }
               }},
           DIV({"class": "testClass"},
+            fragment.cloneNode(true),
             P(
               LABEL({"for": "testInput1"}, "defaultValue: \"defaultValue\""),
               " ",
@@ -212,7 +222,6 @@
           ],
           ["type", "propertyList", "references", "isAutoIncrement", "isUpdateable"]
       ));
-
   });
   </script>
 </head>

@@ -1,5 +1,9 @@
-var DOMBuilder = (function()
+var DOMBuilder = (function(document)
 {
+    /**
+     * **The Function Of All Time** - copies attributes from ``source`` to
+     * ``dest`` and returns ``dest``.
+     */
     function extend(dest, source)
     {
         for (attr in source)
@@ -9,6 +13,19 @@ var DOMBuilder = (function()
                 dest[attr] = source[attr];
             }
         }
+
+        /*@cc_on
+        // ... (stunned silence)
+        if (source.toString !== Object.prototype.toString)
+        {
+            dest.toString = source.toString;
+        }
+        if (source.valueOf !== Object.prototype.valueOf)
+        {
+            dest.valueOf = source.valueOf;
+        }
+        @*/
+
         return dest;
     }
 
@@ -20,7 +37,11 @@ var DOMBuilder = (function()
         var ampRe = /&/g, ltRe = /</g, gtRe = />/g, quoteRe1 = /"/g, quoteRe2 = /'/g;
         return function(html)
         {
-            return html.replace(ampRe, "&amp;").replace(ltRe, "&lt;").replace(gtRe, "&gt;").replace(quoteRe1, "&quot;").replace(quoteRe2, "&#39;");
+            return html.replace(ampRe, "&amp;")
+                        .replace(ltRe, "&lt;")
+                         .replace(gtRe, "&gt;")
+                          .replace(quoteRe1, "&quot;")
+                           .replace(quoteRe2, "&#39;");
         };
     })();
 
@@ -60,51 +81,136 @@ var DOMBuilder = (function()
     {
         this.value = value;
     }
-    SafeString.prototype = new String();
-    SafeString.prototype.toString = SafeString.prototype.valueOf = function()
+    SafeString.prototype = extend(new String(),
     {
-        return this.value;
-    };
-
-    /**
-     * Marks a string as safe - this method will be exposed as
-     * ``DOMBUilder.markSafe`` for end users.
-     */
-    function markSafe(value)
-    {
-        return new SafeString(value);
-    }
-
-    /**
-     * Determines if a string is safe - this method will be exposed as
-     * ``DOMBuilder.isSafe`` for end users.
-     */
-    function isSafe(value)
-    {
-        return (value instanceof SafeString);
-    }
-
-    /**
-     * Encapsulates logic for creating an HTML/XHTML representation of a tag
-     * structure.
-     */
-    function Tag(tagName, attributes, children)
-    {
-        this.tagName = tagName;
-        this.attributes = attributes || {};
-        this.children = children || [];
-        // Keep a record of whether or not closing slashes are needed, as the
-        // mode could change mefore this object is coerced to a String.
-        this.xhtml = (DOMBuilder.mode == "XHTML");
-    }
-
-    Tag.prototype =
-    {
-        appendChild: function(child)
+        constructor: SafeString,
+        toString: function()
         {
-            this.children.push(child);
+            return this.value;
+        },
+        valueOf: function()
+        {
+            return this.value;
+        }
+    });
+
+    /**
+     * Partially emulates a DOM ``Node`` for HTML generation.
+     */
+    function HTMLNode(childNodes)
+    {
+        this.childNodes = childNodes || [];
+
+        // Ensure HTMLFragment contents are inlined, as if this object's child
+        // nodes were appended one-by-one.
+        this._inlineFragments();
+    }
+    HTMLNode.prototype = extend(new Object(),
+    {
+        constructor: HTMLNode,
+
+        /**
+         * Replaces any ``HTMLFragment`` objects in child nodes with their own
+         * child nodes and empties the fragment.
+         */
+        _inlineFragments: function()
+        {
+            for (var i = 0, l = this.childNodes.length; i < l; i++)
+            {
+                var child = this.childNodes[i];
+                if (child instanceof HTMLFragment)
+                {
+                    this.childNodes.splice.apply(this.childNodes,
+                                                 [i, 1].concat(child.childNodes));
+                    // Clear the fragment on append, as per DocumentFragment
+                    child.childNodes = [];
+                }
+            }
         },
 
+        /**
+         * Emulates ``appendChild``, inserting fragment child node contents and
+         * emptying the fragment if one is given.
+         */
+        appendChild: function(node)
+        {
+            if (node instanceof HTMLFragment)
+            {
+                for (var i = 0, l = node.childNodes.length; i < l; i++)
+                {
+                    this.childNodes.push(node.childNodes[i]);
+                }
+                // Clear the fragment on append, as per DocumentFragment
+                node.childNodes = [];
+            }
+            else
+            {
+                this.childNodes.push(node);
+            }
+        },
+
+        /**
+         * Emulates ``cloneNode`` so cloning of ``HTMLFragment`` objects works
+         * as expected.
+         */
+        cloneNode: function(deep)
+        {
+            var clone = this._createCloneObject();
+            if (deep === true)
+            {
+                for (var i = 0, l = this.childNodes.length; i < l; i++)
+                {
+                    var node = this.childNodes[i];
+                    if (node instanceof HTMLElement)
+                    {
+                        clone.childNodes.push(node.cloneNode(deep));
+                    }
+                    else
+                    {
+                        clone.childNodes.push(node);
+                    }
+                }
+            }
+            return clone;
+        },
+
+        /**
+         * Creates the object to be used for deep cloning.
+         */
+        _createCloneObject: function()
+        {
+            return new Node();
+        }
+    });
+
+    /**
+     * Partially emulates a DOM ``Element ``for HTML generation.
+     */
+    function HTMLElement(tagName, attributes, childNodes)
+    {
+        HTMLNode.call(this, childNodes);
+
+        this.tagName = tagName;
+        this.attributes = attributes || {};
+
+        // Keep a record of whether or not closing slashes are needed, as the
+        // mode could change before this object is coerced to a String.
+        this.xhtml = (DOMBuilder.mode == "XHTML");
+    }
+    HTMLElement.prototype = extend(new HTMLNode(),
+    {
+        constructor: HTMLElement,
+
+        _createCloneObject: function()
+        {
+            var clone = new HTMLElement(this.tagName, extend({}, this.attributes));
+            clone.xhtml = this.xhtml;
+            return clone;
+        },
+
+        /**
+         * Creates an HTML/XHTML representation of this HTMLElement.
+         */
         toString: function()
         {
             // Opening tag
@@ -113,7 +219,8 @@ var DOMBuilder = (function()
             {
                 if (this.attributes.hasOwnProperty(attr))
                 {
-                    parts.push(" " + attr.toLowerCase() + "=\"" + conditionalEscape(this.attributes[attr]) + "\"");
+                    parts.push(" " + attr.toLowerCase() + "=\"" +
+                               conditionalEscape(this.attributes[attr]) + "\"");
                 }
             }
             parts.push(">");
@@ -128,14 +235,14 @@ var DOMBuilder = (function()
             }
 
             // Contents
-            for (var i = 0, l = this.children.length; i < l; i++)
+            for (var i = 0, l = this.childNodes.length; i < l; i++)
             {
-                var child = this.children[i];
-                if (child instanceof Tag || child instanceof SafeString)
+                var node = this.childNodes[i];
+                if (node instanceof HTMLElement || node instanceof SafeString)
                 {
-                    parts.push(child.toString());
+                    parts.push(node.toString());
                 }
-                else if (child == "\u00A0")
+                else if (node === "\u00A0")
                 {
                     // Special case to convert these back to entities,
                     parts.push("&nbsp;");
@@ -143,7 +250,7 @@ var DOMBuilder = (function()
                 else
                 {
                     // Coerce to string and escape
-                    parts.push(escapeHTML(""+child));
+                    parts.push(escapeHTML(""+node));
                 }
             }
 
@@ -151,8 +258,27 @@ var DOMBuilder = (function()
             parts.push("</" + this.tagName + ">");
             return parts.join("");
         }
-    };
+    });
 
+    /**
+     * Partially emulates a DOM ``DocumentFragment`` for HTML generation.
+     */
+    function HTMLFragment(childNodes)
+    {
+        HTMLNode.call(this, childNodes);
+    }
+    HTMLFragment.prototype = extend(new HTMLNode(),
+    {
+        constructor: HTMLFragment,
+
+        _createCloneObject: function()
+        {
+            return new HTMLFragment();
+        }
+    });
+
+    // Build up the object which will be referred to as DOMBuilder in the global
+    // scope.
     var o =
     {
         /** Attribute names which should be translated before use. */
@@ -265,7 +391,7 @@ var DOMBuilder = (function()
                     }
                     else
                     {
-                        return new Tag(tagName);
+                        return new HTMLElement(tagName);
                     }
                 }
                 else
@@ -275,6 +401,8 @@ var DOMBuilder = (function()
                 }
             };
 
+            // Expose a map function which will call DOMBuilder.map with the
+            // appropriate tagName.
             elementFunction.map = function()
             {
                 var mapArgs = Array.prototype.slice.call(arguments);
@@ -311,8 +439,9 @@ var DOMBuilder = (function()
                 children = firstArg; // ([child1, ...])
             }
             else if (firstArg.constructor == Object &&
-                     !(firstArg instanceof Tag) &&
-                     !(firstArg instanceof SafeString))
+                     !(firstArg instanceof HTMLElement) &&
+                     !(firstArg instanceof SafeString) &&
+                     !(firstArg instanceof HTMLFragment))
             {
                 attributes = firstArg;
                 children = (argsLength == 2 && args[1] instanceof Array
@@ -345,7 +474,7 @@ var DOMBuilder = (function()
          * See http://ejohn.org/blog/dom-documentfragments/ for more information
          * about ``DocumentFragment`` objects.
          */
-        fragment: function(children)
+        fragment: function()
         {
             var children;
             if (arguments.length == 1 &&
@@ -356,6 +485,11 @@ var DOMBuilder = (function()
             else
             {
                 children = Array.prototype.slice.call(arguments) // (child1, ...)
+            }
+
+            if (this.mode != "DOM")
+            {
+                return new HTMLFragment(children);
             }
 
             var fragment = document.createDocumentFragment();
@@ -398,7 +532,7 @@ var DOMBuilder = (function()
 
             if (this.mode != "DOM")
             {
-                return new Tag(tagName, attributes, children);
+                return new HTMLElement(tagName, attributes, children);
             }
 
             // Create the element
@@ -527,22 +661,32 @@ var DOMBuilder = (function()
             var results = [];
             for (var i = 0, l = items.length; i < l; i++)
             {
-                // If we weren't given a mapping function, use the item as the
-                // contents.
-                if (func === null)
+                // If we were given a mapping function, call it and use the
+                // return value as the contents, unless the function specifies
+                // that the item shouldn't generate an element by explicity
+                // returning null.
+                if (func !== null)
                 {
-                    results.push(this.createElement(tagName, defaultAttrs, items[i]));
-                    continue;
+                    var children = func(items[i], extend({}, defaultAttrs), i);
+                    if (children === null)
+                    {
+                        continue;
+                    }
+                }
+                else
+                {
+                    // If we weren't given a mapping function, use the item as the
+                    // contents.
+                    var children = items[i];
                 }
 
-                // Otherwise, call the mapping function and use the return value
-                // as the contents, unless the function specifies that the item
-                // shouldn't generate an element by explicity returning null.
-                var children = func(items[i], extend({}, defaultAttrs), i);
-                if (children !== null)
+                // Ensure children are in an Array, as required by createElement
+                if (!(children instanceof Array))
                 {
-                    results.push(this.createElement(tagName, defaultAttrs, children));
+                    children = [children];
                 }
+
+                results.push(this.createElement(tagName, defaultAttrs, children));
             }
             return results;
         },
@@ -561,6 +705,22 @@ var DOMBuilder = (function()
         removeEvent: function(element, eventName, handler)
         {
             element.removeEventListener(eventName, handler, false);
+        },
+
+        /**
+         * Marks a string as safe
+         */
+        markSafe: function(value)
+        {
+            return new SafeString(value);
+        },
+
+        /**
+         * Determines if a string is safe.
+         */
+        isSafe: function(value)
+        {
+            return (value instanceof SafeString);
         }
     };
 
@@ -576,6 +736,10 @@ var DOMBuilder = (function()
             o._attrTranslations = extend(o._attrTranslations || {}, {
                 "class": "className",
                 "for": "htmlFor"
+            });
+
+            o._usePropertyAccess = extend(o._usePropertyAccess || {}, {
+                "value": true
             });
 
             o._specialCaseAttrs = extend(o._specialCaseAttrs || {}, {
@@ -651,10 +815,11 @@ var DOMBuilder = (function()
         }
     }
 
-    // Expose tag and escaping-related utility functions
-    o.Tag = Tag
-    o.isSafe = isSafe;
-    o.markSafe = markSafe;
+    // Expose types just in case users are interested in them
+    o.HTMLElement = HTMLElement;
+    o.HTMLFragment = HTMLFragment;
+    o.HTMLNode = HTMLNode;
+    o.SafeString = SafeString;
 
     return o;
-})();
+})(document);
