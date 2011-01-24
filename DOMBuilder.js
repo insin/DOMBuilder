@@ -65,7 +65,8 @@ var DOMBuilder = (function(document)
     var emptyTags = (function()
     {
         var lookup = {},
-            tags = ["br", "col", "hr", "input", "img", "link", "param"];
+            tags = ["area", "base", "br", "col", "hr", "input", "img", "link",
+                    "meta", "param"];
         for (var i = 0, l = tags.length; i < l; i++)
         {
             lookup[tags[i]] = true;
