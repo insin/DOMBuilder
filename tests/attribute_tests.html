@@ -1,0 +1,323 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+  <title>DOMBuilder Attribute Tests</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="Author" content="Jonathan Buchanan">
+  <style type="text/css">
+  body { font-family: verdana; font-size: 12px; }
+  th { background-color: #cdf; }
+  .row1 { background-color: #f3f6f9; }
+  .row2 { background-color: #f6f9fc; }
+  </style>
+  <script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script>
+  <script type="text/javascript" src="../DOMBuilder.js"></script>
+  <script type="text/javascript">
+  function runTests(testConfigs, testFunction)
+  {
+      var results = []
+      for (var i = 0, l = testConfigs.length; i < l; i++)
+      {
+          var config = testConfigs[i];
+          var bothValuesSet = (config[1] !== null && config[2] !== null);
+          var configResults = [];
+          // Run with property attributes
+          configResults.push(testFunction.apply(null, config.concat([true, true])));
+          if (bothValuesSet)
+          {
+              configResults.push(testFunction.apply(null, config.concat([true, false])));
+          }
+          // Run with setAttribute
+          configResults.push(testFunction.apply(null, config.concat([false, true])));
+          if (bothValuesSet)
+          {
+              configResults.push(testFunction.apply(null, config.concat([false, false])));
+          }
+          results.push(configResults);
+      }
+      return results;
+  }
+
+  function createResultsTable(headers, results)
+  {
+      return TABLE({border: 2, frame: "hsides", rules: "groups"},
+        COLGROUP({span: 2}),
+        COLGROUP({span: 3}),
+        COLGROUP({span: 4}),
+        THEAD(
+          TR(TH({colSpan: 2}, NBSP), TH({colSpan: 3}, "Attributes"), TH({colSpan: 4}, "Results")),
+          TR(TH.map(headers))
+        ),
+        // TODO Remove this wrapper once Issue 2 is fixed
+        DOMBuilder.fragment(TBODY.map(results, function(configResults)
+        {
+          return TR.map(configResults, function(resultData, attrs, configResultsIndex)
+          {
+            // Stripe rows
+            attrs['class'] = configResultsIndex % 2 == 0 ? 'row1' : 'row2';
+            return TD.map(resultData, function(result, attrs, resultIndex)
+            {
+                if (configResultsIndex > 0 && resultIndex === 0)
+                {
+                    return NBSP;
+                }
+                else
+                {
+                    return result;
+                }
+            });
+          });
+        }))
+      );
+  }
+
+  var INPUT_TESTS = [
+      ["value only",                 null,           "value"],
+      ["defaultValue only",          "defaultValue", null],
+      ["defaultValue & value",       "defaultValue", "value"],
+      ["defaultValue & blank value", "defaultValue", ""],
+      ["blank defaulValue & value",  "",             "value"]
+  ];
+
+  function testInputValues(testName, defaultValue, value, property, defaultFirst)
+  {
+      // Prepare test data and set up DOMBuilder
+      var propertyAccess = {};
+      var attrs = {type: "text", name: "testInput"};
+
+      function setDefault()
+      {
+          if (defaultValue !== null)
+          {
+              attrs["defaultValue"] = defaultValue;
+              if (property)
+              {
+                  propertyAccess["defaultValue"] = true;
+              }
+          }
+      }
+
+      if (defaultFirst) { setDefault(); }
+      if (value !== null)
+      {
+          attrs["value"] = value;
+          if (property)
+          {
+              propertyAccess["defaultValue"] = true;
+          }
+      }
+      if (!defaultFirst) { setDefault(); }
+      DOMBuilder._usePropertyAccess = propertyAccess;
+
+      // Set up the test
+      var fixture = document.getElementById("fixture");
+      var input = INPUT(attrs);
+      fixture.appendChild(input);
+
+      var initialInput = input.cloneNode(true);
+
+      // Check initial and reset values
+      var initialValue = input.value;
+      input.value = "newValue";
+      jQuery("#reset").trigger("click");
+      var resetValue = input.value;
+
+      // Clear the fixture
+      fixture.innerHTML = "";
+
+      return [
+          testName,
+          property ? "property" : "setAttribute",
+          defaultValue === null ? NBSP : '"' + defaultValue + '"',
+          value === null ? NBSP : '"' + value + '"',
+          (defaultValue !== null && value !== null)
+              ? (defaultFirst ? "defaultValue" : "value") + " first"
+              : "N/A",
+          initialValue,
+          initialInput,
+          resetValue,
+          input
+      ];
+  }
+
+  var CHECKBOX_TESTS = [
+      ["none",                       null,  null],
+      ["checked only",               null,  true],
+      ["defaultChecked only",        true,  null],
+      ["defaultChecked & checked",   true,  true],
+      ["defaultChecked & !checked",  true,  false],
+      ["!defaultChecked & checked ", false, true]
+  ];
+
+  function testCheckboxValues(testName, defaultChecked, checked, property, defaultFirst)
+  {
+      // Prepare test data and set up DOMBuilder
+      var propertyAccess = {};
+      var attrs = {type: "checkbox", name: "testInput"};
+      function setDefault()
+      {
+          if (defaultChecked !== null)
+          {
+              attrs["defaultChecked"] = defaultChecked;
+              if (property)
+              {
+                  propertyAccess["defaultChecked"] = true;
+              }
+          }
+      }
+
+      if (defaultFirst) { setDefault(); }
+      if (checked !== null)
+      {
+          attrs["checked"] = checked;
+          if (property)
+          {
+              propertyAccess["checked"] = true;
+          }
+      }
+      if (!defaultFirst) { setDefault(); }
+      DOMBuilder._usePropertyAccess = propertyAccess;
+
+      // Set up the test
+      var fixture = document.getElementById("fixture");
+      var input = INPUT(attrs);
+      fixture.appendChild(input);
+
+      var initialInput = input.cloneNode(true);
+
+      // Check initial and reset checked values
+      var initialChecked = (input.checked === true);
+      input.checked = !input.checked;
+      jQuery("#reset").trigger("click");
+      var resetChecked = (input.checked === true);
+
+      // Clear the fixture
+      fixture.innerHTML = "";
+
+      return [
+          testName,
+          property ? "property" : "setAttribute",
+          defaultChecked === null ? NBSP : defaultChecked,
+          checked === null ? NBSP : checked,
+          (defaultChecked !== null && checked !== null)
+              ? (defaultFirst ? "defaultChecked" : "checked") + " first"
+              : "N/A",
+          initialChecked,
+          initialInput,
+          resetChecked,
+          input
+      ];
+  }
+
+  var OPTION_TESTS = [
+      ["none",                         null,  null],
+      ["selected only",                null,  true],
+      ["defaultSelected only",         true,  null],
+      ["defaultSelected & selected",   true,  true],
+      ["defaultSelected & !selected",  true,  false],
+      ["!defaultSelected & selected ", false, true]
+  ];
+
+  function testOptionValues(testName, defaultSelected, selected, property, defaultFirst)
+  {
+      // Prepare test data and set up DOMBuilder
+      var propertyAccess = {};
+      var attrs = {value: "test"};
+      function setDefault()
+      {
+          if (defaultSelected !== null)
+          {
+              attrs["defaultSelected"] = defaultSelected;
+              if (property)
+              {
+                  propertyAccess["defaultSelected"] = true;
+              }
+          }
+      }
+
+      if (defaultFirst) { setDefault(); }
+      if (selected !== null)
+      {
+          attrs["selected"] = selected;
+          if (property)
+          {
+              propertyAccess["selected"] = true;
+          }
+      }
+      if (!defaultFirst) { setDefault(); }
+      DOMBuilder._usePropertyAccess = propertyAccess;
+
+      // Set up the test
+      var fixture = document.getElementById("fixture");
+      var input = SELECT(OPTION("----"));
+      var option = OPTION(attrs, "Test");
+      input.appendChild(option);
+      fixture.appendChild(input);
+
+      var initialInput = input.cloneNode(true);
+
+      // Check initial and reset selected values
+      var initialSelected = (input.selectedIndex === 1);
+      input.selected = !input.selected;
+      jQuery("#reset").trigger("click");
+      var resetSelected = (input.selectedIndex === 1);
+
+      // Clear the fixture
+      fixture.innerHTML = "";
+
+      return [
+          testName,
+          property ? "property" : "setAttribute",
+          defaultSelected === null ? NBSP : defaultSelected,
+          selected === null ? NBSP : selected,
+          (defaultSelected !== null && selected !== null)
+              ? (defaultFirst ? "defaultSelected" : "selected") + " first"
+              : "N/A",
+          initialSelected,
+          initialInput,
+          resetSelected,
+          input
+      ];
+  }
+
+  jQuery(document).ready(function()
+  {
+      DOMBuilder.apply(window);
+
+      var inputTestResults = runTests(INPUT_TESTS, testInputValues);
+      document.getElementById("inputTestResults").appendChild(
+          createResultsTable(
+              ["Test", "Method", CODE("defaultValue"), CODE("value"), "Order",
+               "Initial Value", "Initial Input", "Value After Reset", "Reset Input"],
+              inputTestResults));
+
+      var checkboxTestResults = runTests(CHECKBOX_TESTS, testCheckboxValues)
+      document.getElementById("checkboxTestResults").appendChild(
+          createResultsTable(
+              ["Test", "Method", CODE("defaultChecked"), CODE("checked"), "Order",
+               "Initially Checked", "Initial Input", "Checked After Reset", "Reset Input"],
+              checkboxTestResults));
+
+      var optionTestResults = runTests(OPTION_TESTS, testOptionValues)
+      document.getElementById("optionTestResults").appendChild(
+          createResultsTable(
+              ["Test", "Method", CODE("defaultSelected"), CODE("selected"), "Order",
+               "Initially Selected", "Initial Input", "Selected After Reset", "Reset Input"],
+              optionTestResults));
+  });
+  </script>
+</head>
+<body>
+  <h1>DOMBuilder Attribute Tests</h1>
+  <form style="display: none">
+    <div id="fixture"></div>
+    <input type="reset" id="reset" value="Reset">
+  </form>
+  <h2>&lt;input type="text"&gt; - <code>value</code> &amp; <code>defaultValue</code></h2>
+  <div id="inputTestResults"></div>
+  <h2>&lt;input type="checkbox"&gt; - <code>checked</code> &amp; <code>defaultChecked</code></h2>
+  <div id="checkboxTestResults"></div>
+  <h2>&lt;option&gt; - <code>selected</code> &amp; <code>defaultSelected</code></h2>
+  <div id="optionTestResults"></div>
+</body>
+</html>
