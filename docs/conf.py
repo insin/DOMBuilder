@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'DOMBuilder'
-copyright = u'2011, Jonathan Buchanan'
+copyright = u'2008, Jonathan Buchanan'
 highlight_language = 'javascript'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -97,9 +97,7 @@ html_theme = 'default'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {
-    'nosidebar': 'true',
-}
+html_theme_options = {}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
