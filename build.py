@@ -27,14 +27,14 @@ def main(version):
     # Generate docs
     if not os.path.isdir('build/docs'):
         os.mkdir('build/docs')
-    subprocess.call([os.path.abspath('docs/make.bat'), 'singlehtml'], cwd=os.path.abspath('docs'))
-    if os.path.isdir('docs/_build/singlehtml'):
+    subprocess.call([os.path.abspath('docs/make.bat'), 'html'], cwd=os.path.abspath('docs'))
+    if os.path.isdir('build/docs'):
         shutil.rmtree('build/docs')
-    shutil.copytree('docs/_build/singlehtml', 'build/docs',
+    shutil.copytree('docs/_build/html', 'build/docs',
                     ignore=shutil.ignore_patterns('.buildinfo', 'objects.inv'))
 
     # Copy files to be distributed as-is
-    for filename in ['CHANGELOG', 'LICENSE']:
+    for filename in ['CHANGELOG']:
         shutil.copy(filename, 'build')
 
     # Zip everything up
