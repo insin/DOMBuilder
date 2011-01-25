@@ -28,6 +28,28 @@ var DOMBuilder = (function(document)
     }
 
     /**
+     * Flattens an Array in-place, replacing any Arrays it contains with their
+     * contents, and flatetning their contents in turn.
+     */
+    function flatten(a)
+    {
+        for (var i = 0, l = a.length; i < l; i++)
+        {
+            var c = a[i];
+            if (c instanceof Array)
+            {
+                // Make sure we loop to the Array's new length
+                l += c.length - 1;
+                // Repllace the current item with its contents
+                Array.prototype.splice.apply(a, [i, 1].concat(c));
+                // Stay on the current index so we continue looping at the first
+                // element of the array we just spliced in or removed.
+                i--;
+            }
+        }
+    }
+
+    /**
      * Escapes sensitive HTML characters.
      */
     var escapeHTML = (function()
@@ -487,6 +509,9 @@ var DOMBuilder = (function(document)
                 children = Array.prototype.slice.call(arguments) // (child1, ...)
             }
 
+            // Inline the contents of any child Arrays
+            flatten(children);
+
             if (this.mode != "DOM")
             {
                 return new HTMLFragment(children);
@@ -529,6 +554,9 @@ var DOMBuilder = (function(document)
         {
             attributes = attributes || {};
             children = children || [];
+
+            // Inline the contents of any child Arrays
+            flatten(children);
 
             if (this.mode != "DOM")
             {

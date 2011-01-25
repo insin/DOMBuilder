@@ -48,8 +48,7 @@
           TR(TH({colSpan: 2}, NBSP), TH({colSpan: 3}, "Attributes"), TH({colSpan: 4}, "Results")),
           TR(TH.map(headers))
         ),
-        // TODO Remove this wrapper once Issue 2 is fixed
-        DOMBuilder.fragment(TBODY.map(results, function(configResults)
+        TBODY.map(results, function(configResults)
         {
           return TR.map(configResults, function(resultData, attrs, configResultsIndex)
           {
@@ -67,7 +66,7 @@
                 }
             });
           });
-        }))
+        })
       );
   }
 

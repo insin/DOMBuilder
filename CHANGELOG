@@ -5,6 +5,8 @@ DOMBuilder CHANGELOG
 2011-01-25
 ----------
 
+- Fixed issue #2 - nested Arrays in child arguments to createElement and
+  fragment are now flattened.
 - Fixed modification of attributes by mapping functions.
 - Added support for Boolean children in DOM mode.
 

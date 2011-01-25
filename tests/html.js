@@ -3,7 +3,9 @@ module("HTML", {
         DOMBuilder.mode = "HTML";
     },
     tearDown: function() {
-        DOMBuilder.mode = "DOM";
+        if (DOMBuilder.mode != "HTML") {
+            fail("DOMBuilder.mode was not \"HTML\" after test completed: " + DOMBuilder.mode);
+        }
     }
 });
 
@@ -57,22 +59,7 @@ test("DOMBuilder.HTMLFragment", function()
 
 });
 
-test("DOMBuilder.withMode", function()
-{
-    expect(0);
-});
-
-test("DOMBuilder.SafeString", function()
-{
-    expect(0);
-});
-
-test("DOMBuilder.isSafe", function()
-{
-    expect(0);
-});
-
-test("DOMBuilder.markSafe", function()
+test("HTML Escaping", function()
 {
     expect(0);
 });
