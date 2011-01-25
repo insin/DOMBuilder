@@ -13,9 +13,8 @@ var DOMBuilder = (function(document)
                 dest[attr] = source[attr];
             }
         }
-
         /*@cc_on
-        // ... (stunned silence)
+        // ... (stunned silence at IE7 and below)
         if (source.toString !== Object.prototype.toString)
         {
             dest.toString = source.toString;
@@ -25,7 +24,6 @@ var DOMBuilder = (function(document)
             dest.valueOf = source.valueOf;
         }
         @*/
-
         return dest;
     }
 
@@ -728,9 +726,9 @@ var DOMBuilder = (function(document)
 
     // Detect IE and modify DOMBuilder as required to work around any issues,
     // depending on the IE version and document mode for IE8 and up.
-    if (/*@cc_on @*//*@if (@_win32)!/*@end @*/false)
+    if (/*@cc_on!@*/false)
     {
-        var jscriptVersion/*@cc_on @*//*@if (@_win32)= @_jscript_version/*@end @*/;
+        var jscriptVersion/*@cc_on=@_jscript_version@*/;
 
         // IE8 fixed many longstanding attribute problems
         if (jscriptVersion < 5.8 || document.documentMode < 8)
