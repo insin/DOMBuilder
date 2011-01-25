@@ -14,7 +14,7 @@ var DOMBuilder = (function(document)
             }
         }
         /*@cc_on
-        // ... (stunned silence at IE7 and below)
+        // ... (stunned silence at Internet Explorer)
         if (source.toString !== Object.prototype.toString)
         {
             dest.toString = source.toString;
