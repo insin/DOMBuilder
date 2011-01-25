@@ -498,9 +498,9 @@ var DOMBuilder = (function(document)
                 var child = children[i];
                 var childType = typeof child;
 
-                if (childType == "string" || childType == "number")
+                if (childType == "string" || childType == "number" || childType == "boolean")
                 {
-                    fragment.appendChild(document.createTextNode(child));
+                    fragment.appendChild(document.createTextNode(""+child));
                 }
                 else
                 {
@@ -590,9 +590,9 @@ var DOMBuilder = (function(document)
             for (var i = 0, l = children.length; i < l; i++)
             {
                 var child = children[i], childType = typeof child;
-                if (childType == "string" || childType == "number")
+                if (childType == "string" || childType == "number" || childType == "boolean")
                 {
-                    element.appendChild(document.createTextNode(child));
+                    element.appendChild(document.createTextNode(""+child));
                 }
                 else
                 {
@@ -661,13 +661,14 @@ var DOMBuilder = (function(document)
             var results = [];
             for (var i = 0, l = items.length; i < l; i++)
             {
+                var attrs = extend({}, defaultAttrs);
                 // If we were given a mapping function, call it and use the
                 // return value as the contents, unless the function specifies
                 // that the item shouldn't generate an element by explicity
                 // returning null.
                 if (func !== null)
                 {
-                    var children = func(items[i], extend({}, defaultAttrs), i);
+                    var children = func(items[i], attrs, i);
                     if (children === null)
                     {
                         continue;
@@ -686,7 +687,7 @@ var DOMBuilder = (function(document)
                     children = [children];
                 }
 
-                results.push(this.createElement(tagName, defaultAttrs, children));
+                results.push(this.createElement(tagName, attrs, children));
             }
             return results;
         },

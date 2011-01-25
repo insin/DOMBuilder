@@ -2,6 +2,12 @@
 DOMBuilder CHANGELOG
 ====================
 
+2011-01-25
+----------
+
+- Fixed modification of attributes by mapping functions.
+- Added support for Boolean children in DOM mode.
+
 2011-01-24
 ----------
 
