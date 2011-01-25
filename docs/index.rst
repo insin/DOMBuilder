@@ -203,8 +203,8 @@ list via its :js:func:`DOMBuilder.map` function.
       mappingFunction(item, attributes, itemIndex)
 
    Contents created by the function can consist of a single value (in DOM
-   mode: an ``Element``, ``DocumentFragment``, ``String`` or ``Number``)
-   or a mixed ``Array`` of these types.
+   mode: an ``Element``, ``DocumentFragment``, ``String``, ``Number`` or
+   ``Boolean``) or a mixed ``Array`` of these types.
 
    Attributes for the created element can be altered per-item by
    modifying the ``attributes`` argument, which will initially contain
@@ -248,6 +248,15 @@ This isn't essentially any less complex than the previous method, but
 there is a decrease in the number of nested method calls and you can see
 how the default behaviour in the absence of a mapping function simplified
 creation of the table headers.
+
+This is how you could make use of the ``attributes`` and ``itemIndex``
+arguments to the mapping function to implement table striping::
+
+   TR.map(rows, function(row, attributes, itemIndex)
+   {
+       attributes['class'] = (itemIndex % 2 == 0 ? "row1" : "row2");
+       return TD.map(row);
+   });
 
 Event Handlers
 ##############
@@ -294,7 +303,8 @@ convenient than creating and populating elements manually using DOM methods.
    :param Object attributes: attributes to be applied to the new element.
    :param Array children:
        childen to be appended to the new element; may be composed of mixed
-       ``String``, ``Number``, ``Element`` or ``DocumentFragment``.
+       ``String``, ``Number``, ``Boolean``, ``Element`` or
+       ``DocumentFragment``.
 
    Creates a DOM ``Element`` or :js:class:`DOMBuilder.HTMLElement` object
    with the given tag name, attributes and children - this is the underlying
@@ -307,9 +317,9 @@ convenient than creating and populating elements manually using DOM methods.
    a valid event name is set as the attribute name in this case.
 
    If children are provided, they will be added to the new element.
-   ``String`` or ``Number`` children will be added as text nodes. It is
-   assumed that any child passed which is not a ``String`` or ``Number``
-   will suitable for appending to its parent element.
+   ``String``, ``Number`` or ``Boolean`` children will be added as text nodes.
+   It is assumed that any child passed which is not one of these types will
+   be suitable for appending to its parent element.
 
    .. versionchanged:: 1.2
       Now generates :js:class:`DOMBuilder.HTMLElement` objects if
