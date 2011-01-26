@@ -21,17 +21,10 @@
           var config = testConfigs[i];
           var bothValuesSet = (config[1] !== null && config[2] !== null);
           var configResults = [];
-          // Run with property attributes
-          configResults.push(testFunction.apply(null, config.concat([true, true])));
+          configResults.push(testFunction.apply(null, config.concat([true])));
           if (bothValuesSet)
           {
-              configResults.push(testFunction.apply(null, config.concat([true, false])));
-          }
-          // Run with setAttribute
-          configResults.push(testFunction.apply(null, config.concat([false, true])));
-          if (bothValuesSet)
-          {
-              configResults.push(testFunction.apply(null, config.concat([false, false])));
+              configResults.push(testFunction.apply(null, config.concat([false])));
           }
           results.push(configResults);
       }
@@ -41,11 +34,11 @@
   function createResultsTable(headers, results)
   {
       return TABLE({border: 2, frame: "hsides", rules: "groups"},
-        COLGROUP({span: 2}),
+        COLGROUP({span: 1}),
         COLGROUP({span: 3}),
         COLGROUP({span: 4}),
         THEAD(
-          TR(TH({colSpan: 2}, NBSP), TH({colSpan: 3}, "Attributes"), TH({colSpan: 4}, "Results")),
+          TR(TH({colSpan: 1}, NBSP), TH({colSpan: 3}, "Attributes"), TH({colSpan: 4}, "Results")),
           TR(TH.map(headers))
         ),
         TBODY.map(results, function(configResults)
@@ -78,7 +71,7 @@
       ["blank defaultValue & value", "",             "value"]
   ];
 
-  function testInputValues(testName, defaultValue, value, property, defaultFirst)
+  function testInputValues(testName, defaultValue, value, defaultFirst)
   {
       // Prepare test data and set up DOMBuilder
       var propertyAccess = {};
@@ -89,10 +82,6 @@
           if (defaultValue !== null)
           {
               attrs["defaultValue"] = defaultValue;
-              if (property)
-              {
-                  propertyAccess["defaultValue"] = true;
-              }
           }
       }
 
@@ -100,13 +89,8 @@
       if (value !== null)
       {
           attrs["value"] = value;
-          if (property)
-          {
-              propertyAccess["defaultValue"] = true;
-          }
       }
       if (!defaultFirst) { setDefault(); }
-      DOMBuilder._usePropertyAccess = propertyAccess;
 
       // Set up the test
       var fixture = document.getElementById("fixture");
@@ -126,7 +110,6 @@
 
       return [
           testName,
-          property ? "property" : "setAttribute",
           defaultValue === null ? NBSP : '"' + defaultValue + '"',
           value === null ? NBSP : '"' + value + '"',
           (defaultValue !== null && value !== null)
@@ -148,7 +131,7 @@
       ["!defaultChecked & checked ", false, true]
   ];
 
-  function testCheckboxValues(testName, defaultChecked, checked, property, defaultFirst)
+  function testCheckboxValues(testName, defaultChecked, checked, defaultFirst)
   {
       // Prepare test data and set up DOMBuilder
       var propertyAccess = {};
@@ -158,10 +141,6 @@
           if (defaultChecked !== null)
           {
               attrs["defaultChecked"] = defaultChecked;
-              if (property)
-              {
-                  propertyAccess["defaultChecked"] = true;
-              }
           }
       }
 
@@ -169,13 +148,8 @@
       if (checked !== null)
       {
           attrs["checked"] = checked;
-          if (property)
-          {
-              propertyAccess["checked"] = true;
-          }
       }
       if (!defaultFirst) { setDefault(); }
-      DOMBuilder._usePropertyAccess = propertyAccess;
 
       // Set up the test
       var fixture = document.getElementById("fixture");
@@ -195,7 +169,6 @@
 
       return [
           testName,
-          property ? "property" : "setAttribute",
           defaultChecked === null ? NBSP : defaultChecked,
           checked === null ? NBSP : checked,
           (defaultChecked !== null && checked !== null)
@@ -217,7 +190,7 @@
       ["!defaultSelected & selected ", false, true]
   ];
 
-  function testOptionValues(testName, defaultSelected, selected, property, defaultFirst)
+  function testOptionValues(testName, defaultSelected, selected, defaultFirst)
   {
       // Prepare test data and set up DOMBuilder
       var propertyAccess = {};
@@ -227,10 +200,6 @@
           if (defaultSelected !== null)
           {
               attrs["defaultSelected"] = defaultSelected;
-              if (property)
-              {
-                  propertyAccess["defaultSelected"] = true;
-              }
           }
       }
 
@@ -238,13 +207,8 @@
       if (selected !== null)
       {
           attrs["selected"] = selected;
-          if (property)
-          {
-              propertyAccess["selected"] = true;
-          }
       }
       if (!defaultFirst) { setDefault(); }
-      DOMBuilder._usePropertyAccess = propertyAccess;
 
       // Set up the test
       var fixture = document.getElementById("fixture");
@@ -266,7 +230,6 @@
 
       return [
           testName,
-          property ? "property" : "setAttribute",
           defaultSelected === null ? NBSP : defaultSelected,
           selected === null ? NBSP : selected,
           (defaultSelected !== null && selected !== null)
@@ -286,21 +249,21 @@
       var inputTestResults = runTests(INPUT_TESTS, testInputValues);
       document.getElementById("inputTestResults").appendChild(
           createResultsTable(
-              ["Test", "Method", CODE("defaultValue"), CODE("value"), "Order",
+              ["Test", CODE("defaultValue"), CODE("value"), "Order",
                "Initial Value", "Initial Input", "Value After Reset", "Reset Input"],
               inputTestResults));
 
       var checkboxTestResults = runTests(CHECKBOX_TESTS, testCheckboxValues)
       document.getElementById("checkboxTestResults").appendChild(
           createResultsTable(
-              ["Test", "Method", CODE("defaultChecked"), CODE("checked"), "Order",
+              ["Test", CODE("defaultChecked"), CODE("checked"), "Order",
                "Initially Checked", "Initial Input", "Checked After Reset", "Reset Input"],
               checkboxTestResults));
 
       var optionTestResults = runTests(OPTION_TESTS, testOptionValues)
       document.getElementById("optionTestResults").appendChild(
           createResultsTable(
-              ["Test", "Method", CODE("defaultSelected"), CODE("selected"), "Order",
+              ["Test", CODE("defaultSelected"), CODE("selected"), "Order",
                "Initially Selected", "Initial Input", "Selected After Reset", "Reset Input"],
               optionTestResults));
   });

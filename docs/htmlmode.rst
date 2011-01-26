@@ -3,9 +3,8 @@ HTML mode
 
 .. versionadded:: 1.2
 
-The DOMBuilder API can also be used to generate HTML without having to engage
-in extensive ``String`` wrangling. The type of output it generates is controlled
-by the :js:attr:`DOMBuilder.mode` attribute.
+The DOMBuilder API can also be used to generate HTML. The type of output it
+generates is controlled by the :js:attr:`DOMBuilder.mode` attribute.
 
 .. js:attribute:: DOMBuilder.mode
 
@@ -24,17 +23,6 @@ by the :js:attr:`DOMBuilder.mode` attribute.
    | ``"XHTML"`` | :js:class:`DOMBuilder.HTMLElement` objects which ``toString()`` to XHTML |
    +-------------+--------------------------------------------------------------------------+
 
-Yes, that is pretty ugly, but the majority of your usage will depend on the
-environment your JavaScript is executing in. If you're in the browser, you're
-more likely to want to create DOM elements which are easy to attach event
-handlers to, while on the backend you'll probably stick exclusively to one
-of the HTML modes.
-
-Of course, there are plenty of scenarios where you would want to generate
-HTML in the browser. For example, inserting new content using ``innerHTML``
-can be a lot faster than using the DOM methods in scenarios where none of
-its limitations or side-effects apply.
-
 To change to HTML mode, set :js:attr:`DOMBuilder.mode` to the appropriate
 type of HTML output you want and use DOMBuilder as normal.
 
@@ -44,8 +32,7 @@ Mock DOM Objects
 ~~~~~~~~~~~~~~~~
 
 In HTML mode, DOMBuilder will create mock DOM objects which implement a
-very small subset of the ``Node`` operations available on their real
-counterparts.
+small subset of the ``Node`` operations available on their real counterparts.
 
 With foreknowledge of the available operations (and `requests for additional
 operations`_ which would be useful), it's possible to write complex content

@@ -10,6 +10,17 @@ JavaScript.
    htmlmode
    license
 
+Dependencies
+------------
+
+.. versionadded:: 1.3
+
+`jQuery`_ >= 1.4 is required to take care of cross-browser issues creating
+DOM Elements and provide improved object detection for functions which take
+flexible arguments.
+
+.. _`jQuery`: http://jquery.com
+
 Introduction
 ------------
 
@@ -17,18 +28,13 @@ DOMBuilder takes some of the pain out of programatically creating HTML in
 JavaScript.
 
 Usually, this involves copious amounts of creating DOM
-elements with ``document.createElement()`` and putting them in place with
+Elements with ``document.createElement()`` and putting them in place with
 ``appendChild()`` and friends, or lots of ``String`` wrangling if you're
 generating HTML text for use with ``innerHTML``.
 
-There are also a bunch of quite annoying *Internet* cross-browser
-*Explorer* issues which must be dealt with when creating DOM elements
-manually; these usually necessitate your own library of workarounds unless
-you're leveraging one of the many fine JavaScript frameworks.
-
 DOMBuilder's element creation functions give you a more declarative,
-compact API to work with when creating content in code, while taking care
-of cross-browser issues for you behind the scenes.
+compact API to work with when creating content in code, while cross-browser
+issues are taken care of by jQuery behind the scenes.
 
 To get started, use :js:func:`DOMBuilder.apply` to add element creation
 functions to a context object.
@@ -202,9 +208,8 @@ list via its :js:func:`DOMBuilder.map` function.
 
       mappingFunction(item, attributes, itemIndex)
 
-   Contents created by the function can consist of a single value (in DOM
-   mode: an ``Element``, ``DocumentFragment``, ``String``, ``Number`` or
-   ``Boolean``) or a mixed ``Array`` of these types.
+   Contents created by the function can consist of a single value or a
+   mixed ``Array``.
 
    Attributes for the created element can be altered per-item by
    modifying the ``attributes`` argument, which will initially contain
@@ -262,26 +267,26 @@ Event Handlers
 ##############
 
 Event handlers can be specified as you would expect - supply an event name
-(including an ``"on"`` prefix) as one of the element's attributes and an event
-handling function as the corresponding value. DOMBuilder will ensure the
-element the event handler is registered on will be accessible cross-browser
-using the ``this`` keyword when the event handling function is executed.
+as one of the element's attributes and an event handling function as the
+corresponding value. Any of the `event types supported by jQuery`_ can be
+registered in this manner.
+
+.. _`event types supported by jQuery`: http://api.jquery.com/category/events/
 
 For example, the following will create a text input which displays a default
 value, clearing it when the input is focused and restoring the default if
 the input is left blank::
 
    var defaultInput =
-     INPUT({type: "text", name: "test",
-            value: "Type Here!", defaultValue: "Type Here!",
-            onfocus: function()
+     INPUT({type: "text", name: "test", defaultValue: "Type Here!",
+            focus: function()
             {
                if (this.value == this.defaultValue)
                {
                    this.value = "";
                }
             },
-            onblur: function()
+            blur: function()
             {
                if (this.value == "")
                {
@@ -316,10 +321,9 @@ convenient than creating and populating elements manually using DOM methods.
    will be assigned as event listeners on the new element. It is assumed that
    a valid event name is set as the attribute name in this case.
 
-   If children are provided, they will be added to the new element.
-   ``String``, ``Number`` or ``Boolean`` children will be added as text nodes.
-   It is assumed that any child passed which is not one of these types will
-   be suitable for appending to its parent element.
+   If children are provided, they will be added to the new element. Any
+   children which are not DOM elements will be coerced ``String`` as added
+   as text nodes.
 
    .. versionchanged:: 1.2
       Now generates :js:class:`DOMBuilder.HTMLElement` objects if

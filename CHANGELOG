@@ -2,6 +2,14 @@
 DOMBuilder CHANGELOG
 ====================
 
+2011-01-26
+----------
+
+- Issue #3 -  we now detect DOM Elements and coerce everything else to
+  String when appending.
+- Bit the bullet and switched to using jQuery for element creation and
+  more.
+
 2011-01-25
 ----------
 
@@ -19,7 +27,7 @@ DOMBuilder CHANGELOG
 - Fixed a bug in ``DOMBuilder.map`` - ``DOMBuilder.createElement`` expects
   children to be in an array.
 - Extracted ``HTMLNode`` base class to contain common logic from
-  ``HTMLElement`` and ``HTMLFragment``. 
+  ``HTMLElement`` and ``HTMLFragment``.
 - Renamed ``Tag`` to ``HTMLElement``.
 - ``DOMBuilder.fragment`` now works in HTML mode - ``HTMLFragment`` objects
   lightly mimic the ``DocumentFragment`` API.

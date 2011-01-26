@@ -12,21 +12,9 @@
   h2 { font-size: 140%; margin: 1em 0 1em -2%; }
   .testClass { background-color: #ddd; }
   </style>
+  <script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script>
   <script type="text/javascript" src="DOMBuilder.js"></script>
   <script type="text/javascript">
-  // From http://erik.eae.net/playground/arrayextras/arrayextras.js
-  // http://developer-test.mozilla.org/docs/Core_JavaScript_1.5_Reference:Objects:Array:map
-  if (!Array.prototype.map) {
-    Array.prototype.map = function (f, obj) {
-      var l = this.length;  // must be fixed during loop... see docs
-      var res = [];
-      for (var i = 0; i < l; i++) {
-        res.push(f.call(obj, this[i], i, this));
-      }
-      return res;
-    };
-  }
-
   function createTable(headers, objects, properties)
   {
       return TABLE({cellSpacing: 1, border: 1, "class": "data sortable"},
@@ -51,7 +39,7 @@
       );
   }
 
-  DOMBuilder.addEvent(window, "load", function()
+  jQuery(document).ready(function()
   {
       DOMBuilder.apply(window);
 
@@ -61,7 +49,7 @@
         fragment.cloneNode(true),
         TABLE({border: 2, frame: "hsides", rules: "groups",
                summary: "Code page support in different versions of MS Windows.",
-               onclick: function(e)
+               click: function(e)
                {
                    alert(["You clicked this ", this.tagName, " at (",
                           e.screenX, ",", e.screenY, ")"].join(""));
@@ -139,14 +127,14 @@
               " ",
               INPUT({type: "text", name: "testInput1", id: "testInput1",
                      defaultValue: "defaultValue",
-                     onfocus: function()
+                     focus: function()
                      {
                         if (this.value == this.defaultValue)
                         {
                             this.value = "";
                         }
                      },
-                     onblur: function()
+                     blur: function()
                      {
                         if (this.value == "")
                         {
