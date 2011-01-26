@@ -1,13 +1,14 @@
 DOMBuilder
 ==========
 
-DOMBuilder takes some of the pain out of programatically creating HTML in
-JavaScript.
+DOMBuilder takes some of the pain out of programatically creating DOM
+Elements and HTML in JavaScript.
 
 .. toctree::
    :maxdepth: 1
 
    htmlmode
+   news
    license
 
 Dependencies
@@ -15,26 +16,19 @@ Dependencies
 
 .. versionadded:: 1.3
 
-`jQuery`_ >= 1.4 is required to take care of cross-browser issues creating
-DOM Elements and provide improved object detection for functions which take
-flexible arguments.
+* `jQuery`_ >= 1.4 is required to take care of cross-browser issues creating
+  DOM Elements, among other things.
 
 .. _`jQuery`: http://jquery.com
 
 Introduction
 ------------
 
-DOMBuilder takes some of the pain out of programatically creating HTML in
-JavaScript.
-
-Usually, this involves copious amounts of creating DOM
-Elements with ``document.createElement()`` and putting them in place with
-``appendChild()`` and friends, or lots of ``String`` wrangling if you're
-generating HTML text for use with ``innerHTML``.
-
-DOMBuilder's element creation functions give you a more declarative,
-compact API to work with when creating content in code, while cross-browser
-issues are taken care of by jQuery behind the scenes.
+DOMBuilder takes some of the pain out of programatically creating DOM
+Elements and HTML in JavaScript, providing element creation functions which
+give you a more declarative, compact API to work with when creating content
+in code, while cross-browser DOM issues are taken care of by jQuery behind
+the scenes.
 
 To get started, use :js:func:`DOMBuilder.apply` to add element creation
 functions to a context object.
@@ -251,11 +245,12 @@ like so, making use of ``map`` on element creation functions::
 
 This isn't essentially any less complex than the previous method, but
 there is a decrease in the number of nested method calls and you can see
-how the default behaviour in the absence of a mapping function simplified
-creation of the table headers.
+how the default behaviour in the absence of a mapping function has slightly
+simplified creation of the table headers.
 
-This is how you could make use of the ``attributes`` and ``itemIndex``
-arguments to the mapping function to implement table striping::
+This example shows how you could make use of the ``attributes`` and
+``itemIndex`` arguments to the mapping function to implement table
+striping::
 
    TR.map(rows, function(row, attributes, itemIndex)
    {
@@ -306,24 +301,16 @@ convenient than creating and populating elements manually using DOM methods.
 
    :param String tagName: the name of the element to be created.
    :param Object attributes: attributes to be applied to the new element.
-   :param Array children:
-       childen to be appended to the new element; may be composed of mixed
-       ``String``, ``Number``, ``Boolean``, ``Element`` or
-       ``DocumentFragment``.
+   :param Array children: childen to be appended to the new element.
 
    Creates a DOM ``Element`` or :js:class:`DOMBuilder.HTMLElement` object
    with the given tag name, attributes and children - this is the underlying
    function used by the element creation functions created by
    :js:func:`DOMBuilder.apply`.
 
-   If attributes are provided, any properties of the given object which have
-   names starting with ``"on"`` and which have a ``Function`` as their value
-   will be assigned as event listeners on the new element. It is assumed that
-   a valid event name is set as the attribute name in this case.
-
    If children are provided, they will be added to the new element. Any
-   children which are not DOM elements will be coerced ``String`` as added
-   as text nodes.
+   children which are not DOM elements will be coerced ``String`` and added
+   as Text Nodes.
 
    .. versionchanged:: 1.2
       Now generates :js:class:`DOMBuilder.HTMLElement` objects if

@@ -33,6 +33,8 @@ Mock DOM Objects
 
 In HTML mode, DOMBuilder will create mock DOM objects which implement a
 small subset of the ``Node`` operations available on their real counterparts.
+Calling ``toString()`` on these objects will produce the appropriate type of
+HTML based on the mode at the time they and their contents were created.
 
 With foreknowledge of the available operations (and `requests for additional
 operations`_ which would be useful), it's possible to write complex content
@@ -40,10 +42,8 @@ creation code which works seamlessly in both DOM and HTML modes.
 
 .. _`requests for additional operations`: http://code.google.com/p/dombuilder/issues/list
 
-Element creation functions will create :js:class:`DOMBuilder.HTMLElement`
-objects. Calling the :js:class:`DOMBuilder.HTMLElement.toString()` method
-on these objects will produce the appropriate type of HTML based on the
-mode at the time they were created.
+In HTML mode, element creation functions and :js:func:`DOMBuilder.createElement`
+will create :js:class:`DOMBuilder.HTMLElement` objects.
 
 .. js:class:: DOMBuilder.HTMLElement(tagName[, attributes[, childNodes]])
 
@@ -78,9 +78,10 @@ mode at the time they were created.
    prevent the use of sensitive HTML characters - see the `Escaping`_
    section for details on controlling escaping.
 
-:js:func:`DOMBuilder.fragment` will create :js:class:`DOMBuilder.HTMLFragment`
-objects which mimic the behaviour of DOM ``DocumentFragment`` when appended
-to another fragment or a :js:class:`DOMBuilder.HTMLElement`.
+In HTML mode, :js:func:`DOMBuilder.fragment` will create
+:js:class:`DOMBuilder.HTMLFragment` objects which mimic the behaviour of
+DOM ``DocumentFragment`` when appended to another fragment or a
+:js:class:`DOMBuilder.HTMLElement`.
 
 .. js:class:: DOMBuilder.HTMLFragment([childNodes])
 
@@ -97,8 +98,13 @@ to another fragment or a :js:class:`DOMBuilder.HTMLElement`.
 
 .. js:function:: DOMBuilder.HTMLFragment.cloneNode(deep)
 
-   Clones the fragment - if deep is ``true``, its child nodes will also
-   be cloned.
+   Clones the fragment - there's no point calling this *without* passing in
+   ``true``, as you'll just get an empty fragment back, but that's the API.
+
+.. js:function:: DOMBuilder.HTMLFragment.toString()
+
+   Creates a ``String`` containing the HTML representation of the
+   fragment's children.
 
 Temporarily Switching Mode
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -121,7 +127,9 @@ The following `FireBug`_ console session shows :js:func:`DOMBuilder.withNode` in
     "<p>Bed and<br>BReakfast</p>"
     >>> DOMBuilder.withMode("XHTML", createParagraph).toString();
     "<p>Bed and<br />BReakfast</p>"
-    >>> DOMBuilder.withMode("HTML", function() { return createParagraph() + " " + DOMBuilder.withMode("XHTML", createParagraph); })
+    >>> DOMBuilder.withMode("HTML", function() {
+    ...     return createParagraph() + " " + DOMBuilder.withMode("XHTML", createParagraph);
+    ... })
     "<p>Bed and<br>BReakfast</p> <p>Bed and<br />BReakfast</p>"
 
 .. _Firebug: http://www.getfirebug.com
