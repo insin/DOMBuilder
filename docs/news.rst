@@ -4,6 +4,10 @@ News for DOMBuilder
 Trunk
 -----
 
+- Added ``DOMBuilder.fragment.map()`` to create contents from a list of
+  items using a mapping function and wrap them in a single fragment as
+  siblings, negating the need for redundant wrapper elements.
+
 - Fixed issue #5 - added ``HTMLFragment.toString()``.
 
 - Fixed issue #3 - we now append "nodey" contents (anything with a truthy

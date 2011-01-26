@@ -1,4 +1,4 @@
-// Tests which can exercise both mode code paths with the sme test code to the
+// Tests which can exercise both mode code paths with the same test code to the
 // extent that the HTML mode mocks mimic the DOM mode.
 module("Mixed mode");
 

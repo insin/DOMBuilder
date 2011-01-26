@@ -176,13 +176,119 @@ Given this function, the following code...
 
 .. _`map function`: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/map
 
-Map Function
-############
+Event Handlers
+##############
+
+Event handlers can be specified as you would expect - supply an event name
+as one of the element's attributes and an event handling function as the
+corresponding value. Any of the `event types supported by jQuery`_ can be
+registered in this manner.
+
+.. _`event types supported by jQuery`: http://api.jquery.com/category/events/
+
+For example, the following will create a text input which displays a default
+value, clearing it when the input is focused and restoring the default if
+the input is left blank::
+
+   var defaultInput =
+     INPUT({type: "text", name: "test", defaultValue: "Type Here!",
+            focus: function()
+            {
+               if (this.value == this.defaultValue)
+               {
+                   this.value = "";
+               }
+            },
+            blur: function()
+            {
+               if (this.value == "")
+               {
+                   this.value = this.defaultValue;
+               }
+            }});
+
+Manual Element Creation
+-----------------------
+
+The function which does the majority of the work when you call an element
+creation function is available for your own use - the main difference is that
+it's inflexible with the arguments it accepts, but it's still more
+convenient than creating and populating elements manually using DOM methods.
+
+.. js:function:: DOMBuilder.createElement(tagName[, attributes[, children]])
+
+   :param String tagName: the name of the element to be created.
+   :param Object attributes: attributes to be applied to the new element.
+   :param Array children: childen to be appended to the new element.
+
+   Creates a DOM ``Element`` or :js:class:`DOMBuilder.HTMLElement` object
+   with the given tag name, attributes and children - this is the underlying
+   function used by the element creation functions created by
+   :js:func:`DOMBuilder.apply`.
+
+   If children are provided, they will be added to the new element. Any
+   children which are not DOM elements will be coerced ``String`` and added
+   as Text Nodes.
+
+   .. versionchanged:: 1.2
+      Now generates :js:class:`DOMBuilder.HTMLElement` objects if
+      :js:attr:`DOMBuilder.mode` is set to anything but ``"DOM"``.
+
+Document Fragments
+------------------
 
 .. versionadded:: 1.3
 
-DOMBuilder provides a shorthand for creating an element for each item in a
-list via its :js:func:`DOMBuilder.map` function.
+A ``DocumentFragment`` conveniently allows you to append its entire
+contents with a single call to the destination Node's ``appendChild()``
+method.
+
+If you're thinking of adding a wrapper ``<div>`` solely to be able to
+insert a number of sibling elements at the same time, a
+``DocumentFragment`` will do the same job without the need for the
+redundant wrapper element. This single append functionality also makes it
+a handy container for content which needs to be inserted repeatedly,
+calling ``.cloneNode(true)`` for every insertion.
+
+DOMBuilder provides a :js:func:`DOMBuilder.fragment` wrapper function,
+which allows you to pass all the contents you want into a
+``DocumentFragment`` in one call, and also allows you make use of this
+functionality in HTML mode by creating equivalent :ref:`mock-dom-objects`
+when appropriate. This will allow you to, for example, unit test
+functionality you've written which makes use of ``DocumentFragment``
+objects by using HTML mode to verify output against strings, rather than
+against DOM trees.
+
+.. js:function:: DOMBuilder.fragment()
+
+   Creates a DOM ``DocumentFragment`` object or
+   :js:class:`DOMBuilder.HTMLFragment` with the given children. Supported
+   argument formats are:
+
+   +--------------------------------------------------------+
+   | Fragment Creation Arguments                            |
+   +=================================+======================+
+   | ``(child1, ...)``   | an arbitrary number of children. |
+   +---------------------------------+----------------------+
+   + ``([child1, ...])`` | an ``Array`` of children.        |
+   +---------------------------------+----------------------+
+
+See http://ejohn.org/blog/dom-documentfragments/ for more information about
+``DocumentFragment`` objects.
+
+Map Functions
+-------------
+
+.. versionadded:: 1.3
+
+Map functions provide a shorthand for:
+
+- creating elements for each item in a list, via :js:func:`DOMBuilder.map`
+- wrapping elements created for each item in a list with a fragment, via
+  :js:func:`DOMBuilder.fragment.map`
+
+Mapping Elements
+~~~~~~~~~~~~~~~~
 
 .. js:function:: DOMBuilder.map(tagName[, defaultAttributes], items[, mappingFunction])
 
@@ -258,102 +364,61 @@ striping::
        return TD.map(row);
    });
 
-Event Handlers
-##############
+Mapping Fragments
+~~~~~~~~~~~~~~~~~
 
-Event handlers can be specified as you would expect - supply an event name
-as one of the element's attributes and an event handling function as the
-corresponding value. Any of the `event types supported by jQuery`_ can be
-registered in this manner.
+.. js:function:: DOMBuilder.fragment.map(items, mappingFunction)
 
-.. _`event types supported by jQuery`: http://api.jquery.com/category/events/
+   Creates a fragment wrapping content created for (potentially) every item
+   in a list.
 
-For example, the following will create a text input which displays a default
-value, clearing it when the input is focused and restoring the default if
-the input is left blank::
+   :param Array items:
+      the list of items to use as the basis for creating fragment contents.
+   :param Function mappingFunction:
+      a function to be called with each item in the list, to provide
+      contents for the fragment.
 
-   var defaultInput =
-     INPUT({type: "text", name: "test", defaultValue: "Type Here!",
-            focus: function()
-            {
-               if (this.value == this.defaultValue)
-               {
-                   this.value = "";
-               }
-            },
-            blur: function()
-            {
-               if (this.value == "")
-               {
-                   this.value = this.defaultValue;
-               }
-            }});
+   The mapping function will be called with the following arguments::
 
-Manual Element Creation
-~~~~~~~~~~~~~~~~~~~~~~~
+      func(item, itemIndex)
 
-The function which does the majority of the work when you call an element
-creation function is available for your own use - the main difference is that
-it's inflexible with the arguments it accepts, but it's still more
-convenient than creating and populating elements manually using DOM methods.
+   The function can indicate that the given item shouldn't generate
+   any content for the fragment by returning ``null``.
 
-.. js:function:: DOMBuilder.createElement(tagName[, attributes[, children]])
+   Contents created by the function can consist of a single value or a
+   mixed ``Array``.
 
-   :param String tagName: the name of the element to be created.
-   :param Object attributes: attributes to be applied to the new element.
-   :param Array children: childen to be appended to the new element.
+This function is useful if you want to generate sibling content from a list
+of items without introducing redundant wrapper elements.
 
-   Creates a DOM ``Element`` or :js:class:`DOMBuilder.HTMLElement` object
-   with the given tag name, attributes and children - this is the underlying
-   function used by the element creation functions created by
-   :js:func:`DOMBuilder.apply`.
+For example, with a `js-forms`_ ``FormSet`` object, which contains multiple
+``Form`` objects. If you wanted to generate a heading and a table for each
+form object and have the whole lot sitting side-by-side in the document::
 
-   If children are provided, they will be added to the new element. Any
-   children which are not DOM elements will be coerced ``String`` and added
-   as Text Nodes.
+   var formFragment = DOMBuilder.fragment.map(formset.forms, function(form, index)
+   {
+       return [
+         H2("Widget " + (index + 1)),
+         TABLE(TBODY(
+           TR.map(form.boundFields(), function(field)
+           {
+             return [TH(field.labelTag()), TD(field.asWidget())];
+           })
+         ))
+       ];
+   });
 
-   .. versionchanged:: 1.2
-      Now generates :js:class:`DOMBuilder.HTMLElement` objects if
-      :js:attr:`DOMBuilder.mode` is set to anything but ``"DOM"``.
+Appending ``formFragment`` would result in the equivalent of the following
+HTML:
 
-Document Fragments
-~~~~~~~~~~~~~~~~~~
+.. code-block:: html
 
-.. versionadded:: 1.3
+    <h2>Widget 1</h2>
+    <table> ... </table>
+    <h2>Widget 2</h2>
+    <table> ... </table>
+    <h2>Widget 3</h2>
+    <table> ... </table>
+    ...
 
-A ``DocumentFragment`` conveniently allows you to append its entire
-contents with a single call to the target node's ``appendChild()``
-method.
-
-If you're thinking of adding a wrapper ``<div>`` solely to be able to
-insert a number of sibling elements at the same time, a
-``DocumentFragment`` will do the same job without the need for a redundant
-wrapper element. This single append functionality also makes it a
-handy container for content which needs to be inserted repeatedly, calling
-``cloneNode(true)`` for every insertion.
-
-DOMBuilder provides a :js:func:`DOMBuilder.fragment` wrapper function,
-which allows you to pass all the contents you want into a
-``DocumentFragment`` in one call, and also allows you make use of this
-functionality in HTML mode by creating equivalent :ref:`mock-dom-objects`
-instead. This will allow you to, for example, unit test functionality
-you've written which makes use of ``DocumentFragment`` objects by using
-HTML mode to verify output against strings, rather than against DOM
-trees.
-
-.. js:function:: DOMBuilder.fragment()
-
-   Creates a DOM ``DocumentFragment`` object or
-   :js:class:`DOMBuilder.HTMLFragment` with the given children. Supported
-   argument formats are:
-
-   +--------------------------------------------------------+
-   | Fragment Creation Arguments                            |
-   +=================================+======================+
-   | ``(child1, ...)``   | an arbitrary number of children. |
-   +---------------------------------+----------------------+
-   + ``([child1, ...])`` | an ``Array`` of children.        |
-   +---------------------------------+----------------------+
-
-See http://ejohn.org/blog/dom-documentfragments/ for more information about
-``DocumentFragment`` objects.
+.. _`js-forms`: http://code.google.com/p/js-forms/

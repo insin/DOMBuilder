@@ -512,15 +512,14 @@ var DOMBuilder =
      */
     fragment: function()
     {
-        var children;
         if (arguments.length == 1 &&
             jQuery.isArray(arguments[0]))
         {
-            children = arguments[0]; // ([child1, ...])
+            var children = arguments[0]; // ([child1, ...])
         }
         else
         {
-            children = jQuery.makeArray(arguments) // (child1, ...)
+            var children = jQuery.makeArray(arguments) // (child1, ...)
         }
 
         // Inline the contents of any child Arrays
@@ -589,15 +588,17 @@ var DOMBuilder =
         // Determine how the function was called
         if (jQuery.isArray(arguments[1]))
         {
+             // (tagName, items, func)
             var defaultAttrs = {},
                 items = arguments[1],
-                func = arguments[2] || null; // (tagName, items, func)
+                func = (jQuery.isFunction(arguments[2]) ? arguments[2] : null);
         }
         else
         {
+            // (tagName, attrs, items, func)
             var defaultAttrs = arguments[1],
                 items = arguments[2],
-                func = arguments[3] || null; // (tagName, attrs, items, func)
+                func = (jQuery.isFunction(arguments[3]) ? arguments[3] : null);
         }
 
         var results = [];
@@ -655,6 +656,57 @@ var DOMBuilder =
     HTMLNode: HTMLNode,
     SafeString: SafeString
 };
+
+jQuery.extend(DOMBuilder.fragment,
+{
+    /**
+     * Creates a fragment wrapping content created for every item in a
+     * list.
+     *
+     * Arguments are as follows:
+     *
+     * ``items``
+     *    the list of items to use as the basis for creating fragment
+     *    contents.
+     * ``mappingFunction``
+     *    a function to be called with each item in the list, to provide
+     *    contents for the fragment.
+     *
+     *    Contents can consist of a single value or a mixed ``Array``.
+     *
+     *    The function will be called with the following arguments::
+     *
+     *       func(item, itemIndex)
+     *
+     *    The function can indicate that the given item shouldn't generate
+     *    any content for the fragment by returning ``null``.
+     */
+    map: function(items, func)
+    {
+        // If we weren't given a mapping function, the user may as well just
+        // have created a fragment directly, as we're just wrapping content
+        // here, not creating it.
+        if (!jQuery.isFunction(func))
+        {
+            return DOMBuilder.fragment(items);
+        }
+
+        var results = [];
+        for (var i = 0, l = items.length; i < l; i++)
+        {
+            // Call the mapping function and add the return value to the
+            // fragment contents, unless the function specifies that the item
+            // shouldn't generate content by explicity returning null.
+            var children = func(items[i], i);
+            if (children === null)
+            {
+                continue;
+            }
+            results = results.concat(children);
+        }
+        return DOMBuilder.fragment(results);
+    }
+});
 
 // Expose DOMBuilder to the global object
 window.DOMBuilder = DOMBuilder;
