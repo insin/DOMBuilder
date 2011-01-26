@@ -42,6 +42,9 @@ creation code which works seamlessly in both DOM and HTML modes.
 
 .. _`requests for additional operations`: http://code.google.com/p/dombuilder/issues/list
 
+Mock Elements
+#############
+
 In HTML mode, element creation functions and :js:func:`DOMBuilder.createElement`
 will create :js:class:`DOMBuilder.HTMLElement` objects.
 
@@ -61,7 +64,7 @@ will create :js:class:`DOMBuilder.HTMLElement` objects.
 
    .. versionchanged:: 1.3
       Appending a :js:class:`DOMBuilder.HTMLFragment` will append its
-      child nodes and clear them from the fragment.
+      child nodes instead and clear them from the fragment.
 
 .. js:function:: DOMBuilder.HTMLElement.cloneNode(deep)
 
@@ -78,6 +81,11 @@ will create :js:class:`DOMBuilder.HTMLElement` objects.
    prevent the use of sensitive HTML characters - see the `Escaping`_
    section for details on controlling escaping.
 
+Mock Fragments
+##############
+
+.. versionadded:: 1.3
+
 In HTML mode, :js:func:`DOMBuilder.fragment` will create
 :js:class:`DOMBuilder.HTMLFragment` objects which mimic the behaviour of
 DOM ``DocumentFragment`` when appended to another fragment or a
@@ -89,7 +97,6 @@ DOM ``DocumentFragment`` when appended to another fragment or a
 
    :param Array children: initial child nodes
 
-   .. versionadded:: 1.3
 
 .. js:function:: DOMBuilder.HTMLFragment.appendChild(node)
 
