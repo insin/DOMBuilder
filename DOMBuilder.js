@@ -60,6 +60,7 @@ var emptyTags = {
     base: true,
     br: true,
     col: true,
+    frame: true,
     hr: true,
     input: true,
     img: true,
@@ -347,13 +348,13 @@ var DOMBuilder =
         var tagNames = ["a", "abbr", "acronym", "address", "area", "b", "bdo",
             "big", "blockquote", "body", "br", "button", "caption", "cite",
             "code", "col", "colgroup", "dd", "del", "dfn", "div", "dl", "dt",
-            "em", "fieldset", "form", "h1", "h2", "h3", "h4", "h5", "h6", "hr",
-            "head", "html", "i", "img", "input", "ins", "kbd", "label",
-            "legend", "li", "link", "map", "meta", "noscript"/*:)*/, "object",
-            "ol", "optgroup", "option", "p", "param", "pre", "q", "samp",
-            "script", "select", "small", "span", "strong", "style", "sub",
-            "sup", "table", "tbody", "td", "textarea", "tfoot", "th", "thead",
-            "title", "tr", "tt", "ul", "var"];
+            "em", "fieldset", "form", "frame", "frameset", "h1", "h2", "h3",
+            "h4", "h5", "h6", "hr", "head", "html", "i", "iframe", "img",
+            "input", "ins", "kbd", "label", "legend", "li", "link", "map",
+            "meta", "noscript"/*:)*/, "object", "ol", "optgroup", "option", "p",
+            "param", "pre", "q", "samp", "script", "select", "small", "span",
+            "strong", "style", "sub", "sup", "table", "tbody", "td", "textarea",
+            "tfoot", "th", "thead", "title", "tr", "tt", "ul", "var"];
 
         for (var i = 0, tagName; tagName = tagNames[i]; i++)
         {
