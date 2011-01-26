@@ -16,7 +16,7 @@ var dom = DOMBuilder.apply();
 
 test("DOMBuilder.HTMLElement", function()
 {
-    expect(8);
+    expect(24);
 
     // HTMLElement is available
     equals(typeof DOMBuilder.HTMLElement, "function");
@@ -29,18 +29,64 @@ test("DOMBuilder.HTMLElement", function()
     deepEqual(el.childNodes, []);
     ok(!el.xhtml);
     equal(el.toString(), "<a></a>");
-    deepEqual(el, el.cloneNode());
+    deepEqual(el, el.cloneNode(true));
+
+    // Initialise with attributes and children
+    el = new DOMBuilder.HTMLElement("div", {"class": "test", title: "test"},
+                                    [dom.B("test"), dom.BR()]);
+    equal(el.toString(), '<div class="test" title="test"><b>test</b><br></div>');
+    deepEqual(el, el.cloneNode(true));
 
     // Appending a child
-    // Appending a fragment
-    // Appending an empty fragment
+    var el = new DOMBuilder.HTMLElement("div", {"class": "test"}, ["One"]);
+    equal(el.childNodes.length, 1);
+    el.appendChild(dom.P("Two"));
+    equal(el.childNodes.length, 2);
 
-    // One of each valid child
+    // Appending a fragment
+    var f = DOMBuilder.fragment([dom.H2("Three"), "Four", dom.P("Five")]);
+    el.appendChild(f);
+    equal(el.childNodes.length, 5);
+    equal(f.childNodes.length, 0);
+    equal(el.toString(), '<div class="test">One<p>Two</p><h2>Three</h2>Four<p>Five</p></div>');
+
+    // Appending an empty fragment
+    el.appendChild(DOMBuilder.fragment());
+    equal(el.childNodes.length, 5);
+
     // Initialise with a fragment
+    f = DOMBuilder.fragment([dom.H2("Two"), "Three", dom.P("Four")]);
+    var el = new DOMBuilder.HTMLElement("div", {"class": "test"}, ["One", f, "Five"]);
+    equal(el.childNodes.length, 5);
+    equal(f.childNodes.length, 0);
+    equal(el.toString(), '<div class="test">One<h2>Two</h2>Three<p>Four</p>Five</div>');
 
     // Attributes are lower-cased
+    el = new DOMBuilder.HTMLElement("a", {HREF: "test"}, ["test"]);
+    equal(el.toString(), '<a href="test">test</a>', "attributes lower-cased");
+
     // Special case for &nbsp;
-    // Non-nodey children are coerced to String
+    el.appendChild(dom.NBSP);
+    equal(el.toString(), '<a href="test">test&nbsp;</a>',
+          "breaking space character converted to entity")
+
+    // Empty tags rendered appropriately
+    var emptyTags = "area|base|br|col|frame|hr|input|img|link|meta|param".split("|");
+    function createEmptyTags()
+    {
+        return DOMBuilder.fragment.map(emptyTags, function(t) {
+            return new DOMBuilder.HTMLElement(t);
+        });
+    }
+    equal(createEmptyTags().toString(),
+          "<area><base><br><col><frame><hr><input><img><link><meta><param>");
+    equal(DOMBuilder.withMode("XHTML", createEmptyTags).toString(),
+          "<area /><base /><br /><col /><frame /><hr /><input /><img /><link /><meta /><param />");
+
+
+    // Empty tag children are ignored if present
+    el = new DOMBuilder.HTMLElement("br", {clear: "all"}, ["test"]);
+    equal(el.toString(), '<br clear="all">');
 });
 
 test("DOMBuilder.HTMLFragment", function()
@@ -96,11 +142,11 @@ test("HTML Escaping", function()
     ok(!DOMBuilder.isSafe(s), "isSafe returns false for Strings");
     ok(DOMBuilder.isSafe(ss), "isSafe returns true for SafeStrings");
 
-    equal(dom.P(s).toString(),
-          "<p>&lt; &gt; &amp; &#39; &quot;</p>",
+    equal(dom.P({test: s}, s).toString(),
+          '<p test="&lt; &gt; &amp; &#39; &quot;">&lt; &gt; &amp; &#39; &quot;</p>',
           "sensitive characters autoescape");
-    equal(dom.P(ss).toString(),
-          "<p>< > & ' \"</p>",
+    equal(dom.P({test: ss},ss).toString(),
+          '<p test="< > & \' "">< > & \' "</p>',
           "SafeStgrings render as-is");
 });
 
