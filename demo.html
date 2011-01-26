@@ -106,7 +106,8 @@
             P("Cloned fragment: ", fragment.cloneNode(true)),
             P("Original fragment has a length of: ", STRONG(fragment.childNodes.length)),
             P("Original fragment: ", fragment),
-            P("Original fragment now has a length of: ", STRONG(fragment.childNodes.length))
+            P("Original fragment now has a length of: ", STRONG(fragment.childNodes.length)),
+            EM(DOMBuilder.markSafe(DOMBuilder.fragment("toString() from an ", CODE("HTMLFragment"), " with sibling nodes").toString()))
           );
       }).toString();
 

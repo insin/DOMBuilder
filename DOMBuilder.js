@@ -265,6 +265,36 @@ HTMLFragment.prototype = jQuery.extend(new HTMLNode(),
     }
 });
 
+/**
+ * Creates an HTML/XHTML representation of an HTMLFragment.
+ */
+HTMLFragment.prototype.toString = function()
+{
+    var parts = [];
+
+    // Contents
+    for (var i = 0, l = this.childNodes.length; i < l; i++)
+    {
+        var node = this.childNodes[i];
+        if (node instanceof HTMLElement || node instanceof SafeString)
+        {
+            parts.push(node.toString());
+        }
+        else if (node === "\u00A0")
+        {
+            // Special case to convert these back to entities,
+            parts.push("&nbsp;");
+        }
+        else
+        {
+            // Coerce to string and escape
+            parts.push(escapeHTML(""+node));
+        }
+    }
+
+    return parts.join("");
+};
+
 var DOMBuilder =
 {
     /**

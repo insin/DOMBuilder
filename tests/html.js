@@ -9,15 +9,21 @@ module("HTML", {
     }
 });
 
+(function()
+{
+
+var dom = DOMBuilder.apply();
+
 test("DOMBuilder.HTMLElement", function()
 {
-    expect(7);
+    expect(8);
 
     // HTMLElement is available
     equals(typeof DOMBuilder.HTMLElement, "function");
 
     // No attributes or children
     var el = new DOMBuilder.HTMLElement("a");
+    ok(el instanceof DOMBuilder.HTMLNode, "HTMLElement is-an HTMLNode");
     equal(el.tagName, "a");
     deepEqual(el.attributes, {});
     deepEqual(el.childNodes, []);
@@ -34,32 +40,68 @@ test("DOMBuilder.HTMLElement", function()
 
     // Attributes are lower-cased
     // Special case for &nbsp;
-    // Unrecognised children are coerced to String
+    // Non-nodey children are coerced to String
 });
 
 test("DOMBuilder.HTMLFragment", function()
 {
-    expect(3);
+    expect(17);
 
     // HTMLFragment is available
     equal(typeof DOMBuilder.HTMLFragment, "function");
 
     // No children
     var f1 = new DOMBuilder.HTMLFragment();
-    deepEqual(f1.childNodes, []);
-    deepEqual(f1, f1.cloneNode());
+    ok(f1 instanceof DOMBuilder.HTMLNode, "HTMLFragment is-an HTMLNode");
+    deepEqual(f1.childNodes.length, 0, "childNodes initialised with zero args");
+    deepEqual(f1, f1.cloneNode(true));
+    equal(f1.toString(), "");
 
     // Initialuse with children
+    var f2 = new DOMBuilder.HTMLFragment([dom.H2("One"), "Two", dom.P("Three")]);
+    equal(f2.childNodes.length, 3);
+    deepEqual(f2, f2.cloneNode(true));
+    equal(f2.toString(), "<h2>One</h2>Two<p>Three</p>");
 
     // Initialise with a fragment
+    var f1 = new DOMBuilder.HTMLFragment([dom.B("Zero"), f2, dom.B("Four")])
+    equal(f1.childNodes.length, 5, "HTMLFragment contents inlined on creation");
+    equals(f2.childNodes.length, 0, "HTMLFragment which was inlined is empties");
+    equal(f1.toString(), "<b>Zero</b><h2>One</h2>Two<p>Three</p><b>Four</b>");
 
     // Appending a child
-    // Appending a fragment
-    // Appending an empty fragment
+    f2.appendChild(dom.BR());
+    equal(f2.childNodes.length, 1);
+    equal(f2.toString(), "<br>");
 
+    // Appending a fragment
+    f2.appendChild(f1);
+    equal(f2.childNodes.length, 6);
+    equal(f1.childNodes.length, 0);
+    equal(f2.toString(), "<br><b>Zero</b><h2>One</h2>Two<p>Three</p><b>Four</b>");
+
+    // Appending an empty fragment
+    f2.appendChild(f1);
+    equal(f2.childNodes.length, 6);
 });
 
 test("HTML Escaping", function()
 {
-    expect(0);
+    expect(6);
+
+    var s = "< > & ' \"";
+    var ss = DOMBuilder.markSafe(s);
+    ok(ss instanceof DOMBuilder.SafeString, "markSafe yields SafeStrings");
+    ok(ss instanceof String, "SafeString is-a String");
+    ok(!DOMBuilder.isSafe(s), "isSafe returns false for Strings");
+    ok(DOMBuilder.isSafe(ss), "isSafe returns true for SafeStrings");
+
+    equal(dom.P(s).toString(),
+          "<p>&lt; &gt; &amp; &#39; &quot;</p>",
+          "sensitive characters autoescape");
+    equal(dom.P(ss).toString(),
+          "<p>< > & ' \"</p>",
+          "SafeStgrings render as-is");
 });
+
+})();
