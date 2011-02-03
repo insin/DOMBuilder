@@ -41,6 +41,19 @@
 
   jQuery(document).ready(function()
   {
+      with (DOMBuilder.elementFunctions)
+      {
+          document.body.appendChild(
+            DIV(
+              "Testing",
+              P(
+                "Adding elements using ",
+                CODE("with (DOMBuilder.elementFunctions)")
+              )
+            )
+          );
+      }
+
       DOMBuilder.apply(window);
 
       var fragment = DOMBuilder.fragment(STRONG("Hello from a DocumentFragment"));
@@ -229,6 +242,8 @@
 
 <h2>Generated Table</h2>
 <div id="generatedTable"></div>
+
+<h2>Added using <code>with (DOMBuilder.elementFunctions)</code></h2>
 
 </body>
 </html>

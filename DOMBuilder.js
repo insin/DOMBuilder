@@ -55,6 +55,9 @@ function conditionalEscape(html)
     return escapeHTML(""+html);
 }
 
+/**
+ * Lookup for tags defined as EMPTY in the HTML 4.01 Strict and Frameset DTDs.
+ */
 var emptyTags = {
     area: true,
     base: true,
@@ -81,6 +84,9 @@ SafeString.prototype = jQuery.extend(new String(),
 {
     constructor: SafeString
 });
+// IE won't enumerate any properties which are named in Object.prototype and
+// jQuery.extend doesn't special case this for performance reasons, so we need
+// to explicitly add those functions to prototypes.
 SafeString.prototype.toString = SafeString.prototype.valueOf = function()
 {
     return this.value;
@@ -299,7 +305,7 @@ HTMLFragment.prototype.toString = function()
 var DOMBuilder =
 {
     /**
-     * Determines which mode the createElement function will operate in.
+     * Determines which mode the ``createElement`` function will operate in.
      * Supported values are:
      *
      * ``"DOM"``
@@ -334,82 +340,6 @@ var DOMBuilder =
     },
 
     /**
-     * Adds element creation functions to a given context ``Object``, or to
-     * a new object if none was given. Returns the object the functions were
-     * added to, either way.
-     *
-     * An ``NBSP`` property corresponding to the Unicode character for a
-     * non-breaking space is also added to the context object, for
-     * convenience.
-     */
-    apply: function(context)
-    {
-        context = context || {};
-        var tagNames = ["a", "abbr", "acronym", "address", "area", "b", "bdo",
-            "big", "blockquote", "body", "br", "button", "caption", "cite",
-            "code", "col", "colgroup", "dd", "del", "dfn", "div", "dl", "dt",
-            "em", "fieldset", "form", "frame", "frameset", "h1", "h2", "h3",
-            "h4", "h5", "h6", "hr", "head", "html", "i", "iframe", "img",
-            "input", "ins", "kbd", "label", "legend", "li", "link", "map",
-            "meta", "noscript"/*:)*/, "object", "ol", "optgroup", "option", "p",
-            "param", "pre", "q", "samp", "script", "select", "small", "span",
-            "strong", "style", "sub", "sup", "table", "tbody", "td", "textarea",
-            "tfoot", "th", "thead", "title", "tr", "tt", "ul", "var"];
-
-        for (var i = 0, tagName; tagName = tagNames[i]; i++)
-        {
-            context[tagName.toUpperCase()] = this.createElementFunction(tagName);
-        }
-
-        context.NBSP = "\u00A0";
-
-        return context;
-    },
-
-    /**
-     * Creates a function which, when called, uses DOMBuilder to create a
-     * DOM element with the given tagName.
-     *
-     * See ``DOMBuilder.createElementFromArguments`` for the input argument
-     * formats supported by the resulting function.
-     */
-    createElementFunction: function(tagName)
-    {
-        var elementFunction = function()
-        {
-            if (arguments.length == 0)
-            {
-                // Short circuit if there are no arguments, to avoid further
-                // argument inspection.
-                if (DOMBuilder.mode == "DOM")
-                {
-                    return document.createElement(tagName);
-                }
-                else
-                {
-                    return new HTMLElement(tagName);
-                }
-            }
-            else
-            {
-                return DOMBuilder.createElementFromArguments(tagName,
-                                                             arguments);
-            }
-        };
-
-        // Expose a map function which will call DOMBuilder.map with the
-        // appropriate tagName.
-        elementFunction.map = function()
-        {
-            var mapArgs = jQuery.makeArray(arguments);
-            mapArgs.unshift(tagName);
-            return DOMBuilder.map.apply(DOMBuilder, mapArgs);
-        };
-
-        return elementFunction;
-    },
-
-    /**
      * Normalises a list of arguments in order to create a new DOM element
      * using ``DOMBuilder.createElement``. Supported argument formats are:
      *
@@ -421,12 +351,15 @@ var DOMBuilder =
      *    an arbitrary number of children.
      * ``([child1, ...])``
      *    an <code>Array</code> of children.
+     *
+     * At least one argument *must* be provided.
      */
     createElementFromArguments: function(tagName, args)
     {
         var attributes, children;
-        // The short circuit in createElementFunction ensures we will always
-        // have at least one argument.
+        // The short circuit in ``createElementFunction`` ensures we will
+        // always have at least one argument when called via element creation
+        // functions.
         var argsLength = args.length, firstArg = args[0];
 
         if (argsLength == 1 &&
@@ -452,15 +385,6 @@ var DOMBuilder =
     /**
      * Creates a DOM element with the given tag name and optionally,
      * the given attributes and children.
-     *
-     * If an attributes ``Object`` is given, any of its properties which have
-     * names starting with ``"on"`` which have a ``Function`` as their value
-     * will be assigned as event listeners on the new element. It is assumed
-     * that a valid event name is set as the attribute name in this case.
-     *
-     * If a ``children`` ``Array`` is given, its contents will be appended to
-     * the new element. Any children which are not DOM elements will be coerced
-     * to String and appended as text nodes.
      */
     createElement: function(tagName, attributes, children)
     {
@@ -657,6 +581,99 @@ var DOMBuilder =
     HTMLNode: HTMLNode,
     SafeString: SafeString
 };
+
+// Add element creation functions ----------------------------------------------
+
+/**
+ * Creates a function which, when called, uses DOMBuilder to create an element
+ * with the given ``tagName``.
+ *
+ * The resulting function will also have a ``map`` function which calls
+ * ``DOMBuilder.map`` with the given ``tagName``.
+ */
+function createElementFunction(tagName)
+{
+    var elementFunction = function()
+    {
+        if (arguments.length == 0)
+        {
+            // Short circuit if there are no arguments, to avoid further
+            // argument inspection.
+            if (DOMBuilder.mode == "DOM")
+            {
+                return document.createElement(tagName);
+            }
+            else
+            {
+                return new HTMLElement(tagName);
+            }
+        }
+        else
+        {
+            return DOMBuilder.createElementFromArguments(tagName,
+                                                         arguments);
+        }
+    };
+
+    // Add a ``map`` function which will call ``DOMBuilder.map`` with the
+    // appropriate ``tagName``.
+    elementFunction.map = function()
+    {
+        var mapArgs = jQuery.makeArray(arguments);
+        mapArgs.unshift(tagName);
+        return DOMBuilder.map.apply(DOMBuilder, mapArgs);
+    };
+
+    return elementFunction;
+}
+
+/**
+ * Tag names defined in the HTML 4.01 Strict and Frameset DTDs.
+ */
+var tagNames = ["a", "abbr", "acronym", "address", "area", "b", "bdo", "big",
+    "blockquote", "body", "br", "button", "caption", "cite", "code", "col",
+    "colgroup", "dd", "del", "dfn", "div", "dl", "dt", "em", "fieldset", "form",
+    "frame", "frameset", "h1", "h2", "h3", "h4", "h5", "h6", "hr", "head",
+    "html", "i", "iframe", "img", "input", "ins", "kbd", "label", "legend", "li",
+    "link", "map", "meta", "noscript"/*:)*/, "object", "ol", "optgroup",
+    "option", "p", "param", "pre", "q", "samp", "script", "select", "small",
+    "span", "strong", "style", "sub", "sup", "table", "tbody", "td", "textarea",
+    "tfoot", "th", "thead", "title", "tr", "tt", "ul", "var"];
+
+jQuery.extend(DOMBuilder,
+{
+    /**
+     * An ``Object`` containing element creation functions.
+     */
+    elementFunctions: (function()
+    {
+        var o = {};
+        for (var i = 0, tagName; tagName = tagNames[i]; i++)
+        {
+            o[tagName.toUpperCase()] = createElementFunction(tagName);
+        }
+        return o;
+    })(),
+
+    /**
+     * Adds element creation functions to a given context ``Object``, or to
+     * a new object if none was given. Returns the object the functions were
+     * added to, either way.
+     *
+     * An ``NBSP`` property corresponding to the Unicode character for a
+     * non-breaking space is also added to the context object, for
+     * convenience.
+     */
+    apply: function(context)
+    {
+        context = context || {};
+        jQuery.extend(context, this.elementFunctions);
+        context.NBSP = "\u00A0"; // Add NBSP for backwards-compatibility
+        return context;
+    }
+});
+
+// Add fragment convenience methods --------------------------------------------
 
 jQuery.extend(DOMBuilder.fragment,
 {

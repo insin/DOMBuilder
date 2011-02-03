@@ -16,7 +16,7 @@ generates is controlled by the :js:attr:`DOMBuilder.mode` attribute.
    +-------------+--------------------------------------------------------------------------+
    | Value       | Output                                                                   |
    +=============+==========================================================================+
-   | ``"DOM"``   | DOM elements (default value)                                             |
+   | ``"DOM"``   | DOM Elements (default value)                                             |
    +-------------+--------------------------------------------------------------------------+
    | ``"HTML"``  | :js:class:`DOMBuilder.HTMLElement` objects which ``toString()`` to HTML4 |
    +-------------+--------------------------------------------------------------------------+
@@ -118,14 +118,14 @@ Temporarily Switching Mode
 
 If you're going to be working with mixed output types, forgetting to reset
 :js:attr:`DOMBuilder.mode` would be catastrophic, so DOMBuilder provides
-:js:func:`DOMBuilder.withNode` to manage it for you.
+:js:func:`DOMBuilder.withMode` to manage it for you.
 
-.. js:function:: DOMBuilder.withNode(mode, func)
+.. js:function:: DOMBuilder.withMode(mode, func)
 
    Calls a function, with :js:attr:`DOMBuilder.mode` set to the given value
    for the duration of the function call, and returns its output.
 
-The following `FireBug`_ console session shows :js:func:`DOMBuilder.withNode` in action::
+The following `FireBug`_ console session shows :js:func:`DOMBuilder.withMode` in action::
 
     >>> function createParagraph() { return P("Bed and", BR(), "BReakfast"); }
     >>> createParagraph().toString() // DOM mode by default

@@ -4,6 +4,12 @@ News for DOMBuilder
 Trunk
 -----
 
+- Added ``DOMBuilder.elementFunctions`` to hold element creation functions
+  instead of creating them every time ``DOMBuilder.apply()`` is called.
+  This also allows for the possibility of using a ``with`` statement for
+  convenience (not that you should!) instead of adding element creation
+  functions to the global scope.
+
 - Added ``DOMBuilder.fragment.map()`` to create contents from a list of
   items using a mapping function and wrap them in a single fragment as
   siblings, negating the need for redundant wrapper elements.
@@ -19,7 +25,8 @@ Trunk
   more. DOMBuilder now depends on jQuery >= 1.4.
 
 - Fixed issue #2 - nested ``Array`` objects in child arguments to
-  ``DOMBuilder.createElement`` and ``DOMBuilder.fragment`` are now flattened.
+  ``DOMBuilder.createElement()`` and ``DOMBuilder.fragment()`` are now
+  flattened.
 
 - Extracted ``HTMLNode`` base class to contain common logic from
   ``HTMLElement`` and ``HTMLFragment``.
@@ -30,11 +37,11 @@ Trunk
   ``DOMBuilder.HTMLFragment`` objects lightly mimic the ``DocumentFragment``
   API.
 
-- Added ``DOMBuilder.map`` to create elements based on a list, with an
+- Added ``DOMBuilder.map()`` to create elements based on a list, with an
   optional mapping function to control if and how resulting elements are
   created.
 
-- Added ``DOMBuilder.fragment``, a utility method for creating and
+- Added ``DOMBuilder.fragment()``, a utility method for creating and
   populating ``DocumentFragment`` objects.
 
 Version 1.2
@@ -48,8 +55,8 @@ Packaged from revision 23 in Subversion.
   active when they were created, as they may not be coerced until a later
   time, when the mode may have changed.
 
-- Added ``DOMBuilder.withMode`` to switch to HTML mode for the scope of a
-  function call.
+- Added ``DOMBuilder.withMode()`` to switch to HTML mode for the scope of
+  a function call.
 
 - Fixed short circuiting in element creation functions and decreased the
   number of checks required to determine which of the 4 supported argument
@@ -57,8 +64,8 @@ Packaged from revision 23 in Subversion.
 
 - Attributes are now lowercased when generating HTML.
 
-- ``DOMBuilder.isSafe`` and ``DOMBuilder.markSafe`` added as the public API
-  for managing escaping of strings when generating HTML.
+- ``DOMBuilder.isSafe()`` and ``DOMBuilder.markSafe()`` added as the public
+  API for managing escaping of strings when generating HTML.
 
 - Added support for using the DOMBuilder API to generate HTML/XHTML output
   instead of DOM elements. This is an experimental change for using the same

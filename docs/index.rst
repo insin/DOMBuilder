@@ -17,7 +17,8 @@ Dependencies
 .. versionadded:: 1.3
 
 * `jQuery`_ >= 1.4 is required to take care of cross-browser issues creating
-  DOM Elements, among other things.
+  DOM Elements and setting up their attributes and event handlers, among
+  other things.
 
 .. _`jQuery`: http://jquery.com
 
@@ -30,8 +31,47 @@ give you a more declarative, compact API to work with when creating content
 in code, while cross-browser DOM issues are taken care of by jQuery behind
 the scenes.
 
-To get started, use :js:func:`DOMBuilder.apply` to add element creation
-functions to a context object.
+Element Creation Functions
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. js:attribute:: DOMBuilder.elementFunctions
+
+   An ``Object`` containing a function for each valid tag name declared in
+   the HTML 4.01 `Strict DTD`_ and `Frameset DTD`_.
+
+   Functions are referenced by the corresponding tag name in upper case,
+   e.g. ``DOMBuilder.elementFunctions.DIV``, ``DOMBuilder.elementFunctions.A``,
+   ``DOMBuilder.elementFunctions.TD``...
+
+   When called, these functions will create an element with the
+   corresponding tag name, giving it any attributes which are specified as
+   an optional ``Object`` and appending any children which are specified
+   as additional arguments or an ``Array``. Element creation functions
+   accept the following variations of arguments:
+
+   +--------------------------------------------------------------------------------+
+   | Element Creation Function Arguments                                            |
+   +=================================+==============================================+
+   | ``(attributes, child1, ...)``   | an attributes ``Object`` followed by an      |
+   |                                 | arbitrary number of children.                |
+   +---------------------------------+----------------------------------------------+
+   | ``(attributes, [child1, ...])`` | an attributes ``Object`` and an ``Array`` of |
+   |                                 | children.                                    |
+   +---------------------------------+----------------------------------------------+
+   | ``(child1, ...)``               | an arbitrary number of children.             |
+   +---------------------------------+----------------------------------------------+
+   + ``([child1, ...])``             | an ``Array`` of children.                    |
+   +---------------------------------+----------------------------------------------+
+
+   See :js:func:`DOMBuilder.createElement` for more detail on how these
+   arguments are used.
+
+   .. _`Strict DTD`: http://www.w3.org/TR/html4/sgml/dtd.html
+   .. _`Frameset DTD`: http://www.w3.org/TR/html4/sgml/framesetdtd.html
+
+There's nothing compact about code littered with ``DOMBuilder.elementFunctions``,
+so to get started, use :js:func:`DOMBuilder.apply` to add element creation
+functions to a context object of your choice.
 
 .. js:function:: DOMBuilder.apply([context])
 
@@ -40,39 +80,8 @@ functions to a context object.
        If not provided, a new Object will be created and used.
    :returns: The context Object which was passed in or created.
 
-   Creates functions in a context object with names corresponding to valid
-   HTML elements. When called, these functions will create the appropriate
-   elements, giving them any attributes which are specified and creating and
-   appending any children which are specified.
-
-   Element creation functions accept the following variations of
-   arguments:
-
-   +---------------------------------------------------------------------------------+
-   | Element Creation Function Arguments                                             |
-   +=================================+===============================================+
-   | ``(attributes, child1, ...)``   | an attributes object followed by an arbitrary |
-   |                                 | number of children.                           |
-   +---------------------------------+-----------------------------------------------+
-   | ``(attributes, [child1, ...])`` | an attributes object and an ``Array`` of      |
-   |                                 | children.                                     |
-   +---------------------------------+-----------------------------------------------+
-   | ``(child1, ...)``               | an arbitrary number of children.              |
-   +---------------------------------+-----------------------------------------------+
-   + ``([child1, ...])``             | an ``Array`` of children.                     |
-   +---------------------------------+-----------------------------------------------+
-
-   See :js:func:`DOMBuilder.createElement` for more detail on how these
-   arguments are used.
-
-.. tip::
-   For convenience, you may want to create the element creation functions
-   in the global scope, by passing ``window`` as the context object::
-
-      DOMBuilder.apply(window);
-
-Element Creation Functions
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+   Adds element creation functions to a context object, with names
+   corresponding to valid HTML elements.
 
 For a simple example, the following code...
 
@@ -96,12 +105,36 @@ For a simple example, the following code...
      <p>Paragraph two</p>
    </div>
 
-When you're writig a a web application you're more likely to be creating
+.. tip::
+   For (arguably, horrible) convenience, you could add element creation
+   functions to the global scope by passing ``window`` as the context
+   object::
+
+      DOMBuilder.apply(window);
+      var article =
+        DIV({"class": "article"},
+          H2("Article title"),
+          P("Paragraph one"),
+          P("Paragraph two")
+        );
+
+   Aletrnatively, you could (please don't) use JavaScript's much-derided
+   `with statement`_ to temporarily add :js:attr:`DOMBuilder.elementFunctions`
+   to the scope chain::
+
+      with (DOMBuilder.elementFunctions)
+      {
+         // Code as above
+      }
+
+   .. _`with statement`: https://developer.mozilla.org/en/JavaScript/Reference/Statements/with
+
+When you're writing a a web application you're more likely to be creating
 dynamic content based on some sort of input.
 
 .. note::
-   This example assumes that element creation functions are available in
-   the global scope.
+   For brevity, this example assumes that element creation functions are
+   available in the global scope.
 
 The following function (which assumes the existence of an ``Array``
 `map function`_) programmatically creates a ``<table>`` representation of
@@ -191,7 +224,8 @@ value, clearing it when the input is focused and restoring the default if
 the input is left blank::
 
    var defaultInput =
-     INPUT({type: "text", name: "test", defaultValue: "Type Here!",
+     INPUT({type: "text", name: "email",
+            value: "email@host.com", defaultValue: "email@host.com",
             focus: function()
             {
                if (this.value == this.defaultValue)
@@ -210,10 +244,10 @@ the input is left blank::
 Manual Element Creation
 -----------------------
 
-The function which does the majority of the work when you call an element
-creation function is available for your own use - the main difference is that
-it's inflexible with the arguments it accepts, but it's still more
-convenient than creating and populating elements manually using DOM methods.
+The function which does the real work when you call an element creation
+function is available for your own use - it's comparatively inflexible with
+the arguments it accepts, but still more convenient than creating and
+populating elements manually using DOM methods.
 
 .. js:function:: DOMBuilder.createElement(tagName[, attributes[, children]])
 
@@ -223,12 +257,11 @@ convenient than creating and populating elements manually using DOM methods.
 
    Creates a DOM ``Element`` or :js:class:`DOMBuilder.HTMLElement` object
    with the given tag name, attributes and children - this is the underlying
-   function used by the element creation functions created by
-   :js:func:`DOMBuilder.apply`.
+   function used by the element creation functions.
 
-   If children are provided, they will be added to the new element. Any
-   children which are not DOM elements will be coerced ``String`` and added
-   as Text Nodes.
+   If children are provided, they will be appended to the new element. Any
+   children which are not DOM elements will be coerced to ``String`` and
+   appended as TextNodes.
 
    .. versionchanged:: 1.2
       Now generates :js:class:`DOMBuilder.HTMLElement` objects if
@@ -239,7 +272,7 @@ Document Fragments
 
 .. versionadded:: 1.3
 
-A ``DocumentFragment`` conveniently allows you to append its entire
+A `DOM DocumentFragment`_ conveniently allows you to append its entire
 contents with a single call to the destination Node's ``appendChild()``
 method.
 
@@ -254,7 +287,7 @@ DOMBuilder provides a :js:func:`DOMBuilder.fragment` wrapper function,
 which allows you to pass all the contents you want into a
 ``DocumentFragment`` in one call, and also allows you make use of this
 functionality in HTML mode by creating equivalent :ref:`mock-dom-objects`
-when appropriate. This will allow you to, for example, unit test
+as appropriate. This will allow you to, for example, unit test
 functionality you've written which makes use of ``DocumentFragment``
 objects by using HTML mode to verify output against strings, rather than
 against DOM trees.
@@ -276,6 +309,8 @@ against DOM trees.
 See http://ejohn.org/blog/dom-documentfragments/ for more information about
 ``DocumentFragment`` objects.
 
+.. _`DOM DocumentFragment`: http://www.w3.org/TR/REC-DOM-Level-1/level-one-core.html#ID-B63ED1A3
+
 Map Functions
 -------------
 
@@ -296,7 +331,7 @@ Mapping Elements
 
    :param String tagName:
       the name of the element to create for each item in the list.
-   :param Object attributes: default attributes for the element.
+   :param Object defaultAttributes: default attributes for the element.
    :param Array items:
       the list of items to use as the basis for creating elements.
    :param Function mappingFunction:
@@ -360,7 +395,7 @@ striping::
 
    TR.map(rows, function(row, attributes, itemIndex)
    {
-       attributes['class'] = (itemIndex % 2 == 0 ? "row1" : "row2");
+       attributes['class'] = (itemIndex % 2 == 0 ? "stripe1" : "stripe2");
        return TD.map(row);
    });
 
@@ -380,7 +415,7 @@ Mapping Fragments
 
    The mapping function will be called with the following arguments::
 
-      func(item, itemIndex)
+      mappingFunction(item, itemIndex)
 
    The function can indicate that the given item shouldn't generate
    any content for the fragment by returning ``null``.
