@@ -8,8 +8,8 @@ generates is controlled by the :js:attr:`DOMBuilder.mode` attribute.
 
 .. js:attribute:: DOMBuilder.mode
 
-   Determines which kind of objects :js:func:`DOMBuilder.createElement` will
-   create.
+   Determines which kind of objects :js:func:`DOMBuilder.createElement`
+   will create.
 
    The allowable values are:
 
@@ -32,14 +32,17 @@ Mock DOM Objects
 ~~~~~~~~~~~~~~~~
 
 In HTML mode, DOMBuilder will create mock DOM objects which implement a
-small subset of the ``Node`` operations available on their real counterparts.
-Calling ``toString()`` on these objects will produce the appropriate type of
-HTML based on the mode at the time they and their contents were created.
+small subset of the `Node interface`_ operations available on their real
+counterparts. Calling ``toString()`` on these objects will produce the
+appropriate type of HTML based on the mode at the time they and their
+contents were created.
 
-With foreknowledge of the available operations (and `requests for additional
-operations`_ which would be useful), it's possible to write complex content
-creation code which works seamlessly in both DOM and HTML modes.
+With foreknowledge of the available operations (and `requests for
+additional operations`_ which would be useful), it's possible to write
+complex content creation code which works seamlessly in both DOM and HTML
+modes.
 
+.. _`Node interface`: http://www.w3.org/TR/DOM-Level-2-Core/core.html#ID-1950641247
 .. _`requests for additional operations`: http://code.google.com/p/dombuilder/issues/list
 
 Mock Elements
@@ -88,15 +91,14 @@ Mock Fragments
 
 In HTML mode, :js:func:`DOMBuilder.fragment` will create
 :js:class:`DOMBuilder.HTMLFragment` objects which mimic the behaviour of
-DOM ``DocumentFragment`` when appended to another fragment or a
+DOM DocumentFragments when appended to another fragment or a
 :js:class:`DOMBuilder.HTMLElement`.
 
 .. js:class:: DOMBuilder.HTMLFragment([childNodes])
 
-   A representation of a DOM ``DocumentFragment`` and its child nodes.
+   A representation of a DOM DocumentFragment and its child nodes.
 
    :param Array children: initial child nodes
-
 
 .. js:function:: DOMBuilder.HTMLFragment.appendChild(node)
 

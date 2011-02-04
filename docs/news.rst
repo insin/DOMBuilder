@@ -1,8 +1,10 @@
 News for DOMBuilder
 ===================
 
-Trunk
------
+Version 1.3
+-----------
+
+- Tag names passed into ``DOMBuilder.HTMLElement`` are now lower-cased.
 
 - Added ``DOMBuilder.elementFunctions`` to hold element creation functions
   instead of creating them every time ``DOMBuilder.apply()`` is called.
@@ -34,20 +36,18 @@ Trunk
 - Renamed ``Tag`` to ``HTMLElement``.
 
 - ``DOMBuilder.fragment`` now works in HTML mode -
-  ``DOMBuilder.HTMLFragment`` objects lightly mimic the ``DocumentFragment``
-  API.
+  ``DOMBuilder.HTMLFragment`` objects lightly mimic the DOM
+  DocumentFragment API.
 
 - Added ``DOMBuilder.map()`` to create elements based on a list, with an
   optional mapping function to control if and how resulting elements are
   created.
 
 - Added ``DOMBuilder.fragment()``, a utility method for creating and
-  populating ``DocumentFragment`` objects.
+  populating DocumentFragment objects.
 
 Version 1.2
 -----------
-
-Packaged from revision 23 in Subversion.
 
 - Created Sphinx docs.
 
@@ -75,8 +75,6 @@ Packaged from revision 23 in Subversion.
 Version 1.1
 -----------
 
-Packaged from revision 12 in Subversion.
-
 - An ``NBSP`` property is now also added to the context object by
   ``DOMBuilder.apply()``, for convenience.
 
@@ -91,8 +89,6 @@ Packaged from revision 12 in Subversion.
 
 Version 1.0
 -----------
-
-Packaged from revision 5 in Subversion.
 
 - Added support for passing children to element creation function as an
   `Array``.

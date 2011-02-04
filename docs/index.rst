@@ -14,11 +14,12 @@ Elements and HTML in JavaScript.
 Dependencies
 ------------
 
-.. versionadded:: 1.3
-
 * `jQuery`_ >= 1.4 is required to take care of cross-browser issues creating
   DOM Elements and setting up their attributes and event handlers, among
   other things.
+
+.. versionchanged:: 1.3
+   jQuery was added as a dependency.
 
 .. _`jQuery`: http://jquery.com
 
@@ -45,9 +46,10 @@ Element Creation Functions
 
    When called, these functions will create an element with the
    corresponding tag name, giving it any attributes which are specified as
-   an optional ``Object`` and appending any children which are specified
-   as additional arguments or an ``Array``. Element creation functions
-   accept the following variations of arguments:
+   properties of an optional ``Object`` argument and appending any children
+   which are specified as additional arguments or an ``Array`` argument.
+
+   Element creation functions accept the following variations of arguments:
 
    +--------------------------------------------------------------------------------+
    | Element Creation Function Arguments                                            |
@@ -81,7 +83,7 @@ functions to a context object of your choice.
    :returns: The context Object which was passed in or created.
 
    Adds element creation functions to a context object, with names
-   corresponding to valid HTML elements.
+   corresponding to valid HTML elements in upper case.
 
 For a simple example, the following code...
 
@@ -95,7 +97,7 @@ For a simple example, the following code...
        html.P("Paragraph two")
      );
 
-...would produce a DOM element corresponding to the following HTML:
+...would produce a DOM Element corresponding to the following HTML:
 
 .. code-block:: html
 
@@ -129,12 +131,12 @@ For a simple example, the following code...
 
    .. _`with statement`: https://developer.mozilla.org/en/JavaScript/Reference/Statements/with
 
+.. note::
+   For brevity, further examples assume that element creation functions
+   are available in the global scope.
+
 When you're writing a a web application you're more likely to be creating
 dynamic content based on some sort of input.
-
-.. note::
-   For brevity, this example assumes that element creation functions are
-   available in the global scope.
 
 The following function (which assumes the existence of an ``Array``
 `map function`_) programmatically creates a ``<table>`` representation of
@@ -176,7 +178,7 @@ Given this function, the following code...
        ["name", "table", "veggie"]
    );
 
-...would produce a DOM element corresponding to the following HTML:
+...would produce a DOM Element corresponding to the following HTML:
 
 .. code-block:: html
 
@@ -257,8 +259,8 @@ Manual Element Creation
 -----------------------
 
 The function which does the real work when you call an element creation
-function is available for your own use - it's comparatively inflexible with
-the arguments it accepts, but still more convenient than creating and
+function :js:func:`DOMBuilder.createElement` - it's comparatively inflexible
+with the arguments it accepts, but still more convenient than creating and
 populating elements manually using DOM methods.
 
 .. js:function:: DOMBuilder.createElement(tagName[, attributes[, children]])
@@ -267,13 +269,12 @@ populating elements manually using DOM methods.
    :param Object attributes: attributes to be applied to the new element.
    :param Array children: childen to be appended to the new element.
 
-   Creates a DOM ``Element`` or :js:class:`DOMBuilder.HTMLElement` object
-   with the given tag name, attributes and children - this is the underlying
-   function used by the element creation functions.
+   Creates a DOM Element object with the given tag name, attributes and
+   children.
 
-   If children are provided, they will be appended to the new element. Any
-   children which are not DOM elements will be coerced to ``String`` and
-   appended as TextNodes.
+   If children are provided, they will be appended to the new element.
+   Any  children which are not DOM Elements will be coerced to ``String``
+   and appended as Text Nodes.
 
    .. versionchanged:: 1.2
       Now generates :js:class:`DOMBuilder.HTMLElement` objects if
@@ -284,31 +285,30 @@ Document Fragments
 
 .. versionadded:: 1.3
 
-A `DOM DocumentFragment`_ conveniently allows you to append its entire
-contents with a single call to the destination Node's ``appendChild()``
-method.
+A `DOM DocumentFragment`_ is a lightweight container for elements which,
+conveniently, allows you to append its entire contents with a single call
+to the destination element's ``appendChild()`` method.
 
 If you're thinking of adding a wrapper ``<div>`` solely to be able to
 insert a number of sibling elements at the same time, a
-``DocumentFragment`` will do the same job without the need for the
-redundant wrapper element. This single append functionality also makes it
-a handy container for content which needs to be inserted repeatedly,
-calling ``.cloneNode(true)`` for every insertion.
+DocumentFragment will do the same job without the need for the redundant
+wrapper element. This single append functionality also makes it a handy
+container for content which needs to be inserted repeatedly, calling
+``cloneNode(true)`` for each insertion.
 
 DOMBuilder provides a :js:func:`DOMBuilder.fragment` wrapper function,
-which allows you to pass all the contents you want into a
-``DocumentFragment`` in one call, and also allows you make use of this
-functionality in HTML mode by creating equivalent :ref:`mock-dom-objects`
-as appropriate. This will allow you to, for example, unit test
-functionality you've written which makes use of ``DocumentFragment``
-objects by using HTML mode to verify output against strings, rather than
-against DOM trees.
+which allows you to pass all the contents you want into a DocumentFragment
+in one call, and also allows you make use of this functionality in HTML
+mode by creating equivalent :ref:`mock-dom-objects` as appropriate. This
+will allow you to, for example, unit test functionality you've written
+which makes use of DocumentFragment objects by using HTML mode to verify
+output against strings, rather than against DOM trees.
 
 .. js:function:: DOMBuilder.fragment()
 
-   Creates a DOM ``DocumentFragment`` object or
-   :js:class:`DOMBuilder.HTMLFragment` with the given children. Supported
-   argument formats are:
+   Creates a DOM DocumentFragment with the given children.
+
+   Supported argument formats are:
 
    +--------------------------------------------------------+
    | Fragment Creation Arguments                            |
@@ -319,7 +319,7 @@ against DOM trees.
    +---------------------------------+----------------------+
 
 See http://ejohn.org/blog/dom-documentfragments/ for more information about
-``DocumentFragment`` objects.
+DocumentFragment objects.
 
 .. _`DOM DocumentFragment`: http://www.w3.org/TR/REC-DOM-Level-1/level-one-core.html#ID-B63ED1A3
 
