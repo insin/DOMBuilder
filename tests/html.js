@@ -18,57 +18,62 @@ test("DOMBuilder.HTMLElement", function()
 {
     expect(25);
 
-    // HTMLElement is available
-    equals(typeof DOMBuilder.HTMLElement, "function");
+    equals(typeof DOMBuilder.HTMLElement, "function", "HTMLElement is accessible via DOMBuilder");
 
     // No attributes or children
-    var el = new DOMBuilder.HTMLElement("a");
+    var el = new DOMBuilder.HTMLElement("A");
     ok(el instanceof DOMBuilder.HTMLNode, "HTMLElement is-an HTMLNode");
-    equal(el.tagName, "a");
-    deepEqual(el.attributes, {});
-    deepEqual(el.childNodes, []);
-    ok(!el.xhtml);
-    equal(el.toString(), "<a></a>");
-    deepEqual(el, el.cloneNode(true));
+    equal(el.tagName, "a", "Tag names are lower-cased");
+    deepEqual(el.attributes, {}, "Attributes are initialised as empty if not given");
+    deepEqual(el.childNodes, [], "Children are initialised as empty if not given");
+    ok(!el.xhtml, "XHTML flag set coorectly in HTML mode");
+    equal(el.toString(), "<a></a>", "Rendering with no attributes or children");
+    deepEqual(el, el.cloneNode(true), "Clones are really clones");
 
     // Initialise with attributes and children
     el = new DOMBuilder.HTMLElement("div", {"class": "test", title: "test"},
                                     [dom.B("test"), dom.BR()]);
-    equal(el.toString(), '<div class="test" title="test"><b>test</b><br></div>');
-    deepEqual(el, el.cloneNode(true));
+    equal(el.toString(),
+          '<div class="test" title="test"><b>test</b><br></div>',
+          "Rendering with attributes and children");
+    deepEqual(el, el.cloneNode(true), "Clones with attributes and children are really clones");
 
     // Appending a child
     var el = new DOMBuilder.HTMLElement("div", {"class": "test"}, ["One"]);
-    equal(el.childNodes.length, 1);
+    equal(el.childNodes.length, 1, "Initial childNodes count");
     el.appendChild(dom.P("Two"));
-    equal(el.childNodes.length, 2);
+    equal(el.childNodes.length, 2, "Post-append childNodes count");
 
     // Appending a fragment
     var f = DOMBuilder.fragment([dom.H2("Three"), "Four", dom.P("Five")]);
     el.appendChild(f);
-    equal(el.childNodes.length, 5);
-    equal(f.childNodes.length, 0);
-    equal(el.toString(), '<div class="test">One<p>Two</p><h2>Three</h2>Four<p>Five</p></div>');
+    equal(el.childNodes.length, 5, "All fragment children were appended");
+    equal(f.childNodes.length, 0, "Fragment was emptied");
+    equal(el.toString(),
+          '<div class="test">One<p>Two</p><h2>Three</h2>Four<p>Five</p></div>',
+          "Rendering after appending a fragment");
 
     // Appending an empty fragment
     el.appendChild(DOMBuilder.fragment());
-    equal(el.childNodes.length, 5);
+    equal(el.childNodes.length, 5, "Appending an empty fragment has no effect");
 
     // Initialise with a fragment
     f = DOMBuilder.fragment([dom.H2("Two"), "Three", dom.P("Four")]);
     var el = new DOMBuilder.HTMLElement("div", {"class": "test"}, ["One", f, "Five"]);
-    equal(el.childNodes.length, 5);
-    equal(f.childNodes.length, 0);
-    equal(el.toString(), '<div class="test">One<h2>Two</h2>Three<p>Four</p>Five</div>');
+    equal(el.childNodes.length, 5, "Fragment contents inlined on creation");
+    equal(f.childNodes.length, 0, "Fragment was emptied");
+    equal(el.toString(),
+          '<div class="test">One<h2>Two</h2>Three<p>Four</p>Five</div>',
+          "Rendering after initialising with a fragment");
 
     // Attributes are lower-cased
     el = new DOMBuilder.HTMLElement("a", {HREF: "test"}, ["test"]);
-    equal(el.toString(), '<a href="test">test</a>', "attributes lower-cased");
+    equal(el.toString(), '<a href="test">test</a>', "Attributes are lower-cased");
 
     // Special case for &nbsp;
     el.appendChild(dom.NBSP);
     equal(el.toString(), '<a href="test">test&nbsp;</a>',
-          "breaking space character converted to entity")
+          "Breaking space character converted to entity")
 
     // Empty tags rendered appropriately
     var emptyTags = "area|base|br|col|frame|hr|input|img|link|meta|param".split("|");
@@ -79,17 +84,17 @@ test("DOMBuilder.HTMLElement", function()
         });
     }
     equal(createEmptyTags().toString(),
-          "<area><base><br><col><frame><hr><input><img><link><meta><param>");
+          "<area><base><br><col><frame><hr><input><img><link><meta><param>",
+          "empty tags render as expected in HTML mode");
     equal(DOMBuilder.withMode("XHTML", createEmptyTags).toString(),
-          "<area /><base /><br /><col /><frame /><hr /><input /><img /><link /><meta /><param />");
+          "<area /><base /><br /><col /><frame /><hr /><input /><img /><link /><meta /><param />",
+          "empty tags render as expected in XHTML mode");
 
-    // Empty tag children are ignored if present
     el = new DOMBuilder.HTMLElement("br", {clear: "all"}, ["test"]);
-    equal(el.toString(), '<br clear="all">');
+    equal(el.toString(), '<br clear="all">', "Empty tag children are ignored if present");
 
-    // Attributes which would have been handled by jQuery are ignored
     el = new DOMBuilder.HTMLElement("input", {type: "button", click: function(){}});
-    equal(el.toString(), '<input type="button">');
+    equal(el.toString(), '<input type="button">', " Attributes which would have been handled by jQuery are ignored");
 });
 
 test("DOMBuilder.HTMLFragment", function()
@@ -97,41 +102,45 @@ test("DOMBuilder.HTMLFragment", function()
     expect(17);
 
     // HTMLFragment is available
-    equal(typeof DOMBuilder.HTMLFragment, "function");
+    equal(typeof DOMBuilder.HTMLFragment, "function", "HTMLFragment is accessible via DOMBuilder");
 
     // No children
     var f1 = new DOMBuilder.HTMLFragment();
     ok(f1 instanceof DOMBuilder.HTMLNode, "HTMLFragment is-an HTMLNode");
-    deepEqual(f1.childNodes.length, 0, "childNodes initialised with zero args");
-    deepEqual(f1, f1.cloneNode(true));
-    equal(f1.toString(), "");
+    deepEqual(f1.childNodes.length, 0, "Children are initialised as empty if not given");
+    deepEqual(f1, f1.cloneNode(true), "Clones are really clones");
+    equal(f1.toString(), "", "Rendering with no children");
 
     // Initialuse with children
     var f2 = new DOMBuilder.HTMLFragment([dom.H2("One"), "Two", dom.P("Three")]);
-    equal(f2.childNodes.length, 3);
-    deepEqual(f2, f2.cloneNode(true));
-    equal(f2.toString(), "<h2>One</h2>Two<p>Three</p>");
+    equal(f2.childNodes.length, 3, "Initial childNodes count");
+    deepEqual(f2, f2.cloneNode(true), "Clones are really clones");
+    equal(f2.toString(), "<h2>One</h2>Two<p>Three</p>", "Rendering with children");
 
     // Initialise with a fragment
     var f1 = new DOMBuilder.HTMLFragment([dom.B("Zero"), f2, dom.B("Four")])
-    equal(f1.childNodes.length, 5, "HTMLFragment contents inlined on creation");
-    equals(f2.childNodes.length, 0, "HTMLFragment which was inlined is empties");
-    equal(f1.toString(), "<b>Zero</b><h2>One</h2>Two<p>Three</p><b>Four</b>");
+    equal(f1.childNodes.length, 5,  "Fragment contents inlined on creation");
+    equals(f2.childNodes.length, 0, "Fragment which was inlined was emptied");
+    equal(f1.toString(),
+          "<b>Zero</b><h2>One</h2>Two<p>Three</p><b>Four</b>",
+          "Rendering after initialising with a fragment");
 
     // Appending a child
     f2.appendChild(dom.BR());
-    equal(f2.childNodes.length, 1);
-    equal(f2.toString(), "<br>");
+    equal(f2.childNodes.length, 1, "Post-append childNodes count");
+    equal(f2.toString(), "<br>", "Rendering post-append");
 
     // Appending a fragment
     f2.appendChild(f1);
-    equal(f2.childNodes.length, 6);
-    equal(f1.childNodes.length, 0);
-    equal(f2.toString(), "<br><b>Zero</b><h2>One</h2>Two<p>Three</p><b>Four</b>");
+    equal(f2.childNodes.length, 6, "All fragment children were appended");
+    equal(f1.childNodes.length, 0, "Fragment was emptied");
+    equal(f2.toString(),
+          "<br><b>Zero</b><h2>One</h2>Two<p>Three</p><b>Four</b>",
+          "Rendering after appending a fragment");
 
     // Appending an empty fragment
     f2.appendChild(f1);
-    equal(f2.childNodes.length, 6);
+    equal(f2.childNodes.length, 6, "Appending an empty fragment has no effect");
 });
 
 test("HTML Escaping", function()

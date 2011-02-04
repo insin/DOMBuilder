@@ -182,7 +182,7 @@ function HTMLElement(tagName, attributes, childNodes)
 {
     HTMLNode.call(this, childNodes);
 
-    this.tagName = tagName;
+    this.tagName = tagName.toLowerCase();
     this.attributes = attributes || {};
 
     // Keep a record of whether or not closing slashes are needed, as the
