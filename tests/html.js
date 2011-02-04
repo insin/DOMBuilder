@@ -16,7 +16,7 @@ var dom = DOMBuilder.apply();
 
 test("DOMBuilder.HTMLElement", function()
 {
-    expect(24);
+    expect(25);
 
     // HTMLElement is available
     equals(typeof DOMBuilder.HTMLElement, "function");
@@ -83,10 +83,13 @@ test("DOMBuilder.HTMLElement", function()
     equal(DOMBuilder.withMode("XHTML", createEmptyTags).toString(),
           "<area /><base /><br /><col /><frame /><hr /><input /><img /><link /><meta /><param />");
 
-
     // Empty tag children are ignored if present
     el = new DOMBuilder.HTMLElement("br", {clear: "all"}, ["test"]);
     equal(el.toString(), '<br clear="all">');
+
+    // Attributes which would have been handled by jQuery are ignored
+    el = new DOMBuilder.HTMLElement("input", {type: "button", click: function(){}});
+    equal(el.toString(), '<input type="button">');
 });
 
 test("DOMBuilder.HTMLFragment", function()

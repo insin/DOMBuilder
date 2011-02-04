@@ -212,12 +212,22 @@ Given this function, the following code...
 Event Handlers
 ##############
 
-Event handlers can be specified as you would expect - supply an event name
-as one of the element's attributes and an event handling function as the
-corresponding value. Any of the `event types supported by jQuery`_ can be
-registered in this manner.
+Event handlers can be specified by supplying an event name as one of the
+element's attributes and an event handling function as the corresponding
+value.  Any of the `events which have jQuery shortcut methods`_ can be
+registered in this manner. These are:
 
-.. _`event types supported by jQuery`: http://api.jquery.com/category/events/
++----------------------------------------------------------------------+
+| Event names                                                          |
++===========+===========+==========+============+============+=========+
+| blur      | focus     | focusin  | focusout   | load       | resize  |
++-----------+-----------+----------+------------+------------+---------+
+| scroll    | unload    | click    | dblclick   | mousedown  | mouseup |
++-----------+-----------+----------+------------+------------+---------+
+| mousemove | mouseover | mouseout | mouseenter | mouseleave | change  |
++-----------+-----------+----------+------------+------------+---------+
+| select    | submit    | keydown  | keypress   | keyup      | error   |
++-----------+-----------+----------+------------+------------+---------+
 
 For example, the following will create a text input which displays a default
 value, clearing it when the input is focused and restoring the default if
@@ -240,6 +250,8 @@ the input is left blank::
                    this.value = this.defaultValue;
                }
             }});
+
+.. _`events which have jQuery shortcut methods`: http://api.jquery.com/category/events/
 
 Manual Element Creation
 -----------------------

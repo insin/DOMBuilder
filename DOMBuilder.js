@@ -58,19 +58,13 @@ function conditionalEscape(html)
 /**
  * Lookup for tags defined as EMPTY in the HTML 4.01 Strict and Frameset DTDs.
  */
-var emptyTags = {
-    area: true,
-    base: true,
-    br: true,
-    col: true,
-    frame: true,
-    hr: true,
-    input: true,
-    img: true,
-    link: true,
-    meta: true,
-    param: true
-};
+var emptyTags = (function()
+{
+    var lookup = {};
+    jQuery.each("area base br col frame hr input img link meta param".split(" "),
+                function(i, name) { lookup[name] = true; });
+    return lookup;
+})();
 
 /**
  * ``String`` subclass which marks the given string as safe for inclusion
@@ -216,6 +210,12 @@ HTMLElement.prototype.toString = function()
     var parts = ["<" + this.tagName];
     for (var attr in this.attributes)
     {
+        // Don't create attributes which would have been handled by jQuery in
+        // DOM mode.
+        if (attr in jQuery.attrFn)
+        {
+            continue;
+        }
         parts.push(" " + attr.toLowerCase() + "=\"" +
                    conditionalEscape(this.attributes[attr]) + "\"");
     }

@@ -97,7 +97,7 @@
       var input = INPUT(attrs);
       fixture.appendChild(input);
 
-      var initialInput = input.cloneNode(true);
+      var initialInput = jQuery(input).clone().get(0);
 
       // Check initial and reset values
       var initialValue = input.value;
@@ -156,7 +156,7 @@
       var input = INPUT(attrs);
       fixture.appendChild(input);
 
-      var initialInput = input.cloneNode(true);
+      var initialInput = jQuery(input).clone().get(0);
 
       // Check initial and reset checked values
       var initialChecked = (input.checked === true);
@@ -217,7 +217,7 @@
       input.appendChild(option);
       fixture.appendChild(input);
 
-      var initialInput = input.cloneNode(true);
+      var initialInput = jQuery(input).clone().get(0);
 
       // Check initial and reset selected values
       var initialSelected = (input.selectedIndex === 1);

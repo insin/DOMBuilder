@@ -128,8 +128,8 @@
         FORM({name: "testForm", method: "POST", action: "",
               onsubmit: function()
               {
-                  if (this.elements["testInput"].value ==
-                      this.elements["testInput"].defaultValue)
+                  if (this.elements["testInput1"].value ==
+                      this.elements["testInput1"].defaultValue)
                   {
                       alert("Submitting with the default value set!");
                   }
@@ -161,14 +161,14 @@
                 " ",
                 INPUT({type: "text", name: "testInput2", id: "testInput2",
                      value: "value",
-                     onfocus: function()
+                     focus: function()
                      {
                         if (this.value == this.defaultValue)
                         {
                             this.value = "";
                         }
                      },
-                     onblur: function()
+                     blur: function()
                      {
                         if (this.value == "")
                         {
