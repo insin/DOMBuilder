@@ -122,4 +122,32 @@ test("Regression: Issue 2", function()
     });
 });
 
+function testEventHandlers()
+{
+    return DOMBuilder.fragment(
+      dom.DIV({id: "testElement", click: function() { $("#testOutput").text("PASS"); }}),
+      dom.DIV({id: "testOutput"})
+    );
+}
+
+test("DOM Event Handlers", function()
+{
+    expect(1);
+
+    var fragment = DOMBuilder.withMode("DOM", testEventHandlers);
+    $("#qunit-fixture").append(fragment);
+    $("#testElement").trigger("click");
+    equal("PASS",  $("#testOutput").text(), "click handler executed");
+});
+
+test("HTML Event Handlers", function()
+{
+    expect(1);
+
+    var fragment = DOMBuilder.withMode("HTML", testEventHandlers);
+    fragment.insertAndRegister($("#qunit-fixture").get(0));
+    $("#testElement").trigger("click");
+    equal("PASS",  $("#testOutput").text(), "click handler executed");
+});
+
 })();
