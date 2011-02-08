@@ -10,13 +10,10 @@ Downloads:
 
 * `Compressed`_ (4.9 KB)
 
-* `Uncompressed`_ (21.3 KB)
-
 * `Package including docs and demo page`_ (83.9 KB)
 
-.. _`Compressed`: http://dombuilder.googlecode.com/files/dombuilder-1.3.min.js
-.. _`Uncompressed`: http://dombuilder.googlecode.com/files/dombuilder-1.3.js
-.. _`Package including docs and demo page`: http://dombuilder.googlecode.com/files/DOMBuilder-1.3.zip
+.. _`Compressed`: https://github.com/insin/DOMBuilder/downloads#download_77039
+.. _`Package including docs and demo page`: https://github.com/insin/DOMBuilder/downloads#download_77041
 
 Significant changes in this release:
 
