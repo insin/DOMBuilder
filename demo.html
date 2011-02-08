@@ -225,6 +225,28 @@
           ],
           ["type", "propertyList", "references", "isAutoIncrement", "isUpdateable"]
       ));
+
+      var eventId = 123;
+      function testEvents()
+      {
+          return DOMBuilder.fragment(
+            DIV({
+              mouseover: function() { this.style.backgroundColor = "#7e7"; },
+              mouseout: function() { this.style.backgroundColor = "transparent"; },
+              click: function() { alert("Thanks for testing me today! My id is " + this.id); }
+            }, "Mouse me good"),
+            DIV({
+              id: "testEvent" + eventId++,
+              click: function() { alert("Hi! My id is " + this.id); }
+            },"I have my own ID :-)")
+          );
+      }
+      document.getElementById("domEvents").appendChild(testEvents());
+      DOMBuilder.withMode("HTML", function()
+      {
+          var html = testEvents();
+          html.insertAndRegister(document.getElementById("htmlEvents"));
+      });
   };
   </script>
 </head>
@@ -243,6 +265,12 @@
 
 <h2>Generated Table</h2>
 <div id="generatedTable"></div>
+
+<h2>Events in DOM mode</h2>
+<div id="domEvents"></div>
+
+<h2>Same code in HTML mode, using <code>innerHTML</code> and <code>registerEventHandlers</code></h2>
+<div id="htmlEvents"></div>
 
 <h2>Added using <code>with (DOMBuilder.elementFunctions)</code></h2>
 

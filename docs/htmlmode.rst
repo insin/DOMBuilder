@@ -77,12 +77,40 @@ will create :js:class:`DOMBuilder.HTMLElement` objects.
    .. versionadded:: 1.3
       Added to support cloning by an :js:class:`DOMBuilder.HTMLFragment`.
 
-.. js:function:: DOMBuilder.HTMLElement.toString()
+.. js:function:: DOMBuilder.HTMLElement.toString([trackEvents])
 
    Creates a ``String`` containing the HTML representation of the tag and
    its children. By default, any ``String`` children will be escaped to
    prevent the use of sensitive HTML characters - see the `Escaping`_
    section for details on controlling escaping.
+
+   If ``true`` is passed as an argument and any event handlers are found
+   in this object's attributes during HTML generation, this method will
+   ensure the resulting element has an id so the handlers can be
+   registered after the element has been inserted into the document via
+   ``innerHTML``.
+
+   If neccessary, a unique id will be generated.
+
+   .. versionchanged:: 1.4
+      Added the optional ``trackEvents`` argument to support registration
+      of event handlers post-insertion.
+
+.. js:function:: DOMBuilder.HTMLElement.registerEventHandlers()
+
+   If event attributes were found when ``toString(true)`` was called, this
+   method will retrieve the resulting DOM Element by id, attach event
+   handlers to it and call ``registerEventHandlers()`` on any HTMLElement
+   children.
+
+   .. versionadded:: 1.4
+
+.. js:function:: DOMBuilder.HTMLElement.insertAndRegister(element)
+
+   Convenience method for generating and inserting HTML into the given
+   DOM Element and registering event handlers.
+
+   .. versionadded:: 1.4
 
 Mock Fragments
 ##############
@@ -110,10 +138,85 @@ DOM DocumentFragments when appended to another fragment or a
    Clones the fragment - there's no point calling this *without* passing in
    ``true``, as you'll just get an empty fragment back, but that's the API.
 
-.. js:function:: DOMBuilder.HTMLFragment.toString()
+.. js:function:: DOMBuilder.HTMLFragment.toString([trackEvents])
 
    Creates a ``String`` containing the HTML representation of the
    fragment's children.
+
+   .. versionchanged:: 1.4
+      If the ``trackEvents`` argument is provided, it will be passed on
+      to any child HTMLElements when their :js:func:`DOMBuilder.HTMLElement.toString`
+      method is called.
+
+.. js:function:: DOMBuilder.HTMLFragment.registerEventHandlers()
+
+   Calls :js:func:`DOMBuilder.HTMLElement.registerEventHandlers` on any
+   HTMLElement children.
+
+   .. versionadded:: 1.4
+
+.. js:function:: DOMBuilder.HTMLFragment.insertAndRegister(element)
+
+   Convenience method for generating and inserting HTML into the given
+   DOM Element and registering event handlers.
+
+   .. versionadded:: 1.4
+
+Event Handlers and ``innerHTML``
+################################
+
+.. versionadded:: 1.4
+
+In DOM mode, :ref:`event-handlers` specified for an element are registered
+when it's being created - these are skipped when generating HTML, as we
+would just be inserting the resut of calling ``toString()`` on the event
+handling functions, which wouldn't make any sense.
+
+To allow you to use the same code to define event handlers regardless of
+which mode you're in, the mock DOM objects support passing in a flag to
+their ``toString()`` methods indicating that you'd like to register event
+handlers which have been specified at a later time, after you've inserted
+the generated HTML into the document using ``innerHTML``::
+
+   var article = DIV({"class":"article"},
+      P({id: "para1", click: function() { alert(this.id); }}, "Paragraph 1"),
+      P({click: function() { alert(this.id); }}, "Paragraph 2")
+   );
+   document.getElementById("articles").innerHTML = article.toString(true);
+
+When you pass ``true`` into the ``toString()`` call as above, DOMBuilder
+does two things:
+
+1. Looks at the attributes of each element while generating HTML and
+   determines if they contain any event handlers, storing a flag in the
+   element if this is the case.
+2. Ensures the object has an ``id`` attribute if event handlers were
+   found. If an ``id`` attribute was not provided, a unique id is
+   generated and stored in the element for later use.
+
+This is the HTML which was generated from the above code, where you can
+see the generated id in place:
+
+.. code-block:: html
+
+   <div class="article">
+     <p id="para1">Paragraph 1</p>
+     <p id="__DB1__">Paragraph 2</p>
+   </div>
+
+Since we know which elements have event handlers and what their ids are,
+we can use that information to fetch the corresponding DOM Elements and
+reister the event handlers - you can do just that using
+:js:func:`DOMBuilder.HTMLElement.registerEventHandlers()`::
+
+   article.registerEventHandlers();
+
+Now, clicking on either paragraph will result in its id being alerted.
+
+DOMBuilder also provides a bit of sugar for performing these two steps in
+a single call, :js:func:`DOMBuilder.HTMLElement.insertAndRegister()`::
+
+    article.insertAndRegister(document.getElementById("articles"));
 
 Temporarily Switching Mode
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

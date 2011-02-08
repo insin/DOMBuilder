@@ -4,7 +4,12 @@ News for DOMBuilder
 Trunk
 -----
 
-- jQuery is now optional, but will be made use of if present.
+- Fixed issue #1 - HTML mode now supports registering event handlers,
+  specified in the same way as DOM mode, after HTML has been inserted
+  with ``innerHTML``.
+
+- Fixed issue #3 - jQuery is now optional, but will be made use of if
+  present.
 
 Version 1.3
 -----------
@@ -21,19 +26,20 @@ Version 1.3
   items using a mapping function and wrap them in a single fragment as
   siblings, negating the need for redundant wrapper elements.
 
-- Fixed issue #5 - added ``HTMLFragment.toString()``.
+- Fixed (Google Code) issue #5 - added ``HTMLFragment.toString()``.
 
-- Fixed issue #3 - we now append "nodey" contents (anything with a truthy
-  ``nodeType``) directly and coerce everything else to ``String`` when
-  appending child nodes, rather than checking for types which should be
-  coerced to ``String`` and appending everything else directly.
+- Fixed (Google Code)  issue #3 - we now append "nodey" contents
+  (anything with a truthy ``nodeType``) directly and coerce everything
+  else to ``String`` when appending child nodes, rather than checking for
+  types which should be coerced to ``String`` and appending everything
+  else directly.
 
 - Bit the bullet and switched to using jQuery for element creation and
   more. DOMBuilder now depends on jQuery >= 1.4.
 
-- Fixed issue #2 - nested ``Array`` objects in child arguments to
-  ``DOMBuilder.createElement()`` and ``DOMBuilder.fragment()`` are now
-  flattened.
+- Fixed (Google Code) issue #2 - nested ``Array`` objects in child
+  arguments to ``DOMBuilder.createElement()`` and ``DOMBuilder.fragment()``
+  are now flattened.
 
 - Extracted ``HTMLNode`` base class to contain common logic from
   ``HTMLElement`` and ``HTMLFragment``.

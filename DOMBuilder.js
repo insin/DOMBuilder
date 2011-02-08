@@ -4,7 +4,7 @@
 var document = window.document;
 
 // Detect and use jQuery, or create these pieces with basic workarounds in place.
-var createElementWithAttributes, functionAttributes;
+var createElementWithAttributes, functionAttributes, registerEventHandler;
 
 if (typeof window.jQuery != "undefined")
 {
@@ -12,6 +12,10 @@ if (typeof window.jQuery != "undefined")
     createElementWithAttributes = function(tagName, attributes)
     {
         return jQuery("<" + tagName + ">", attributes).get(0);
+    };
+    registerEventHandler = function(id, event, handler)
+    {
+        jQuery("#" + id)[event](handler);
     };
 }
 else
@@ -76,6 +80,11 @@ else
         }
 
         return el;
+    };
+
+    registerEventHandler = function(id, event, handler)
+    {
+        document.getElementById(id)["on" + event] = handler;
     };
 }
 
@@ -304,6 +313,8 @@ function HTMLElement(tagName, attributes, childNodes)
 }
 inheritFrom(HTMLElement, HTMLNode);
 
+HTMLElement.eventTrackerId = 1;
+
 HTMLElement.prototype.nodeType = 1;
 
 HTMLElement.prototype._clone = function()
@@ -315,20 +326,40 @@ HTMLElement.prototype._clone = function()
 
 /**
  * Creates an HTML/XHTML representation of an HTMLElement.
+ *
+ * If ``true`` is passed as an argument and any event attributes are found, this
+ * method will ensure the resulting element has an id so  the handlers for the
+ * event attributes can be registered after the element has been inserted into
+ * the document via ``innerHTML``.
+ *
+ * If necessary, a unique id will be generated.
  */
 HTMLElement.prototype.toString = function()
 {
+    var trackEvents = arguments[0] || false;
+
     // Opening tag
     var parts = ["<" + this.tagName];
     for (var attr in this.attributes)
     {
-        // Don't create attributes which wouldn't make sense in HTML mode
+        // Don't create attributes which wouldn't make sense in HTML mode -
+        // they can be dealt with afet insertion using registerEventHandlers().
         if (attr in functionAttributes)
         {
+            if (trackEvents === true && !this.eventsFound)
+            {
+                this.eventsFound = true;
+            }
             continue;
         }
         parts.push(" " + attr.toLowerCase() + "=\"" +
                    conditionalEscape(this.attributes[attr]) + "\"");
+    }
+    if (this.eventsFound && !("id" in this.attributes))
+    {
+        // Ensure an id is present so we can grab this element later
+        this.generatedId  = "__DB" + HTMLElement.eventTrackerId++ + "__";
+        parts.push(' id="' + this.generatedId + '"');
     }
     parts.push(">");
 
@@ -367,6 +398,46 @@ HTMLElement.prototype.toString = function()
 };
 
 /**
+ * If event attributes were found when ``toString(true)`` was called, this
+ * method will retrieve the resulting DOM Element by id, attach event handlers
+ * to it and call ``registerEventHandlers`` on any HTMLElement children.
+ */
+HTMLElement.prototype.registerEventHandlers = function()
+{
+    if (this.eventsFound)
+    {
+        var id = ("id" in this.attributes
+                  ? conditionalEscape(this.attributes.id)
+                  : this.generatedId);
+        for (var attr in this.attributes)
+        {
+            if (attr in functionAttributes)
+            {
+                registerEventHandler(id, attr, this.attributes[attr]);
+            }
+        }
+
+        delete this.eventsFound;
+        delete this.generatedId;
+    }
+
+    for (var i = 0, l = this.childNodes.length; i < l; i++)
+    {
+        var node = this.childNodes[i];
+        if (node instanceof HTMLElement)
+        {
+            node.registerEventHandlers();
+        }
+    }
+};
+
+HTMLElement.prototype.insertAndRegister = function(el)
+{
+    el.innerHTML = this.toString(true);
+    this.registerEventHandlers();
+};
+
+/**
  * Partially emulates a DOM ``DocumentFragment`` for HTML generation.
  */
 function HTMLFragment(childNodes)
@@ -385,10 +456,14 @@ HTMLFragment.prototype.nodeName = "#document-fragment";
 
 /**
  * Creates an HTML/XHTML representation of an HTMLFragment.
+ *
+ * If ``true``is passed as an argument, it will be passed on to
+ * any child HTMLElements when their ``toString()`` is called.
  */
 HTMLFragment.prototype.toString = function()
 {
-    var parts = [];
+    var trackEvents = arguments[0] || false,
+        parts = [];
 
     // Contents
     for (var i = 0, l = this.childNodes.length; i < l; i++)
@@ -396,7 +471,7 @@ HTMLFragment.prototype.toString = function()
         var node = this.childNodes[i];
         if (node instanceof HTMLElement || node instanceof SafeString)
         {
-            parts.push(node.toString());
+            parts.push(node.toString(trackEvents));
         }
         else if (node === "\u00A0")
         {
@@ -411,6 +486,27 @@ HTMLFragment.prototype.toString = function()
     }
 
     return parts.join("");
+};
+
+/**
+ * Calls ``registerEventHandlers()`` on any HTMLElement children.
+ */
+HTMLFragment.prototype.registerEventHandlers = function()
+{
+    for (var i = 0, l = this.childNodes.length; i < l; i++)
+    {
+        var node = this.childNodes[i];
+        if (node instanceof HTMLElement)
+        {
+            node.registerEventHandlers();
+        }
+    }
+};
+
+HTMLFragment.prototype.insertAndRegister = function(el)
+{
+    el.innerHTML = this.toString(true);
+    this.registerEventHandlers();
 };
 
 /**
@@ -544,7 +640,7 @@ DOMBuilder.apply = function(context)
  * ``(child1, ...)``
  *    an arbitrary number of children.
  * ``([child1, ...])``
- *    an <code>Array</code> of children.
+ *    an ``Array`` of children.
  *
  * At least one argument *must* be provided.
  */

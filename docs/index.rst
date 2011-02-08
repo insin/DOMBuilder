@@ -220,6 +220,8 @@ Given this function, the following code...
 
 .. _`map function`: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/map
 
+.. _event-handlers:
+
 Event Handlers
 ##############
 
