@@ -14,14 +14,23 @@ Elements and HTML in JavaScript.
 Dependencies
 ------------
 
-* `jQuery`_ >= 1.4 is required to take care of cross-browser issues creating
-  DOM Elements and setting up their attributes and event handlers, among
-  other things.
+There are no *required* dependencies, but if `jQuery`_ (>= 1.4) is
+available, DOMBuilder will use it to take care of cross-browser issues
+creating DOM Elements and setting up their attributes and event handlers.
+
+If not, DOMBuilder will fall back to using some less comprehensive
+workarounds for cross-browser issues and use the `traditional event
+registration model`_.
 
 .. versionchanged:: 1.3
    jQuery was added as a dependency.
 
+.. versionchanged:: 1.4
+   jQuery was made optional, with the caveat that cross-browser support will
+   be less robust.
+
 .. _`jQuery`: http://jquery.com
+.. _`traditional event registration model`: http://www.quirksmode.org/js/events_tradmod.html
 
 Introduction
 ------------
@@ -216,8 +225,7 @@ Event Handlers
 
 Event handlers can be specified by supplying an event name as one of the
 element's attributes and an event handling function as the corresponding
-value.  Any of the `events which have jQuery shortcut methods`_ can be
-registered in this manner. These are:
+value.  Any of the following events can be registered in this manner:
 
 +----------------------------------------------------------------------+
 | Event names                                                          |
@@ -230,6 +238,9 @@ registered in this manner. These are:
 +-----------+-----------+----------+------------+------------+---------+
 | select    | submit    | keydown  | keypress   | keyup      | error   |
 +-----------+-----------+----------+------------+------------+---------+
+
+These correspond to `events which have jQuery shortcut methods`_, which will
+be used for event handler registration if jQuery is available.
 
 For example, the following will create a text input which displays a default
 value, clearing it when the input is focused and restoring the default if

@@ -1,6 +1,11 @@
 News for DOMBuilder
 ===================
 
+Trunk
+-----
+
+- jQuery is now optional, but will be made use of if present.
+
 Version 1.3
 -----------
 

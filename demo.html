@@ -12,7 +12,7 @@
   h2 { font-size: 140%; margin: 1em 0 1em -2%; }
   .testClass { background-color: #ddd; }
   </style>
-  <script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script>
+  <!--script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script-->
   <script type="text/javascript" src="DOMBuilder.js"></script>
   <script type="text/javascript">
   function createTable(headers, objects, properties)
@@ -39,7 +39,7 @@
       );
   }
 
-  jQuery(document).ready(function()
+  window.onload = function()
   {
       with (DOMBuilder.elementFunctions)
       {
@@ -64,6 +64,7 @@
                summary: "Code page support in different versions of MS Windows.",
                click: function(e)
                {
+                   e = e || event;
                    alert(["You clicked this ", this.tagName, " at (",
                           e.screenX, ",", e.screenY, ")"].join(""));
                }},
@@ -224,7 +225,7 @@
           ],
           ["type", "propertyList", "references", "isAutoIncrement", "isUpdateable"]
       ));
-  });
+  };
   </script>
 </head>
 <body>

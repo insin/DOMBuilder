@@ -1,6 +1,9 @@
+# Requires Django - point your browser at http://localhost:8000 to verify that
+# generated form inputs have names in IE - POST variables will be printed to the
+# console.
 import os
 from django.conf import settings
-DIRNAME = os.path.dirname(__file__)
+DIRNAME = os.path.split(os.path.dirname(__file__))[0]
 if not settings.configured:
     settings.configure(
         DEBUG = True,
