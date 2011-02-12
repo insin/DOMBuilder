@@ -575,8 +575,8 @@ function createElementFunction(tagName)
         }
         else
         {
-            return DOMBuilder.createElementFromArguments(tagName,
-                                                         arguments);
+            return DOMBuilder._createElementFromArguments(tagName,
+                                                          arguments);
         }
     };
 
@@ -674,7 +674,7 @@ DOMBuilder.apply = function(context)
  *
  * At least one argument *must* be provided.
  */
-DOMBuilder.createElementFromArguments = function(tagName, args)
+DOMBuilder._createElementFromArguments = function(tagName, args)
 {
     var attributes, children;
     // The short circuit in ``createElementFunction`` ensures we will
