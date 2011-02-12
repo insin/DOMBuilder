@@ -4,7 +4,7 @@
 var document = window.document;
 
 // Detect and use jQuery, or create these pieces with basic workarounds in place.
-var createElementWithAttributes, functionAttributes, registerEventHandler;
+var createElementWithAttributes, functionAttributes, registerEventHandler, setInnerHTML;
 
 if (typeof window.jQuery != "undefined")
 {
@@ -16,6 +16,10 @@ if (typeof window.jQuery != "undefined")
     registerEventHandler = function(id, event, handler)
     {
         jQuery("#" + id)[event](handler);
+    };
+    setInnerHTML = function(el, html)
+    {
+        jQuery(el).html(html);
     };
 }
 else
@@ -85,6 +89,23 @@ else
     registerEventHandler = function(id, event, handler)
     {
         document.getElementById(id)["on" + event] = handler;
+    };
+
+    setInnerHTML = function(el, html)
+    {
+        try
+        {
+            el.innerHTML = html;
+        }
+        catch (e)
+        {
+            var div = document.createElement("div");
+            div.innerHTML = html;
+            while (el.firstChild)
+                el.removeChild(el.firstChild);
+            while (div.firstChild)
+                el.appendChild(div.firstChild);
+        }
     };
 }
 
@@ -433,7 +454,7 @@ HTMLElement.prototype.registerEventHandlers = function()
 
 HTMLElement.prototype.insertAndRegister = function(el)
 {
-    el.innerHTML = this.toString(true);
+    setInnerHTML(el, this.toString(true));
     this.registerEventHandlers();
 };
 
@@ -505,7 +526,7 @@ HTMLFragment.prototype.registerEventHandlers = function()
 
 HTMLFragment.prototype.insertAndRegister = function(el)
 {
-    el.innerHTML = this.toString(true);
+    setInnerHTML(el, this.toString(true));
     this.registerEventHandlers();
 };
 

@@ -150,4 +150,19 @@ test("HTML Event Handlers", function()
     equal("PASS",  $("#testOutput").text(), "click handler executed");
 });
 
+test("insertAndRegister on elements with readonly innerHTML (IE)", function()
+{
+    expect(2);
+
+    DOMBuilder.mode = "DOM";
+    var fixture = $("#qunit-fixture"),
+        table = dom.TABLE(dom.TBODY());
+    fixture.append(table);
+    var fragment = DOMBuilder.withMode("HTML", testEventHandlers);
+    fragment.insertAndRegister(fixture.get(0));
+    ok("An exceptions wasn't thrown");
+    $("#testElement").trigger("click");
+    equal("PASS",  $("#testOutput").text(), "click handler executed");
+});
+
 })();
