@@ -22,9 +22,6 @@ If not, DOMBuilder will fall back to using some less comprehensive
 workarounds for cross-browser issues and use the `traditional event
 registration model`_.
 
-.. versionchanged:: 1.3
-   jQuery was added as a dependency.
-
 .. versionchanged:: 1.4
    jQuery was made optional, with the caveat that cross-browser support will
    be less robust.
@@ -38,8 +35,7 @@ Introduction
 DOMBuilder takes some of the pain out of programatically creating DOM
 Elements and HTML in JavaScript, providing element creation functions which
 give you a more declarative, compact API to work with when creating content
-in code, while cross-browser DOM issues are taken care of by jQuery behind
-the scenes.
+in code, while cross-browser DOM issues are taken care of behind the scenes.
 
 Element Creation Functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -86,13 +82,13 @@ functions to a context object of your choice.
 
 .. js:function:: DOMBuilder.apply([context])
 
+   Adds element creation functions to a context object, with names
+   corresponding to valid HTML elements in upper case.
+
    :param Object context:
        an object to have element creation functions added to it.
        If not provided, a new Object will be created and used.
    :returns: The context Object which was passed in or created.
-
-   Adds element creation functions to a context object, with names
-   corresponding to valid HTML elements in upper case.
 
 For a simple example, the following code...
 
@@ -129,9 +125,9 @@ For a simple example, the following code...
           P("Paragraph two")
         );
 
-   Aletrnatively, you could (please don't) use JavaScript's much-derided
-   `with statement`_ to temporarily add :js:attr:`DOMBuilder.elementFunctions`
-   to the scope chain::
+   Alternatively, you could (please don't - ``with`` is on the way out) use
+   JavaScript's much-derided `with statement`_ to temporarily add
+   :js:attr:`DOMBuilder.elementFunctions` to the scope chain::
 
       with (DOMBuilder.elementFunctions)
       {
@@ -272,18 +268,17 @@ Manual Element Creation
 -----------------------
 
 The function which does the real work when you call an element creation
-function :js:func:`DOMBuilder.createElement` - it's comparatively inflexible
-with the arguments it accepts, but still more convenient than creating and
-populating elements manually using DOM methods.
+function is :js:func:`DOMBuilder.createElement` - it's comparatively
+inflexible with the arguments it accepts, but still more convenient than
+creating and populating elements manually using DOM methods.
 
 .. js:function:: DOMBuilder.createElement(tagName[, attributes[, children]])
+
+   Creates a DOM Element with the given tag name, attributes and children.
 
    :param String tagName: the name of the element to be created.
    :param Object attributes: attributes to be applied to the new element.
    :param Array children: childen to be appended to the new element.
-
-   Creates a DOM Element object with the given tag name, attributes and
-   children.
 
    If children are provided, they will be appended to the new element.
    Any  children which are not DOM Elements will be coerced to ``String``
@@ -384,7 +379,7 @@ Mapping Elements
 
 This function is also exposed via element creation functions. Each
 element creation function has its own ``map`` function, which takes the
-same arguments as :js:func:`DOMBuilder.map` excluding the ``tagName``
+same arguments as :js:func:`DOMBuilder.map` minus the ``tagName``
 argument, which is taken from the element creation function itself.
 
 For example, the table code we looked at earlier could also be written

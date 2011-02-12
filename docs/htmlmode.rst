@@ -43,7 +43,7 @@ complex content creation code which works seamlessly in both DOM and HTML
 modes.
 
 .. _`Node interface`: http://www.w3.org/TR/DOM-Level-2-Core/core.html#ID-1950641247
-.. _`requests for additional operations`: http://code.google.com/p/dombuilder/issues/list
+.. _`requests for additional operations`: https://github.com/insin/DOMBuilder/issues
 
 Mock Elements
 #############
@@ -53,7 +53,7 @@ will create :js:class:`DOMBuilder.HTMLElement` objects.
 
 .. js:class:: DOMBuilder.HTMLElement(tagName[, attributes[, childNodes]])
 
-   A representation of a DOM ``Element``, its attributes and child nodes.
+   A representation of a DOM Element, its attributes and child nodes.
 
    Arguments are as per :js:func:`DOMBuilder.createElement`.
 
@@ -71,22 +71,22 @@ will create :js:class:`DOMBuilder.HTMLElement` objects.
 
 .. js:function:: DOMBuilder.HTMLElement.cloneNode(deep)
 
-   Clones the tag and its attributes - if deep is ``true`` its child nodes
-   will also be cloned.
+   Clones the element and its attributes - if deep is ``true``, its child
+   nodes will also be cloned.
 
    .. versionadded:: 1.3
       Added to support cloning by an :js:class:`DOMBuilder.HTMLFragment`.
 
 .. js:function:: DOMBuilder.HTMLElement.toString([trackEvents])
 
-   Creates a ``String`` containing the HTML representation of the tag and
-   its children. By default, any ``String`` children will be escaped to
+   Creates a ``String`` containing the HTML representation of the element
+   and its children. By default, any ``String`` children will be escaped to
    prevent the use of sensitive HTML characters - see the `Escaping`_
    section for details on controlling escaping.
 
    If ``true`` is passed as an argument and any event handlers are found
    in this object's attributes during HTML generation, this method will
-   ensure the resulting element has an id so the handlers can be
+   ensure the element has an ``id`` attribute so the handlers can be
    registered after the element has been inserted into the document via
    ``innerHTML``.
 
@@ -99,9 +99,9 @@ will create :js:class:`DOMBuilder.HTMLElement` objects.
 .. js:function:: DOMBuilder.HTMLElement.registerEventHandlers()
 
    If event attributes were found when ``toString(true)`` was called, this
-   method will retrieve the resulting DOM Element by id, attach event
-   handlers to it and call ``registerEventHandlers()`` on any HTMLElement
-   children.
+   method will attempt to retrieve a DOM Element with this element's ``id``
+   attribute, attach event handlers to it and call
+   ``registerEventHandlers()`` on any HTMLElement children.
 
    .. versionadded:: 1.4
 
@@ -126,7 +126,7 @@ DOM DocumentFragments when appended to another fragment or a
 
    A representation of a DOM DocumentFragment and its child nodes.
 
-   :param Array children: initial child nodes
+   :param Array childNodes: initial child nodes
 
 .. js:function:: DOMBuilder.HTMLFragment.appendChild(node)
 
@@ -190,12 +190,12 @@ does two things:
 1. Looks at the attributes of each element while generating HTML and
    determines if they contain any event handlers, storing a flag in the
    element if this is the case.
-2. Ensures the object has an ``id`` attribute if event handlers were
+2. Ensures the element has an ``id`` attribute if event handlers were
    found. If an ``id`` attribute was not provided, a unique id is
    generated and stored in the element for later use.
 
-This is the HTML which was generated from the above code, where you can
-see the generated id in place:
+This is the HTML which ewsulted from the above code, where you can
+see the generated ``id`` attribute in place:
 
 .. code-block:: html
 
