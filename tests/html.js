@@ -145,7 +145,7 @@ test("DOMBuilder.HTMLFragment", function()
 
 test("HTML Escaping", function()
 {
-    expect(6);
+    expect(7);
 
     var s = "< > & ' \"";
     var ss = DOMBuilder.markSafe(s);
@@ -154,9 +154,12 @@ test("HTML Escaping", function()
     ok(!DOMBuilder.isSafe(s), "isSafe returns false for Strings");
     ok(DOMBuilder.isSafe(ss), "isSafe returns true for SafeStrings");
 
-    equal(dom.P({test: s}, s).toString(),
-          '<p test="&lt; &gt; &amp; &#39; &quot;">&lt; &gt; &amp; &#39; &quot;</p>',
+    equal(dom.P({test: s, "< > & ' \"": "test"}, s).toString(),
+          '<p test="&lt; &gt; &amp; &#39; &quot;" &lt; &gt; &amp; &#39; &quot;="test">&lt; &gt; &amp; &#39; &quot;</p>',
           "sensitive characters autoescape");
+    equal(DOMBuilder.createElement("< > & ' \"").toString(),
+          "<&lt; &gt; &amp; &#39; &quot;></&lt; &gt; &amp; &#39; &quot;>",
+          "unknowm tagNames autoescape");
     equal(dom.P({test: ss},ss).toString(),
           '<p test="< > & \' "">< > & \' "</p>',
           "SafeStgrings render as-is");

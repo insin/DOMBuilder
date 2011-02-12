@@ -45,10 +45,9 @@ else
             usemap: "useMap"
         };
 
-    functionAttributes = (function()
+    functionAttributes = (function(lookup)
     {
-        var lookup = {},
-            attrs = ("blur focus focusin focusout load resize scroll unload " +
+        var attrs = ("blur focus focusin focusout load resize scroll unload " +
                      "click dblclick mousedown mouseup mousemove mouseover " +
                      "mouseout mouseenter mouseleave change select submit " +
                      "keydown keypress keyup error").split(" ");
@@ -57,7 +56,7 @@ else
             lookup[attrs[i]] = true;
         }
         return lookup;
-    })();
+    })({});
 
     createElementWithAttributes = function(tagName, attributes)
     {
@@ -204,18 +203,35 @@ function conditionalEscape(html)
 }
 
 /**
+ * Tag names defined in the HTML 4.01 Strict and Frameset DTDs.
+ */
+var tagNames = ("a abbr acronym address area b bdo big blockquote body br " +
+    "button caption cite code col colgroup dd del dfn div dl dt em fieldset " +
+    "form frame frameset h1 h2 h3 h4 h5 h6 hr head html i iframe img input " +
+    "ins kbd label legend li link map meta noscript " /* :) */ + "object ol " +
+    "optgroup option p param pre q samp script select small span strong style " +
+    "sub sup table tbody td textarea tfoot th thead title tr tt ul var").split(" "),
+    tagNameLookup = (function(lookup)
+    {
+        for (var i = 0, l = tagNames.length; i < l; i++)
+        {
+            lookup[tagNames[i]] = true;
+        }
+        return lookup;
+    })({});
+
+/**
  * Lookup for tags defined as EMPTY in the HTML 4.01 Strict and Frameset DTDs.
  */
-var emptyTags = (function()
+var emptyTags = (function(lookup)
 {
-    var lookup = {},
-        tags = "area base br col frame hr input img link meta param".split(" ");
+    var tags = "area base br col frame hr input img link meta param".split(" ");
     for (var i = 0, l = tags.length; i < l; i++)
     {
         lookup[tags[i]] = true;
     }
     return lookup;
-})();
+})({});
 
 /**
  * ``String`` subclass which marks the given string as safe for inclusion
@@ -357,10 +373,13 @@ HTMLElement.prototype._clone = function()
  */
 HTMLElement.prototype.toString = function()
 {
-    var trackEvents = arguments[0] || false;
+    var trackEvents = arguments[0] || false,
+        tagName = (tagNameLookup[this.tagName]
+                   ? this.tagName
+                   : conditionalEscape(this.tagName));
 
     // Opening tag
-    var parts = ["<" + this.tagName];
+    var parts = ["<" + tagName];
     for (var attr in this.attributes)
     {
         // Don't create attributes which wouldn't make sense in HTML mode -
@@ -373,7 +392,7 @@ HTMLElement.prototype.toString = function()
             }
             continue;
         }
-        parts.push(" " + attr.toLowerCase() + "=\"" +
+        parts.push(" " + conditionalEscape(attr.toLowerCase()) + "=\"" +
                    conditionalEscape(this.attributes[attr]) + "\"");
     }
     if (this.eventsFound && !("id" in this.attributes))
@@ -384,7 +403,7 @@ HTMLElement.prototype.toString = function()
     }
     parts.push(">");
 
-    if (emptyTags[this.tagName])
+    if (emptyTags[tagName])
     {
         if (this.xhtml)
         {
@@ -414,7 +433,7 @@ HTMLElement.prototype.toString = function()
     }
 
     // Closing tag
-    parts.push("</" + this.tagName + ">");
+    parts.push("</" + tagName + ">");
     return parts.join("");
 };
 
@@ -572,16 +591,6 @@ function createElementFunction(tagName)
 
     return elementFunction;
 }
-
-/**
- * Tag names defined in the HTML 4.01 Strict and Frameset DTDs.
- */
-var tagNames = ("a abbr acronym address area b bdo big blockquote body br " +
-    "button caption cite code col colgroup dd del dfn div dl dt em fieldset " +
-    "form frame frameset h1 h2 h3 h4 h5 h6 hr head html i iframe img input " +
-    "ins kbd label legend li link map meta noscript " /* :) */ + "object ol " +
-    "optgroup option p param pre q samp script select small span strong style " +
-    "sub sup table tbody td textarea tfoot th thead title tr tt ul var").split(" ");
 
 var DOMBuilder = {};
 
