@@ -1,8 +1,8 @@
 News for DOMBuilder
 ===================
 
-Trunk
------
+Version 1.4
+-----------
 
 - Fixed HTML escaping bugs: attribute names and unknown tag names are now
   escaped.

@@ -3,33 +3,33 @@ Elements and HTML in JavaScript, providing element creation functions
 which give you a more declarative, compact API to work with when creating
 content in code.
 
-Version 1.3 released on 4th February 2011
-=========================================
+Version 1.4 released on 13th February 2011
+==========================================
 
-Downloads:
-
-* `Compressed`_ (4.9 KB)
-
-* `Package including docs and demo page`_ (83.9 KB)
-
-.. _`Compressed`: https://github.com/insin/DOMBuilder/downloads#download_77039
-.. _`Package including docs and demo page`: https://github.com/insin/DOMBuilder/downloads#download_77041
+`v1.4 documentation at readthedocs.org`_.
 
 Significant changes in this release:
 
-* `jQuery`_ >= 1.4 is new a dependency, helping to ensure
-  that attributes are created more consistently across browsers.
+**DOM mode**:
 
-* Added `DOMBuilder.fragment()`_ for working with DocumentFragments,
-  specifying all children at once and providing emulation for
-  DocumentFragment functionality in HTML mode.
+- `jQuery`_ (>= 1.4) is no longer a dependency, but will be used for
+  creating elements/setting attributes/adding event listeners when
+  present; otherwise, DOMBuilder implements a less comprehensive set of
+  cross-browser workarounds.
 
-* Added `map functions`_ which make it more convenient to create content
-  for each item in a list.
+**HTML mode**:
 
+- `Event listeners can now be added in HTML mode`_ using the same API as DOM
+  mode - a new ``insertWithEvents`` method takes care of doing all the
+  work for you if you want to try using the same code in HTML mode in case
+  there's a performance boost to be had.
+
+- Fixed HTML escaping bugs: attribute names and unknown tag names are now
+  escaped.
+
+.. _`v1.4 documentation at readthedocs.org`: http://readthedocs.org/docs/dombuilder/en/1.4/index.html
 .. _`jQuery`: http://jquery.com
-.. _`DOMBuilder.fragment()`: http://readthedocs.org/docs/dombuilder/en/1.3/index.html#document-fragments
-.. _`map functions`: http://readthedocs.org/docs/dombuilder/en/1.3/index.html#map-functions
+.. _`Event listeners can now be added in HTML mode`: http://readthedocs.org/docs/dombuilder/en/1.4/htmlmode.html#event-handlers-and-innerhtml
 
 Basic usage
 -----------
@@ -107,11 +107,7 @@ Map functions make it a breeze to work with lists of items::
 
 `Read the documentation to find out more...`_
 
-View the `Demo Page`_ to see how easy it is to create complex DOM
-structures and HTML with DOMBuilder.
-
-.. _`Read the documentation to find out more...`: http://readthedocs.org/docs/dombuilder/en/1.3/index.html
-.. _`Demo Page`: http://jonathan.buchanan153.users.btopenworld.com/DOMBuilder/demo.html
+.. _`Read the documentation to find out more...`: http://readthedocs.org/docs/dombuilder/en/1.4/index.html
 
 Benefits of multiple output modes
 ---------------------------------
@@ -130,8 +126,8 @@ DOMBuilder:
 * `Akshell`_ has ported js-forms and DOMBuilder for use as its backend
   `form-handling library`_.
 
-.. _`js-forms`: http://code.google.com/p/js-forms/
-.. _`output modes`: http://readthedocs.org/docs/dombuilder/en/1.3/htmlmode.html#DOMBuilder.mode
+.. _`js-forms`: https://github.com/js-forms/
+.. _`output modes`: http://readthedocs.org/docs/dombuilder/en/latest/htmlmode.html#DOMBuilder.mode
 .. _`js-forms Demo Page`: http://jonathan.buchanan153.users.btopenworld.com/js-forms/demo.html
 .. _`js-forms Unit Tests`: http://jonathan.buchanan153.users.btopenworld.com/js-forms/tests.html
 .. _`Akshell`: http://www.akshell.com
