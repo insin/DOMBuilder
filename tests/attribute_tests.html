@@ -10,12 +10,12 @@
   .row1 { background-color: #f3f6f9; }
   .row2 { background-color: #f6f9fc; }
   </style>
-  <script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script>
-  <script type="text/javascript" src="../DOMBuilder.js"></script>
+  <!--script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script-->
+  <!--script type="text/javascript" src="../DOMBuilder.js"></script-->
   <script type="text/javascript">
   function runTests(testConfigs, testFunction)
   {
-      var results = []
+      var results = [];
       for (var i = 0, l = testConfigs.length; i < l; i++)
       {
           var config = testConfigs[i];
@@ -242,10 +242,9 @@
       ];
   }
 
-  jQuery(document).ready(function()
+  function attributeTests()
   {
       DOMBuilder.apply(window);
-
       var inputTestResults = runTests(INPUT_TESTS, testInputValues);
       document.getElementById("inputTestResults").appendChild(
           createResultsTable(
@@ -266,7 +265,43 @@
               ["Test", CODE("defaultSelected"), CODE("selected"), "Order",
                "Initially Selected", "Initial Input", "Selected After Reset", "Reset Input"],
               optionTestResults));
-  });
+  }
+
+  function createScriptAndWait(src, waitForName, then)
+  {
+      var script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src = src;
+      document.getElementsByTagName("head")[0].appendChild(script);
+      waitForLoad(waitForName, then, 100);
+  }
+
+  function waitForLoad(name, then, delay)
+  {
+      if (typeof window[name] == "undefined")
+      {
+          return setTimeout((function(a,b,c) {
+              return function() { waitForLoad(a,b,c); }
+          })(name,then,delay), delay);
+      }
+      then();
+  }
+
+  window.onload = function()
+  {
+      if (location.hash == "#jQuery")
+      {
+          createScriptAndWait("http://code.jquery.com/jquery-latest.js", "jQuery", function() {
+              createScriptAndWait("../DOMBuilder.js", "DOMBuilder", attributeTests);
+          });
+      }
+      else
+      {
+          createScriptAndWait("../DOMBuilder.js", "DOMBuilder", function() {
+              createScriptAndWait("http://code.jquery.com/jquery-latest.js", "jQuery", attributeTests);
+          });
+      }
+  };
   </script>
 </head>
 <body>

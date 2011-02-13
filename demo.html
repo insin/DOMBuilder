@@ -13,7 +13,7 @@
   .testClass { background-color: #ddd; }
   </style>
   <!--script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script-->
-  <script type="text/javascript" src="DOMBuilder.js"></script>
+  <!--script type="text/javascript" src="DOMBuilder.js"></script-->
   <script type="text/javascript">
   function createTable(headers, objects, properties)
   {
@@ -39,7 +39,7 @@
       );
   }
 
-  window.onload = function()
+  function demo()
   {
       with (DOMBuilder.elementFunctions)
       {
@@ -248,6 +248,42 @@
           html.insertWithEvents(document.getElementById("htmlEvents"));
       });
   };
+
+  function createScriptAndWait(src, waitForName, then)
+  {
+      var script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src = src;
+      document.getElementsByTagName("head")[0].appendChild(script);
+      waitForLoad(waitForName, then, 100);
+  }
+
+  function waitForLoad(name, then, delay)
+  {
+      if (typeof window[name] == "undefined")
+      {
+          return setTimeout((function(a,b,c) {
+              return function() { waitForLoad(a,b,c); }
+          })(name,then,delay), delay);
+      }
+      then();
+  }
+
+  window.onload = function()
+  {
+      if (location.hash == "#jQuery")
+      {
+          createScriptAndWait( "http://code.jquery.com/jquery-latest.js", "jQuery", function() {
+              createScriptAndWait("DOMBuilder.js", "DOMBuilder", demo);
+          });
+      }
+      else
+      {
+          createScriptAndWait("DOMBuilder.js", "DOMBuilder", function() {
+              createScriptAndWait("http://code.jquery.com/jquery-latest.js", "jQuery", demo);
+          });
+      }
+  };
   </script>
 </head>
 <body>
@@ -269,7 +305,7 @@
 <h2>Events in DOM mode</h2>
 <div id="domEvents"></div>
 
-<h2>Same code in HTML mode, using <code>innerHTML</code> and <code>registerEventHandlers</code></h2>
+<h2>Same code in HTML mode, using <code>innerHTML</code> and <code>addEvents</code></h2>
 <div id="htmlEvents"></div>
 
 <h2>Added using <code>with (DOMBuilder.elementFunctions)</code></h2>
