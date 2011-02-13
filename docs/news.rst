@@ -4,9 +4,19 @@ News for DOMBuilder
 Trunk
 -----
 
-- Fixed issue #1 - HTML mode now supports registering event handlers,
+- Fixed HTML escaping bugs: attribute names and unknown tag names are now
+  escaped.
+
+- A new ``insertWithEvents`` method on DOMBuilder.HTMLElement attempts to
+  use ``innerHTML`` in a cross-browser friendly fashion. It's safe to use
+  this method on elements for which innerHTML is readonly, as it dropps
+  back to creating DOM Elements in a new element and moving them. If
+  jQuery is available, its more comprehensive ``html`` function is used.
+
+- Fixed issue #1 - HTML mode now supports registering event listeners,
   specified in the same way as DOM mode, after HTML has been inserted
-  with ``innerHTML``.
+  with ``innerHTML``. If necessary, ``id`` attributes will be generated
+  in order to target elements which need event listeners.
 
 - Fixed issue #3 - jQuery is now optional, but will be made use of if
   present.
@@ -28,7 +38,7 @@ Version 1.3
 
 - Fixed (Google Code) issue #5 - added ``HTMLFragment.toString()``.
 
-- Fixed (Google Code)  issue #3 - we now append "nodey" contents
+- Fixed (Google Code) issue #3 - we now append "nodey" contents
   (anything with a truthy ``nodeType``) directly and coerce everything
   else to ``String`` when appending child nodes, rather than checking for
   types which should be coerced to ``String`` and appending everything

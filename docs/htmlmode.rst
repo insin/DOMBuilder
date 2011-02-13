@@ -96,16 +96,16 @@ will create :js:class:`DOMBuilder.HTMLElement` objects.
       Added the optional ``trackEvents`` argument to support registration
       of event handlers post-insertion.
 
-.. js:function:: DOMBuilder.HTMLElement.registerEventHandlers()
+.. js:function:: DOMBuilder.HTMLElement.addEvents()
 
    If event attributes were found when ``toString(true)`` was called, this
    method will attempt to retrieve a DOM Element with this element's ``id``
    attribute, attach event handlers to it and call
-   ``registerEventHandlers()`` on any HTMLElement children.
+   ``addEvents()`` on any HTMLElement children.
 
    .. versionadded:: 1.4
 
-.. js:function:: DOMBuilder.HTMLElement.insertAndRegister(element)
+.. js:function:: DOMBuilder.HTMLElement.insertWithEvents(element)
 
    Convenience method for generating and inserting HTML into the given
    DOM Element and registering event handlers.
@@ -148,14 +148,14 @@ DOM DocumentFragments when appended to another fragment or a
       to any child HTMLElements when their :js:func:`DOMBuilder.HTMLElement.toString`
       method is called.
 
-.. js:function:: DOMBuilder.HTMLFragment.registerEventHandlers()
+.. js:function:: DOMBuilder.HTMLFragment.addEvents()
 
-   Calls :js:func:`DOMBuilder.HTMLElement.registerEventHandlers` on any
+   Calls :js:func:`DOMBuilder.HTMLElement.addEvents` on any
    HTMLElement children.
 
    .. versionadded:: 1.4
 
-.. js:function:: DOMBuilder.HTMLFragment.insertAndRegister(element)
+.. js:function:: DOMBuilder.HTMLFragment.insertWithEvents(element)
 
    Convenience method for generating and inserting HTML into the given
    DOM Element and registering event handlers.
@@ -214,9 +214,9 @@ reister the event handlers - you can do just that using
 Now, clicking on either paragraph will result in its id being alerted.
 
 DOMBuilder also provides a bit of sugar for performing these two steps in
-a single call, :js:func:`DOMBuilder.HTMLElement.insertAndRegister()`::
+a single call, :js:func:`DOMBuilder.HTMLElement.insertWithEvents()`::
 
-    article.insertAndRegister(document.getElementById("articles"));
+    article.insertWithEvents(document.getElementById("articles"));
 
 Temporarily Switching Mode
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

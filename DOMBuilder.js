@@ -1,123 +1,51 @@
 (function(window)
 {
 
-var document = window.document;
+var document = window.document,
+    toString = Object.prototype.toString,
+    slice = Array.prototype.slice,
+    // Functioms and objects involved in implementing cross-crowser workarounds
+    createElement,
+    eventAttrs,
+    addEvent,
+    setInnerHTML,
+    /** Tag names defined in the HTML 4.01 Strict and Frameset DTDs. */
+    tagNames = ("a abbr acronym address area b bdo big blockquote body br " +
+    "button caption cite code col colgroup dd del dfn div dl dt em fieldset " +
+    "form frame frameset h1 h2 h3 h4 h5 h6 hr head html i iframe img input " +
+    "ins kbd label legend li link map meta noscript " /* :) */ + "object ol " +
+    "optgroup option p param pre q samp script select small span strong style " +
+    "sub sup table tbody td textarea tfoot th thead title tr tt ul var").split(" "),
+    /** Lookup for known tag names. */
+    tagNameLookup = lookup(tagNames),
+    /** * Lookup for tags defined as EMPTY in the HTML 4.01 Strict and Frameset DTDs. */
+    emptyTags = lookup("area base br col frame hr input img link meta param".split(" "));
 
-// Detect and use jQuery, or create these pieces with basic workarounds in place.
-var createElementWithAttributes, functionAttributes, registerEventHandler, setInnerHTML;
-
-if (typeof window.jQuery != "undefined")
-{
-    functionAttributes = jQuery.attrFn;
-    createElementWithAttributes = function(tagName, attributes)
-    {
-        return jQuery("<" + tagName + ">", attributes).get(0);
-    };
-    registerEventHandler = function(id, event, handler)
-    {
-        jQuery("#" + id)[event](handler);
-    };
-    setInnerHTML = function(el, html)
-    {
-        jQuery(el).html(html);
-    };
-}
-else
-{
-    var supportsStyle = (function()
-        {
-            var div = document.createElement("div");
-            div.style.display = "none";
-            div.innerHTML = '<span style="color:silver;">s<span>';
-            return /silver/.test(div.getElementsByTagName("span")[0].getAttribute("style"));
-        })(),
-        specialRE = /^(?:href|src|style)$/,
-        attributeTranslations = {
-            cellspacing: "cellSpacing",
-            "class": "className",
-            colspan: "colSpan",
-            "for": "htmlFor",
-            frameborder: "frameBorder",
-            maxlength: "maxLength",
-            readonly: "readOnly",
-            rowspan: "rowSpan",
-            tabindex: "tabIndex",
-            usemap: "useMap"
-        };
-
-    functionAttributes = (function(lookup)
-    {
-        var attrs = ("blur focus focusin focusout load resize scroll unload " +
-                     "click dblclick mousedown mouseup mousemove mouseover " +
-                     "mouseout mouseenter mouseleave change select submit " +
-                     "keydown keypress keyup error").split(" ");
-        for (var i = 0, l = attrs.length; i < l; i++)
-        {
-            lookup[attrs[i]] = true;
-        }
-        return lookup;
-    })({});
-
-    createElementWithAttributes = function(tagName, attributes)
-    {
-        var el = document.createElement(tagName); // Damn you, IE
-
-        for (var name in attributes)
-        {
-            var value = attributes[name],
-                name = attributeTranslations[name] || name;
-
-            if (name in functionAttributes)
-            {
-                el["on" + name] = value;
-                continue;
-            }
-
-            var special = specialRE.test(name);
-            if ((name in el || el[name] !== undefined) && !special)
-                el[name] = value;
-            else if (!supportsStyle && name == "style")
-                el.style.cssText = ""+value;
-            else
-                el.setAttribute(name, ""+value);
-        }
-
-        return el;
-    };
-
-    registerEventHandler = function(id, event, handler)
-    {
-        document.getElementById(id)["on" + event] = handler;
-    };
-
-    setInnerHTML = function(el, html)
-    {
-        try
-        {
-            el.innerHTML = html;
-        }
-        catch (e)
-        {
-            var div = document.createElement("div");
-            div.innerHTML = html;
-            while (el.firstChild)
-                el.removeChild(el.firstChild);
-            while (div.firstChild)
-                el.appendChild(div.firstChild);
-        }
-    };
-}
+// Utility functions -----------------------------------------------------------
 
 /**
- * Naively copies from ``source`` to ``dest``.
+ * Naively copies from ``source`` to ``dest``, returning ``dest``.
  */
 function extend(dest, source)
 {
-    for (name in source)
+    for (var name in source)
     {
         dest[name] = source[name];
     }
     return dest;
+}
+
+/**
+ * Creates a lookup object from an array of strings.
+ */
+function lookup(a)
+{
+    var obj = {}, i = 0, l = a.length;
+    for (; i < l; i++)
+    {
+        obj[a[i]] = true;
+    }
+    return obj;
 }
 
 /**
@@ -134,12 +62,12 @@ function inheritFrom(child, parent)
 
 function isArray(o)
 {
-    return (Object.prototype.toString.call(o) === "[object Array]");
+    return (toString.call(o) === "[object Array]");
 }
 
 function isFunction(o)
 {
-    return (Object.prototype.toString.call(o) === "[object Function]");
+    return (toString.call(o) === "[object Function]");
 }
 
 /**
@@ -147,7 +75,7 @@ function isFunction(o)
  */
 function isObject(o)
 {
-    return (!!o && Object.prototype.toString.call(o) === "[object Object]" && !o.nodeType)
+    return (!!o && toString.call(o) === "[object Object]" && !o.nodeType)
 }
 
 /**
@@ -175,22 +103,116 @@ function flatten(a)
 /**
  * Escapes sensitive HTML characters.
  */
-var escapeHTML = (function()
+function escapeHTML(s)
 {
-    var ampRe = /&/g, ltRe = /</g, gtRe = />/g, quoteRe1 = /"/g, quoteRe2 = /'/g;
-    return function(html)
+    return s.split("&").join("&amp;")
+             .split("<").join("&lt;")
+              .split(">").join("&gt;")
+               .split('"').join("&quot;")
+                .split("'").join("&#39;");
+}
+
+// Detect and use jQuery to implement cross-browser workarounds when available
+if (typeof window.jQuery != "undefined")
+{
+    eventAttrs = jQuery.attrFn;
+    createElement = function(tagName, attributes)
     {
-        return html.replace(ampRe, "&amp;")
-                    .replace(ltRe, "&lt;")
-                     .replace(gtRe, "&gt;")
-                      .replace(quoteRe1, "&quot;")
-                       .replace(quoteRe2, "&#39;");
+        return jQuery("<" + tagName + ">", attributes).get(0);
     };
-})();
+    addEvent = function(id, event, handler)
+    {
+        jQuery("#" + id)[event](handler);
+    };
+    setInnerHTML = function(el, html)
+    {
+        jQuery(el).html(html);
+    };
+}
+else
+{
+    // jQuery is not available, implement the most essential workarounds
+    var supportsStyle = (function()
+        {
+            var div = document.createElement("div");
+            div.style.display = "none";
+            div.innerHTML = '<span style="color:silver;">s<span>';
+            return /silver/.test(div.getElementsByTagName("span")[0].getAttribute("style"));
+        })(),
+        specialRE = /^(?:href|src|style)$/,
+        attributeTranslations = {
+            cellspacing: "cellSpacing",
+            "class": "className",
+            colspan: "colSpan",
+            "for": "htmlFor",
+            frameborder: "frameBorder",
+            maxlength: "maxLength",
+            readonly: "readOnly",
+            rowspan: "rowSpan",
+            tabindex: "tabIndex",
+            usemap: "useMap"
+        };
+
+    eventAttrs = lookup(
+        ("blur focus focusin focusout load resize scroll unload click dblclick " +
+         "mousedown mouseup mousemove mouseover mouseout mouseenter mouseleave " +
+         "change select submit keydown keypress keyup error").split(" "));
+
+    createElement = function(tagName, attributes)
+    {
+        var el = document.createElement(tagName); // Damn you, IE
+
+        for (var name in attributes)
+        {
+            var value = attributes[name],
+                name = attributeTranslations[name] || name;
+
+            if (name in eventAttrs)
+            {
+                el["on" + name] = value;
+                continue;
+            }
+
+            var special = specialRE.test(name);
+            if ((name in el || el[name] !== undefined) && !special)
+                el[name] = value;
+            else if (!supportsStyle && name == "style")
+                el.style.cssText = ""+value;
+            else
+                el.setAttribute(name, ""+value);
+        }
+
+        return el;
+    };
+
+    addEvent = function(id, event, handler)
+    {
+        document.getElementById(id)["on" + event] = handler;
+    };
+
+    setInnerHTML = function(el, html)
+    {
+        try
+        {
+            el.innerHTML = html;
+        }
+        catch (e)
+        {
+            var div = document.createElement("div");
+            div.innerHTML = html;
+            while (el.firstChild)
+                el.removeChild(el.firstChild);
+            while (div.firstChild)
+                el.appendChild(div.firstChild);
+        }
+    };
+}
+
+// HTML Escaping ---------------------------------------------------------------
 
 /**
- * Escapes if the given input is not a ``SafeString``, otherwise returns its
- * value.
+ * If the given input is a ``SafeString``, returns its value; otherwise, coerces
+ * to ``String`` and escapes.
  */
 function conditionalEscape(html)
 {
@@ -198,40 +220,8 @@ function conditionalEscape(html)
     {
         return html.value;
     }
-    // Ensure the value we're trying to escape is coerced to a String
     return escapeHTML(""+html);
 }
-
-/**
- * Tag names defined in the HTML 4.01 Strict and Frameset DTDs.
- */
-var tagNames = ("a abbr acronym address area b bdo big blockquote body br " +
-    "button caption cite code col colgroup dd del dfn div dl dt em fieldset " +
-    "form frame frameset h1 h2 h3 h4 h5 h6 hr head html i iframe img input " +
-    "ins kbd label legend li link map meta noscript " /* :) */ + "object ol " +
-    "optgroup option p param pre q samp script select small span strong style " +
-    "sub sup table tbody td textarea tfoot th thead title tr tt ul var").split(" "),
-    tagNameLookup = (function(lookup)
-    {
-        for (var i = 0, l = tagNames.length; i < l; i++)
-        {
-            lookup[tagNames[i]] = true;
-        }
-        return lookup;
-    })({});
-
-/**
- * Lookup for tags defined as EMPTY in the HTML 4.01 Strict and Frameset DTDs.
- */
-var emptyTags = (function(lookup)
-{
-    var tags = "area base br col frame hr input img link meta param".split(" ");
-    for (var i = 0, l = tags.length; i < l; i++)
-    {
-        lookup[tags[i]] = true;
-    }
-    return lookup;
-})({});
 
 /**
  * ``String`` subclass which marks the given string as safe for inclusion
@@ -241,12 +231,15 @@ function SafeString(value)
 {
     this.value = value;
 }
+
 inheritFrom(SafeString, String);
 
 SafeString.prototype.toString = SafeString.prototype.valueOf = function()
 {
     return this.value;
 };
+
+// Mock DOM Elements -----------------------------------------------------------
 
 /**
  * Partially emulates a DOM ``Node`` for HTML generation.
@@ -259,6 +252,7 @@ function HTMLNode(childNodes)
     // nodes were appended one-by-one.
     this._inlineFragments();
 }
+
 inheritFrom(HTMLNode, Object);
 
 /**
@@ -288,10 +282,7 @@ HTMLNode.prototype.appendChild = function(node)
 {
     if (node instanceof HTMLFragment)
     {
-        for (var i = 0, l = node.childNodes.length; i < l; i++)
-        {
-            this.childNodes.push(node.childNodes[i]);
-        }
+        this.childNodes = this.childNodes.concat(node.childNodes);
         // Clear the fragment on append, as per DocumentFragment
         node.childNodes = [];
     }
@@ -348,6 +339,7 @@ function HTMLElement(tagName, attributes, childNodes)
     // mode could change before this object is coerced to a String.
     this.xhtml = (DOMBuilder.mode == "XHTML");
 }
+
 inheritFrom(HTMLElement, HTMLNode);
 
 HTMLElement.eventTrackerId = 1;
@@ -383,8 +375,8 @@ HTMLElement.prototype.toString = function()
     for (var attr in this.attributes)
     {
         // Don't create attributes which wouldn't make sense in HTML mode -
-        // they can be dealt with afet insertion using registerEventHandlers().
-        if (attr in functionAttributes)
+        // they can be dealt with afet insertion using addEvents().
+        if (attr in eventAttrs)
         {
             if (trackEvents === true && !this.eventsFound)
             {
@@ -398,8 +390,8 @@ HTMLElement.prototype.toString = function()
     if (this.eventsFound && !("id" in this.attributes))
     {
         // Ensure an id is present so we can grab this element later
-        this.generatedId  = "__DB" + HTMLElement.eventTrackerId++ + "__";
-        parts.push(' id="' + this.generatedId + '"');
+        this.id  = "__DB" + HTMLElement.eventTrackerId++ + "__";
+        parts.push(' id="' + this.id + '"');
     }
     parts.push(">");
 
@@ -440,25 +432,25 @@ HTMLElement.prototype.toString = function()
 /**
  * If event attributes were found when ``toString(true)`` was called, this
  * method will retrieve the resulting DOM Element by id, attach event handlers
- * to it and call ``registerEventHandlers`` on any HTMLElement children.
+ * to it and call ``addEvents`` on any HTMLElement children.
  */
-HTMLElement.prototype.registerEventHandlers = function()
+HTMLElement.prototype.addEvents = function()
 {
     if (this.eventsFound)
     {
         var id = ("id" in this.attributes
                   ? conditionalEscape(this.attributes.id)
-                  : this.generatedId);
+                  : this.id);
         for (var attr in this.attributes)
         {
-            if (attr in functionAttributes)
+            if (attr in eventAttrs)
             {
-                registerEventHandler(id, attr, this.attributes[attr]);
+                addEvent(id, attr, this.attributes[attr]);
             }
         }
 
         delete this.eventsFound;
-        delete this.generatedId;
+        delete this.id;
     }
 
     for (var i = 0, l = this.childNodes.length; i < l; i++)
@@ -466,15 +458,15 @@ HTMLElement.prototype.registerEventHandlers = function()
         var node = this.childNodes[i];
         if (node instanceof HTMLElement)
         {
-            node.registerEventHandlers();
+            node.addEvents();
         }
     }
 };
 
-HTMLElement.prototype.insertAndRegister = function(el)
+HTMLElement.prototype.insertWithEvents = function(el)
 {
     setInnerHTML(el, this.toString(true));
-    this.registerEventHandlers();
+    this.addEvents();
 };
 
 /**
@@ -529,24 +521,24 @@ HTMLFragment.prototype.toString = function()
 };
 
 /**
- * Calls ``registerEventHandlers()`` on any HTMLElement children.
+ * Calls ``addEvents()`` on any HTMLElement children.
  */
-HTMLFragment.prototype.registerEventHandlers = function()
+HTMLFragment.prototype.addEvents = function()
 {
     for (var i = 0, l = this.childNodes.length; i < l; i++)
     {
         var node = this.childNodes[i];
         if (node instanceof HTMLElement)
         {
-            node.registerEventHandlers();
+            node.addEvents();
         }
     }
 };
 
-HTMLFragment.prototype.insertAndRegister = function(el)
+HTMLFragment.prototype.insertWithEvents = function(el)
 {
     setInnerHTML(el, this.toString(true));
-    this.registerEventHandlers();
+    this.addEvents();
 };
 
 /**
@@ -575,8 +567,7 @@ function createElementFunction(tagName)
         }
         else
         {
-            return DOMBuilder._createElementFromArguments(tagName,
-                                                          arguments);
+            return createElementFromArguments(tagName, slice.call(arguments));
         }
     };
 
@@ -584,80 +575,13 @@ function createElementFunction(tagName)
     // appropriate ``tagName``.
     elementFunction.map = function()
     {
-        var mapArgs = Array.prototype.slice.call(arguments);
+        var mapArgs = slice.call(arguments);
         mapArgs.unshift(tagName);
         return DOMBuilder.map.apply(DOMBuilder, mapArgs);
     };
 
     return elementFunction;
 }
-
-var DOMBuilder = {};
-
-/**
- * Determines which mode the ``createElement`` function will operate in.
- * Supported values are:
- *
- * ``"DOM"``
- *    create DOM Elements.
- * ``"HTML"``
- *    create HTML Strings.
- * ``"XHTML"``
- *    create XHTML Strings.
- */
-DOMBuilder.mode = "DOM";
-
-/**
- * Calls a function using DOMBuilder temporarily in the given mode and
- * returns its output.
- *
- * This is primarily intended for using DOMBuilder to generate HTML
- * strings when running in the browser without having to manage the
- * mode flag yourself.
- */
-DOMBuilder.withMode = function(mode, func)
-{
-    var originalMode = this.mode;
-    this.mode = mode;
-    try
-    {
-        return func();
-    }
-    finally
-    {
-        this.mode = originalMode;
-    }
-};
-
-/**
- * An ``Object`` containing element creation functions.
- */
-DOMBuilder.elementFunctions = (function()
-{
-    var o = {};
-    for (var i = 0, tagName; tagName = tagNames[i]; i++)
-    {
-        o[tagName.toUpperCase()] = createElementFunction(tagName);
-    }
-    return o;
-})();
-
-/**
- * Adds element creation functions to a given context ``Object``, or to
- * a new object if none was given. Returns the object the functions were
- * added to, either way.
- *
- * An ``NBSP`` property corresponding to the Unicode character for a
- * non-breaking space is also added to the context object, for
- * convenience.
- */
-DOMBuilder.apply = function(context)
-{
-    context = context || {};
-    extend(context, this.elementFunctions);
-    context.NBSP = "\u00A0"; // Add NBSP for backwards-compatibility
-    return context;
-};
 
 /**
  * Normalises a list of arguments in order to create a new DOM element
@@ -674,13 +598,13 @@ DOMBuilder.apply = function(context)
  *
  * At least one argument *must* be provided.
  */
-DOMBuilder._createElementFromArguments = function(tagName, args)
+function createElementFromArguments(tagName, args)
 {
-    var attributes, children;
-    // The short circuit in ``createElementFunction`` ensures we will
-    // always have at least one argument when called via element creation
-    // functions.
-    var argsLength = args.length, firstArg = args[0];
+    var attributes, children,
+        // The short circuit in ``createElementFunction`` ensures we will
+        // always have at least one argument when called via element creation
+        // functions.
+        argsLength = args.length, firstArg = args[0];
 
     if (argsLength == 1 &&
         isArray(firstArg))
@@ -692,192 +616,283 @@ DOMBuilder._createElementFromArguments = function(tagName, args)
         attributes = firstArg;
         children = (argsLength == 2 && isArray(args[1])
                     ? args[1]                               // (attributes, [child1, ...])
-                    : Array.prototype.slice.call(args, 1)); // (attributes, child1, ...)
+                    : slice.call(args, 1)); // (attributes, child1, ...)
     }
     else
     {
-        children = Array.prototype.slice.call(args); // (child1, ...)
+        children = slice.call(args); // (child1, ...)
     }
 
-    return this.createElement(tagName, attributes, children);
-};
+    return DOMBuilder.createElement(tagName, attributes, children);
+}
 
-/**
- * Creates a DOM element with the given tag name and optionally,
- * the given attributes and children.
- */
-DOMBuilder.createElement = function(tagName, attributes, children)
-{
-    attributes = attributes || {};
-    children = children || [];
-    flatten(children);
+// DOMBuilder API --------------------------------------------------------------
 
-    if (this.mode != "DOM")
+var DOMBuilder = {
+    version: "1.4",
+
+    /**
+     * Determines which mode the ``createElement`` function will operate in.
+     * Supported values are:
+     *
+     * ``"DOM"``
+     *    create DOM Elements.
+     * ``"HTML"``
+     *    create HTML Strings.
+     * ``"XHTML"``
+     *    create XHTML Strings.
+     */
+    mode: "DOM",
+
+    /**
+     * Calls a function using DOMBuilder temporarily in the given mode and
+     * returns its output.
+     *
+     * This is primarily intended for using DOMBuilder to generate HTML
+     * strings when running in the browser without having to manage the
+     * mode flag yourself.
+     */
+    withMode: function(mode, func)
     {
-        return new HTMLElement(tagName, attributes, children);
-    }
-
-    // Create the element and set its attributes and event listeners
-    var el = createElementWithAttributes(tagName, attributes);
-
-    // Append children
-    for (var i = 0, l = children.length; i < l; i++)
-    {
-        var child = children[i];
-        if (child.nodeType)
+        var originalMode = this.mode;
+        this.mode = mode;
+        try
         {
-            el.appendChild(child);
+            return func();
         }
-        else
+        finally
         {
-            el.appendChild(document.createTextNode(""+child));
+            this.mode = originalMode;
         }
-    }
+    },
 
-    return el;
-};
-
-/**
- * Creates an element for (potentially) every item in a list. Supported
- * argument formats are:
- *
- * 1. ``(tagName, defaultAttributes, [item1, ...], mappingFunction)``
- * 2. ``(tagName, [item1, ...], mappingFunction)``
- *
- * Arguments are as follows:
- *
- * ``tagName``
- *    the name of the element to create.
- * ``defaultAttributes`` (optional)
- *    default attributes for the element.
- * ``items``
- *    the list of items to use as the basis for creating elements.
- * ``mappingFunction`` (optional)
- *    a function to be called with each item in the list to provide
- *    contents for the element which will be created for that item.
- *
- *    Contents can consist of a single value  or a mixed ``Array``.
- *
- *    If provided, the function will be called with the following
- *    arguments::
- *
- *       func(item, attributes, itemIndex)
- *
- *    Attributes on the element which will be created can be altered by
- *    modifying the ``attributes argument, which will initially contain
- *    the contents of ``defaultAttributes``, if it was provided.
- *
- *    The function can prevent an element being generated for a given
- *    item by returning ``null``.
- *
- *    If not provided, each item will result in the creation of a new
- *    element and the item itself will be used as the only contents.
- */
-DOMBuilder.map = function(tagName)
-{
-    // Determine how the function was called
-    if (isArray(arguments[1]))
+    /**
+     * An ``Object`` containing element creation functions.
+     */
+    elementFunctions: (function(obj)
     {
-         // (tagName, items, func)
-        var defaultAttrs = {},
-            items = arguments[1],
-            func = (isFunction(arguments[2]) ? arguments[2] : null);
-    }
-    else
-    {
-        // (tagName, attrs, items, func)
-        var defaultAttrs = arguments[1],
-            items = arguments[2],
-            func = (isFunction(arguments[3]) ? arguments[3] : null);
-    }
-
-    var results = [];
-    for (var i = 0, l = items.length; i < l; i++)
-    {
-        var attrs = extend({}, defaultAttrs);
-        // If we were given a mapping function, call it and use the
-        // return value as the contents, unless the function specifies
-        // that the item shouldn't generate an element by explicity
-        // returning null.
-        if (func !== null)
+        for (var i = 0, tagName; tagName = tagNames[i]; i++)
         {
-            var children = func(items[i], attrs, i);
-            if (children === null)
+            obj[tagName.toUpperCase()] = createElementFunction(tagName);
+        }
+        return obj;
+    })({}),
+
+    /**
+     * Adds element creation functions to a given context ``Object``, or to
+     * a new object if none was given. Returns the object the functions were
+     * added to, either way.
+     *
+     * An ``NBSP`` property corresponding to the Unicode character for a
+     * non-breaking space is also added to the context object, for
+     * convenience.
+     */
+    apply: function(context)
+    {
+        context = context || {};
+        extend(context, this.elementFunctions);
+        context.NBSP = "\u00A0"; // Add NBSP for backwards-compatibility
+        return context;
+    },
+
+    /**
+     * Creates a DOM element with the given tag name and, optionally,
+     * the given attributes and children.
+     */
+    createElement: function(tagName, attributes, children)
+    {
+        attributes = attributes || {};
+        children = children || [];
+        flatten(children);
+
+        if (this.mode != "DOM")
+        {
+            return new HTMLElement(tagName, attributes, children);
+        }
+
+        // Create the element and set its attributes and event listeners
+        var el = createElement(tagName, attributes);
+
+        // Append children
+        for (var i = 0, l = children.length; i < l; i++)
+        {
+            var child = children[i];
+            if (child.nodeType)
             {
-                continue;
+                el.appendChild(child);
+            }
+            else
+            {
+                el.appendChild(document.createTextNode(""+child));
             }
         }
-        else
+
+        return el;
+    },
+
+    /**
+     * Creates an element for (potentially) every item in a list. Supported
+     * argument formats are:
+     *
+     * 1. ``(tagName, defaultAttributes, [item1, ...], mappingFunction)``
+     * 2. ``(tagName, [item1, ...], mappingFunction)``
+     *
+     * Arguments are as follows:
+     *
+     * ``tagName``
+     *    the name of the element to create.
+     * ``defaultAttributes`` (optional)
+     *    default attributes for the element.
+     * ``items``
+     *    the list of items to use as the basis for creating elements.
+     * ``mappingFunction`` (optional)
+     *    a function to be called with each item in the list to provide
+     *    contents for the element which will be created for that item.
+     *
+     *    Contents can consist of a single value  or a mixed ``Array``.
+     *
+     *    If provided, the function will be called with the following
+     *    arguments::
+     *
+     *       func(item, attributes, itemIndex)
+     *
+     *    Attributes on the element which will be created can be altered by
+     *    modifying the ``attributes argument, which will initially contain
+     *    the contents of ``defaultAttributes``, if it was provided.
+     *
+     *    The function can prevent an element being generated for a given
+     *    item by returning ``null``.
+     *
+     *    If not provided, each item will result in the creation of a new
+     *    element and the item itself will be used as the only contents.
+     */
+    map: function(tagName)
+    {
+        // Determine how the function was called
+        if (isArray(arguments[1]))
         {
-            // If we weren't given a mapping function, use the item as the
-            // contents.
-            var children = items[i];
-        }
-
-        // Ensure children are in an Array, as required by createElement
-        if (!isArray(children))
-        {
-            children = [children];
-        }
-
-        results.push(this.createElement(tagName, attrs, children));
-    }
-    return results;
-};
-
-/**
- * Creates a ``DocumentFragment`` with the given children. Supported
- * argument formats are:
- *
- * ``(child1, ...)``
- *    an arbitrary number of children.
- * ``([child1, ...])``
- *    an ``Array`` of children.
- *
- * A ``DocumentFragment`` conveniently allows you to append its contents
- * with a single call. If you're thinking of adding a wrapper ``<div>``
- * solely to be able to insert a number of sibling elements at the same
- * time, a ``DocumentFragment`` will do the same job without the need for
- * a redundant wrapper element.
- *
- * See http://ejohn.org/blog/dom-documentfragments/ for more information
- * about ``DocumentFragment`` objects.
- */
-DOMBuilder.fragment = function()
-{
-    if (arguments.length == 1 &&
-        isArray(arguments[0]))
-    {
-        var children = arguments[0]; // ([child1, ...])
-    }
-    else
-    {
-        var children = Array.prototype.slice.call(arguments) // (child1, ...)
-    }
-
-    // Inline the contents of any child Arrays
-    flatten(children);
-
-    if (this.mode != "DOM")
-    {
-        return new HTMLFragment(children);
-    }
-
-    var fragment = document.createDocumentFragment();
-    for (var i = 0, l = children.length; i < l; i++)
-    {
-        var child = children[i];
-        if (child.nodeType)
-        {
-            fragment.appendChild(child);
+             // (tagName, items, func)
+            var defaultAttrs = {},
+                items = arguments[1],
+                func = (isFunction(arguments[2]) ? arguments[2] : null);
         }
         else
         {
-            fragment.appendChild(document.createTextNode(""+child));
+            // (tagName, attrs, items, func)
+            var defaultAttrs = arguments[1],
+                items = arguments[2],
+                func = (isFunction(arguments[3]) ? arguments[3] : null);
         }
-    }
 
-    return fragment;
+        var results = [];
+        for (var i = 0, l = items.length; i < l; i++)
+        {
+            var attrs = extend({}, defaultAttrs);
+            // If we were given a mapping function, call it and use the
+            // return value as the contents, unless the function specifies
+            // that the item shouldn't generate an element by explicity
+            // returning null.
+            if (func !== null)
+            {
+                var children = func(items[i], attrs, i);
+                if (children === null)
+                {
+                    continue;
+                }
+            }
+            else
+            {
+                // If we weren't given a mapping function, use the item as the
+                // contents.
+                var children = items[i];
+            }
+
+            // Ensure children are in an Array, as required by createElement
+            if (!isArray(children))
+            {
+                children = [children];
+            }
+
+            results.push(this.createElement(tagName, attrs, children));
+        }
+        return results;
+    },
+
+    /**
+     * Creates a ``DocumentFragment`` with the given children. Supported
+     * argument formats are:
+     *
+     * ``(child1, ...)``
+     *    an arbitrary number of children.
+     * ``([child1, ...])``
+     *    an ``Array`` of children.
+     *
+     * A ``DocumentFragment`` conveniently allows you to append its contents
+     * with a single call. If you're thinking of adding a wrapper ``<div>``
+     * solely to be able to insert a number of sibling elements at the same
+     * time, a ``DocumentFragment`` will do the same job without the need for
+     * a redundant wrapper element.
+     *
+     * See http://ejohn.org/blog/dom-documentfragments/ for more information
+     * about ``DocumentFragment`` objects.
+     */
+    fragment: function()
+    {
+        if (arguments.length == 1 &&
+            isArray(arguments[0]))
+        {
+            var children = arguments[0]; // ([child1, ...])
+        }
+        else
+        {
+            var children = slice.call(arguments) // (child1, ...)
+        }
+
+        // Inline the contents of any child Arrays
+        flatten(children);
+
+        if (this.mode != "DOM")
+        {
+            return new HTMLFragment(children);
+        }
+
+        var fragment = document.createDocumentFragment();
+        for (var i = 0, l = children.length; i < l; i++)
+        {
+            var child = children[i];
+            if (child.nodeType)
+            {
+                fragment.appendChild(child);
+            }
+            else
+            {
+                fragment.appendChild(document.createTextNode(""+child));
+            }
+        }
+
+        return fragment;
+    },
+
+    /**
+     * Marks a string as safe
+     */
+    markSafe: function(value)
+    {
+        return new SafeString(value);
+    },
+
+    /**
+     * Determines if a string is safe.
+     */
+    isSafe: function(value)
+    {
+        return (value instanceof SafeString);
+    },
+
+    HTMLElement: HTMLElement,
+    HTMLFragment: HTMLFragment,
+    HTMLNode: HTMLNode,
+    SafeString: SafeString
 };
 
 /**
@@ -927,27 +942,6 @@ DOMBuilder.fragment.map = function(items, func)
     }
     return DOMBuilder.fragment(results);
 };
-
-/**
- * Marks a string as safe
- */
-DOMBuilder.markSafe = function(value)
-{
-    return new SafeString(value);
-};
-
-/**
- * Determines if a string is safe.
- */
-DOMBuilder.isSafe = function(value)
-{
-    return (value instanceof SafeString);
-};
-
-DOMBuilder.HTMLElement = HTMLElement;
-DOMBuilder.HTMLFragment = HTMLFragment;
-DOMBuilder.HTMLNode = HTMLNode;
-DOMBuilder.SafeString = SafeString;
 
 // Expose DOMBuilder to the global object
 window.DOMBuilder = DOMBuilder;
