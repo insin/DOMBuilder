@@ -145,7 +145,7 @@ test("DOMBuilder.HTMLFragment", function()
 
 test("HTML Escaping", function()
 {
-    expect(7);
+    expect(8);
 
     var s = "< > & ' \"";
     var ss = DOMBuilder.markSafe(s);
@@ -163,6 +163,9 @@ test("HTML Escaping", function()
     equal(dom.P({test: ss},ss).toString(),
           '<p test="< > & \' "">< > & \' "</p>',
           "SafeStgrings render as-is");
+    equal(dom.P(DOMBuilder.markSafe("Test")).toString(),
+          "<p>Test</p>",
+          "SafeStrings are not used as an attributes argument if given first");
 });
 
 })();

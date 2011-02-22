@@ -75,7 +75,9 @@ function isFunction(o)
  */
 function isObject(o)
 {
-    return (!!o && toString.call(o) === "[object Object]" && !o.nodeType)
+    return (!!o && toString.call(o) === "[object Object]" &&
+            !o.nodeType &&
+            !(o instanceof SafeString))
 }
 
 /**
