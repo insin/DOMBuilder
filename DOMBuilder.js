@@ -1,7 +1,16 @@
-(function(window)
+(function(__global__, undefined)
 {
 
-var document = window.document,
+var modules = (typeof module !== 'undefined' && module.exports);
+
+var document = (__global__.document || {
+        // Provide a dummy document object if we're not in a browser, to keep
+        // interpreters happy.
+        createElement: function(){},
+        createDocumentFragment: function(){},
+        createTextNode: function(){},
+        getElementById: function(){}
+    }),
     toString = Object.prototype.toString,
     slice = Array.prototype.slice,
     // Functioms and objects involved in implementing cross-crowser workarounds
@@ -115,99 +124,105 @@ function escapeHTML(s)
 }
 
 // Detect and use jQuery to implement cross-browser workarounds when available
-if (typeof window.jQuery != "undefined")
+if (typeof jQuery != "undefined")
 {
     eventAttrs = jQuery.attrFn;
-    createElement = function(tagName, attributes)
+    if (!modules)
     {
-        return jQuery("<" + tagName + ">", attributes).get(0);
-    };
-    addEvent = function(id, event, handler)
-    {
-        jQuery("#" + id)[event](handler);
-    };
-    setInnerHTML = function(el, html)
-    {
-        jQuery(el).html(html);
-    };
+        createElement = function(tagName, attributes)
+        {
+            return jQuery("<" + tagName + ">", attributes).get(0);
+        };
+        addEvent = function(id, event, handler)
+        {
+            jQuery("#" + id)[event](handler);
+        };
+        setInnerHTML = function(el, html)
+        {
+            jQuery(el).html(html);
+        };
+    }
 }
 else
 {
-    // jQuery is not available, implement the most essential workarounds
-    var supportsStyle = (function()
-        {
-            var div = document.createElement("div");
-            div.style.display = "none";
-            div.innerHTML = '<span style="color:silver;">s<span>';
-            return /silver/.test(div.getElementsByTagName("span")[0].getAttribute("style"));
-        })(),
-        specialRE = /^(?:href|src|style)$/,
-        attributeTranslations = {
-            cellspacing: "cellSpacing",
-            "class": "className",
-            colspan: "colSpan",
-            "for": "htmlFor",
-            frameborder: "frameBorder",
-            maxlength: "maxLength",
-            readonly: "readOnly",
-            rowspan: "rowSpan",
-            tabindex: "tabIndex",
-            usemap: "useMap"
-        };
-
     eventAttrs = lookup(
         ("blur focus focusin focusout load resize scroll unload click dblclick " +
          "mousedown mouseup mousemove mouseover mouseout mouseenter mouseleave " +
          "change select submit keydown keypress keyup error").split(" "));
 
-    createElement = function(tagName, attributes)
+    if (!modules)
     {
-        var el = document.createElement(tagName); // Damn you, IE
-
-        for (var name in attributes)
-        {
-            var value = attributes[name],
-                name = attributeTranslations[name] || name;
-
-            if (name in eventAttrs)
+        // jQuery is not available, implement the most essential workarounds
+        var supportsStyle = (function()
             {
-                el["on" + name] = value;
-                continue;
+                var div = document.createElement("div");
+                div.style.display = "none";
+                div.innerHTML = '<span style="color:silver;">s<span>';
+                return /silver/.test(div.getElementsByTagName("span")[0].getAttribute("style"));
+            })(),
+            specialRE = /^(?:href|src|style)$/,
+            attributeTranslations = {
+                cellspacing: "cellSpacing",
+                "class": "className",
+                colspan: "colSpan",
+                "for": "htmlFor",
+                frameborder: "frameBorder",
+                maxlength: "maxLength",
+                readonly: "readOnly",
+                rowspan: "rowSpan",
+                tabindex: "tabIndex",
+                usemap: "useMap"
+            };
+
+        createElement = function(tagName, attributes)
+        {
+            var el = document.createElement(tagName); // Damn you, IE
+
+            for (var name in attributes)
+            {
+                var value = attributes[name],
+                    name = attributeTranslations[name] || name;
+
+                if (name in eventAttrs)
+                {
+                    el["on" + name] = value;
+                    continue;
+                }
+
+                var special = specialRE.test(name);
+                if ((name in el || el[name] !== undefined) && !special)
+                    el[name] = value;
+                else if (!supportsStyle && name == "style")
+                    el.style.cssText = ""+value;
+                else
+                    el.setAttribute(name, ""+value);
             }
 
-            var special = specialRE.test(name);
-            if ((name in el || el[name] !== undefined) && !special)
-                el[name] = value;
-            else if (!supportsStyle && name == "style")
-                el.style.cssText = ""+value;
-            else
-                el.setAttribute(name, ""+value);
-        }
+            return el;
+        };
 
-        return el;
-    };
-
-    addEvent = function(id, event, handler)
-    {
-        document.getElementById(id)["on" + event] = handler;
-    };
-
-    setInnerHTML = function(el, html)
-    {
-        try
+        addEvent = function(id, event, handler)
         {
-            el.innerHTML = html;
-        }
-        catch (e)
+            document.getElementById(id)["on" + event] = handler;
+        };
+
+        setInnerHTML = function(el, html)
         {
-            var div = document.createElement("div");
-            div.innerHTML = html;
-            while (el.firstChild)
-                el.removeChild(el.firstChild);
-            while (div.firstChild)
-                el.appendChild(div.firstChild);
-        }
-    };
+            try
+            {
+                el.innerHTML = html;
+            }
+            catch (e)
+            {
+                var div = document.createElement("div");
+                div.innerHTML = html;
+                while (el.firstChild)
+                    el.removeChild(el.firstChild);
+                while (div.firstChild)
+                    el.appendChild(div.firstChild);
+            }
+        };
+    }
 }
 
 // HTML Escaping ---------------------------------------------------------------
@@ -554,7 +569,7 @@ function createElementFunction(tagName)
 {
     var elementFunction = function()
     {
-        if (arguments.length == 0)
+        if (arguments.length === 0)
         {
             // Short circuit if there are no arguments, to avoid further
             // argument inspection.
@@ -608,7 +623,7 @@ function createElementFromArguments(tagName, args)
         // functions.
         argsLength = args.length, firstArg = args[0];
 
-    if (argsLength == 1 &&
+    if (argsLength === 1 &&
         isArray(firstArg))
     {
         children = firstArg; // ([child1, ...])
@@ -631,7 +646,7 @@ function createElementFromArguments(tagName, args)
 // DOMBuilder API --------------------------------------------------------------
 
 var DOMBuilder = {
-    version: "1.4",
+    version: "1.5 (beta)",
 
     /**
      * Determines which mode the ``createElement`` function will operate in.
@@ -643,8 +658,12 @@ var DOMBuilder = {
      *    create HTML Strings.
      * ``"XHTML"``
      *    create XHTML Strings.
+     *
+     * The value depends on the environment we're running in - if modules are
+     * available, we default to HTML mode, otherwise we assume we'te in a
+     * browser and default to DOM mode.
      */
-    mode: "DOM",
+    mode: (modules ? "HTML" : "DOM"),
 
     /**
      * Calls a function using DOMBuilder temporarily in the given mode and
@@ -840,7 +859,7 @@ var DOMBuilder = {
      */
     fragment: function()
     {
-        if (arguments.length == 1 &&
+        if (arguments.length === 1 &&
             isArray(arguments[0]))
         {
             var children = arguments[0]; // ([child1, ...])
@@ -945,7 +964,14 @@ DOMBuilder.fragment.map = function(items, func)
     return DOMBuilder.fragment(results);
 };
 
-// Expose DOMBuilder to the global object
-window.DOMBuilder = DOMBuilder;
+// Export DOMBuilder or expose it to the global object
+if (modules)
+{
+    module.exports = DOMBuilder;
+}
+else
+{
+    __global__.DOMBuilder = DOMBuilder;
+}
 
-})(window);
+})(this);
