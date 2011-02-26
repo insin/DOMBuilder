@@ -145,7 +145,7 @@ test("DOMBuilder.HTMLFragment", function()
 
 test("HTML Escaping", function()
 {
-    expect(8);
+    expect(9);
 
     var s = "< > & ' \"";
     var ss = DOMBuilder.markSafe(s);
@@ -166,6 +166,9 @@ test("HTML Escaping", function()
     equal(dom.P(DOMBuilder.markSafe("Test")).toString(),
           "<p>Test</p>",
           "SafeStrings are not used as an attributes argument if given first");
+    equal(DOMBuilder.createElement("ul", {}, DOMBuilder.map("li", ["<script>"])).toString(),
+          "<ul><li>&lt;script&gt;</li></ul>",
+          "Map list contents are escaped");
 });
 
 })();

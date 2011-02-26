@@ -126,7 +126,7 @@ function testEventHandlers()
 {
     return DOMBuilder.fragment(
       dom.DIV({id: "testElement", click: function() { $("#testOutput").text("PASS"); }}),
-      dom.DIV({id: "testOutput"})
+      dom.DIV({id: "testOutput"}, "FAIL")
     );
 }
 
@@ -145,6 +145,22 @@ test("HTML Event Handlers", function()
     expect(1);
 
     var fragment = DOMBuilder.withMode("HTML", testEventHandlers);
+    fragment.insertWithEvents($("#qunit-fixture").get(0));
+    $("#testElement").trigger("click");
+    equal("PASS",  $("#testOutput").text(), "click handler executed");
+});
+
+test("HTML Event Handlers on nested elements", function()
+{
+    expect(1);
+
+    var fragment = DOMBuilder.withMode("HTML", function()
+    {
+        return dom.DIV(
+          dom.DIV({id: "testElement", click: function() { $("#testOutput").text("PASS"); }}),
+          dom.DIV({id: "testOutput"}, "FAIL")
+        );
+    });
     fragment.insertWithEvents($("#qunit-fixture").get(0));
     $("#testElement").trigger("click");
     equal("PASS",  $("#testOutput").text(), "click handler executed");

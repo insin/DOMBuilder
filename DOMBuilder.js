@@ -427,7 +427,7 @@ HTMLElement.prototype.toString = function()
         var node = this.childNodes[i];
         if (node instanceof HTMLElement || node instanceof SafeString)
         {
-            parts.push(node.toString());
+            parts.push(node.toString(trackEvents));
         }
         else if (node === "\u00A0")
         {
