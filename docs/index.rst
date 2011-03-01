@@ -11,8 +11,8 @@ Elements and HTML in JavaScript.
    news
    license
 
-Dependencies
-------------
+Client-Side Dependencies
+------------------------
 
 There are no *required* dependencies, but if `jQuery`_ (>= 1.4) is
 available, DOMBuilder will use it to take care of cross-browser issues

@@ -1,6 +1,19 @@
 News for DOMBuilder
 ===================
 
+Trunk
+-----
+
+- Fixed HTML mode bug: event registration now works for nested elements.
+
+- DOMBuilder can now be used as a `Node.js`_ module, defaulting to HTML
+  mode.
+
+- Fixed bug: SafeString is no longer used as an attributes object if passed
+  as the first argument to an element creation function.
+
+.. _`Node.js`: http://nodejs.org
+
 Version 1.4
 -----------
 

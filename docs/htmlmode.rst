@@ -28,6 +28,21 @@ type of HTML output you want and use DOMBuilder as normal.
 
 .. _mock-dom-objects:
 
+Node.js Support
+~~~~~~~~~~~~~~~
+
+DOMBuilder can be imported as a `Node.js`_ module, in which case it
+defaults to HTML mode.
+
+A `Node Package Manager`_ package is not currently available, but after
+checking out DOMBuilder from GitHub and addding its path to NODE_PATH,
+you can import it like so::
+
+   var DOMBuilder = require('DOMBuilder');
+
+.. _`Node.js`: http://nodejs.org
+.. _`Node Package Manager`: http://npmjs.org/
+
 Mock DOM Objects
 ~~~~~~~~~~~~~~~~
 
