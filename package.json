@@ -1,0 +1,6 @@
+{
+  "name": "DOMBuilder",
+  "description": "Builder library - generate DOM Elements or HTML (mostly) interchangeably",
+  "author": "Jonathan Buchanan <jonathan.buchanan@gmail.com>",
+  "main": "./DOMBuilder.js"
+}
