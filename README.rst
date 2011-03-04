@@ -3,10 +3,21 @@ Elements and HTML in JavaScript, providing element creation functions
 which give you a more declarative, compact API to work with when creating
 content in code.
 
+Version 1.4.1 released on 4th March 2011
+========================================
+
+`v1.4.1 documentation at readthedocs.org`_.
+
+.. _`v1.4.1 documentation at readthedocs.org`: http://readthedocs.org/docs/dombuilder/en/1.4.1/index.html
+
+Bugfix release which also adds support for use as a Node.js module to generate HTML.
+
+Install for Node.js using Node Package Manager (npm)::
+
+   npm install DOMBuilder
+
 Version 1.4 released on 13th February 2011
 ==========================================
-
-`v1.4 documentation at readthedocs.org`_.
 
 Significant changes in this release:
 
@@ -27,7 +38,6 @@ Significant changes in this release:
 - Fixed HTML escaping bugs: attribute names and unknown tag names are now
   escaped.
 
-.. _`v1.4 documentation at readthedocs.org`: http://readthedocs.org/docs/dombuilder/en/1.4/index.html
 .. _`jQuery`: http://jquery.com
 .. _`Event listeners can now be added in HTML mode`: http://readthedocs.org/docs/dombuilder/en/1.4/htmlmode.html#event-handlers-and-innerhtml
 
@@ -105,30 +115,20 @@ Map functions make it a breeze to work with lists of items::
    </tbody>
    </table>
 
+Multiple output modes
+---------------------
+
+DOMBuilder can generate DOM Elements or HTML strings interchangeably, depending
+on its `output mode`_ at element creation time.
+
+This allows you to run the same code in different contexts (e.g. same content
+generation code on the client and server), easily switch how content is generated
+and inserted on the client when you're looking for performance gains, and sanity
+check DOM creation code in unit tests without having to verify DOM trees, by
+generating HTML instead.
+
+.. _`output mode`: http://readthedocs.org/docs/dombuilder/en/1.4.1/htmlmode.html#DOMBuilder.mode
+
 `Read the documentation to find out more...`_
 
-.. _`Read the documentation to find out more...`: http://readthedocs.org/docs/dombuilder/en/1.4/index.html
-
-Benefits of multiple output modes
----------------------------------
-
-`js-forms`_ uses DOMBuilder for all its content creation. Due to
-DOMBuilder's multiple `output modes`_, this means js-forms' form
-generation and validation will be usable in the browser and on the
-backend, using largely the same codebase. Examples of current usage of
-DOMBuilder:
-
-* `js-forms Demo Page`_ - all form elements are created in DOM mode.
-
-* `js-forms Unit Tests`_ - unit tests take advantage of HTML mode to more
-  easily validate what's being created.
-
-* `Akshell`_ has ported js-forms and DOMBuilder for use as its backend
-  `form-handling library`_.
-
-.. _`js-forms`: https://github.com/js-forms/
-.. _`output modes`: http://readthedocs.org/docs/dombuilder/en/latest/htmlmode.html#DOMBuilder.mode
-.. _`js-forms Demo Page`: http://jonathan.buchanan153.users.btopenworld.com/js-forms/demo.html
-.. _`js-forms Unit Tests`: http://jonathan.buchanan153.users.btopenworld.com/js-forms/tests.html
-.. _`Akshell`: http://www.akshell.com
-.. _`form-handling library`: http://www.akshell.com/apps/form/
+.. _`Read the documentation to find out more...`: http://readthedocs.org/docs/dombuilder/en/1.4.1/index.html

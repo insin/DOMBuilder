@@ -29,6 +29,24 @@ registration model`_.
 .. _`jQuery`: http://jquery.com
 .. _`traditional event registration model`: http://www.quirksmode.org/js/events_tradmod.html
 
+Node.js Support
+~~~~~~~~~~~~~~~
+
+.. versionadded:: 1.4.1
+
+DOMBuilder can be installed and imported as a `Node.js`_ module, in which case
+it defaults to :doc:`htmlmode`.
+
+Install::
+
+   npm install DOMBuilder
+
+Import::
+
+   var DOMBuilder = require('DOMBuilder');
+
+.. _`Node.js`: http://nodejs.org
+
 Introduction
 ------------
 
@@ -125,9 +143,8 @@ For a simple example, the following code...
           P("Paragraph two")
         );
 
-   Alternatively, you could (please don't - ``with`` is on the way out) use
-   JavaScript's much-derided `with statement`_ to temporarily add
-   :js:attr:`DOMBuilder.elementFunctions` to the scope chain::
+   Alternatively, you could use JavaScript's much-derided `with statement`_ to
+   temporarily add :js:attr:`DOMBuilder.elementFunctions` to the scope chain::
 
       with (DOMBuilder.elementFunctions)
       {

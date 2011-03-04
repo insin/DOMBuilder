@@ -1,8 +1,8 @@
 News for DOMBuilder
 ===================
 
-Trunk
------
+Version 1.4.1
+-------------
 
 - Fixed HTML mode bug: event registration now works for nested elements.
 
