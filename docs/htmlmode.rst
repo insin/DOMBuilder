@@ -207,9 +207,9 @@ see the generated ``id`` attribute in place:
 Since we know which elements have event handlers and what their ids are,
 we can use that information to fetch the corresponding DOM Elements and
 reister the event handlers - you can do just that using
-:js:func:`DOMBuilder.HTMLElement.registerEventHandlers()`::
+:js:func:`DOMBuilder.HTMLElement.addEvents()`::
 
-   article.registerEventHandlers();
+   article.addEvents();
 
 Now, clicking on either paragraph will result in its id being alerted.
 
