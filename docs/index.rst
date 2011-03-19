@@ -463,7 +463,7 @@ Mapping Fragments
 This function is useful if you want to generate sibling content from a list
 of items without introducing redundant wrapper elements.
 
-For example, with a `js-forms`_ ``FormSet`` object, which contains multiple
+For example, with a `newforms`_ ``FormSet`` object, which contains multiple
 ``Form`` objects. If you wanted to generate a heading and a table for each
 form object and have the whole lot sitting side-by-side in the document::
 
@@ -493,4 +493,4 @@ HTML:
     <table> ... </table>
     ...
 
-.. _`js-forms`: http://code.google.com/p/js-forms/
+.. _`newforms`: https://github.com/insin/newforms

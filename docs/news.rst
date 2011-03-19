@@ -104,7 +104,7 @@ Version 1.2
 - Added support for using the DOMBuilder API to generate HTML/XHTML output
   instead of DOM elements. This is an experimental change for using the same
   codebase to generate HTML on the backend and DOM elements on the frontend,
-  as is currently being implemented in http://code.google.com/p/js-forms/
+  as is currently being implemented in https://github.com/insin/newforms
 
 Version 1.1
 -----------
