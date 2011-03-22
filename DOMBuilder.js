@@ -1,3 +1,5 @@
+var ak = require('ak');
+
 (function(__global__, undefined)
 {
 
@@ -86,7 +88,7 @@ function isObject(o)
 {
     return (!!o && toString.call(o) === "[object Object]" &&
             !o.nodeType &&
-            !(o instanceof SafeString))
+            !(o instanceof ak.template.Wrap))
 }
 
 /**
@@ -109,18 +111,6 @@ function flatten(a)
             i--;
         }
     }
-}
-
-/**
- * Escapes sensitive HTML characters.
- */
-function escapeHTML(s)
-{
-    return s.split("&").join("&amp;")
-             .split("<").join("&lt;")
-              .split(">").join("&gt;")
-               .split('"').join("&quot;")
-                .split("'").join("&#39;");
 }
 
 // Detect and use jQuery to implement cross-browser workarounds when available
@@ -233,28 +223,12 @@ else
  */
 function conditionalEscape(html)
 {
-    if (html instanceof SafeString)
+    if (html instanceof ak.template.Wrap)
     {
-        return html.value;
+        return ""+html;
     }
-    return escapeHTML(""+html);
+    return ak.escapeHTML(""+html);
 }
-
-/**
- * ``String`` subclass which marks the given string as safe for inclusion
- * without escaping.
- */
-function SafeString(value)
-{
-    this.value = value;
-}
-
-inheritFrom(SafeString, String);
-
-SafeString.prototype.toString = SafeString.prototype.valueOf = function()
-{
-    return this.value;
-};
 
 // Mock DOM Elements -----------------------------------------------------------
 
@@ -425,7 +399,7 @@ HTMLElement.prototype.toString = function()
     for (var i = 0, l = this.childNodes.length; i < l; i++)
     {
         var node = this.childNodes[i];
-        if (node instanceof HTMLElement || node instanceof SafeString)
+        if (node instanceof HTMLElement || node instanceof ak.template.Wrap)
         {
             parts.push(node.toString(trackEvents));
         }
@@ -445,6 +419,8 @@ HTMLElement.prototype.toString = function()
     parts.push("</" + tagName + ">");
     return parts.join("");
 };
+
+HTMLElement.prototype.toString.safe = true;
 
 /**
  * If event attributes were found when ``toString(true)`` was called, this
@@ -518,7 +494,7 @@ HTMLFragment.prototype.toString = function()
     for (var i = 0, l = this.childNodes.length; i < l; i++)
     {
         var node = this.childNodes[i];
-        if (node instanceof HTMLElement || node instanceof SafeString)
+        if (node instanceof HTMLElement || node instanceof ak.template.Wrap)
         {
             parts.push(node.toString(trackEvents));
         }
@@ -536,6 +512,8 @@ HTMLFragment.prototype.toString = function()
 
     return parts.join("");
 };
+
+HTMLFragment.prototype.toString.safe = true;
 
 /**
  * Calls ``addEvents()`` on any HTMLElement children.
@@ -899,7 +877,7 @@ var DOMBuilder = {
      */
     markSafe: function(value)
     {
-        return new SafeString(value);
+        return ak.safe(value);
     },
 
     /**
@@ -907,13 +885,12 @@ var DOMBuilder = {
      */
     isSafe: function(value)
     {
-        return (value instanceof SafeString);
+        return (value instanceof ak.template.Wrap && value.safe);
     },
 
     HTMLElement: HTMLElement,
     HTMLFragment: HTMLFragment,
-    HTMLNode: HTMLNode,
-    SafeString: SafeString
+    HTMLNode: HTMLNode
 };
 
 /**
@@ -967,7 +944,7 @@ DOMBuilder.fragment.map = function(items, func)
 // Export DOMBuilder or expose it to the global object
 if (modules)
 {
-    module.exports = DOMBuilder;
+    extend(module.exports, DOMBuilder);
 }
 else
 {
