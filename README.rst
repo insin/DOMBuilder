@@ -1,3 +1,7 @@
+==========
+DOMBuilder
+==========
+
 DOMBuilder takes some of the pain out of programatically creating DOM
 Elements and HTML in JavaScript, providing element creation functions
 which give you a more declarative, compact API to work with when creating
@@ -12,9 +16,16 @@ Version 1.4.1 released on 4th March 2011
 
 Bugfix release which also adds support for use as a Node.js module to generate HTML.
 
-Install for Node.js using Node Package Manager (npm)::
+Install for `Node.js`_ using Node Package Manager (npm)::
 
    npm install DOMBuilder
+
+Use in `Akshell`_ by adding the following to your app's ``manifest.json``::
+
+   "insin/DOMBuilder:1.4.1"
+
+.. _`Node.js`: http://nodejs.org
+.. _`Akshell`: http://akshell.com
 
 Version 1.4 released on 13th February 2011
 ==========================================
