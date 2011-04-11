@@ -391,6 +391,12 @@ HTMLElement.prototype.toString = function()
     var parts = ["<" + tagName];
     for (var attr in this.attributes)
     {
+        // innerHTML is a special case, as we can use it to (perhaps
+        // inadvisedly) to specify entire contents as a string.
+        if (attr === "innerHTML")
+        {
+            continue;
+        }
         // Don't create attributes which wouldn't make sense in HTML mode -
         // they can be dealt with afet insertion using addEvents().
         if (attr in eventAttrs)
@@ -421,23 +427,30 @@ HTMLElement.prototype.toString = function()
         return parts.join("");
     }
 
-    // Contents
-    for (var i = 0, l = this.childNodes.length; i < l; i++)
+    // If innerHTML was given, use it exclusively for the contents
+    if ("innerHTML" in this.attributes)
     {
-        var node = this.childNodes[i];
-        if (node instanceof HTMLElement || node instanceof SafeString)
+        parts.push(this.attributes.innerHTML);
+    }
+    else
+    {
+        for (var i = 0, l = this.childNodes.length; i < l; i++)
         {
-            parts.push(node.toString(trackEvents));
-        }
-        else if (node === "\u00A0")
-        {
-            // Special case to convert these back to entities,
-            parts.push("&nbsp;");
-        }
-        else
-        {
-            // Coerce to string and escape
-            parts.push(escapeHTML(""+node));
+            var node = this.childNodes[i];
+            if (node instanceof HTMLElement || node instanceof SafeString)
+            {
+                parts.push(node.toString(trackEvents));
+            }
+            else if (node === "\u00A0")
+            {
+                // Special case to convert these back to entities,
+                parts.push("&nbsp;");
+            }
+            else
+            {
+                // Coerce to string and escape
+                parts.push(escapeHTML(""+node));
+            }
         }
     }
 
@@ -632,7 +645,7 @@ function createElementFromArguments(tagName, args)
     {
         attributes = firstArg;
         children = (argsLength == 2 && isArray(args[1])
-                    ? args[1]                               // (attributes, [child1, ...])
+                    ? args[1]               // (attributes, [child1, ...])
                     : slice.call(args, 1)); // (attributes, child1, ...)
     }
     else
@@ -646,7 +659,7 @@ function createElementFromArguments(tagName, args)
 // DOMBuilder API --------------------------------------------------------------
 
 var DOMBuilder = {
-    version: "1.4.1",
+    version: "1.4.2 beta",
 
     /**
      * Determines which mode the ``createElement`` function will operate in.
@@ -734,20 +747,23 @@ var DOMBuilder = {
         // Create the element and set its attributes and event listeners
         var el = createElement(tagName, attributes);
 
-        // Append children
-        for (var i = 0, l = children.length; i < l; i++)
+        // If content was set via innerHTML, we're done...
+        if (!("innerHTML" in attributes))
         {
-            var child = children[i];
-            if (child.nodeType)
+            // ...otherwise, append children
+            for (var i = 0, l = children.length; i < l; i++)
             {
-                el.appendChild(child);
-            }
-            else
-            {
-                el.appendChild(document.createTextNode(""+child));
+                var child = children[i];
+                if (child.nodeType)
+                {
+                    el.appendChild(child);
+                }
+                else
+                {
+                    el.appendChild(document.createTextNode(""+child));
+                }
             }
         }
-
         return el;
     },
 

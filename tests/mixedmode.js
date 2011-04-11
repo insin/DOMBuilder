@@ -181,4 +181,27 @@ test("insertWithEvents on elements with readonly innerHTML (IE)", function()
     equal("PASS",  $("#testOutput").text(), "click handler executed");
 });
 
+function testInnerHTML()
+{
+  return dom.DIV({innerHTML: "test1<span>test2</span>"}, dom.P(), dom.P(), dom.P());
+}
+
+test("DOM innerHTML", function()
+{
+    expect(3);
+
+    var div = DOMBuilder.withMode("DOM", testInnerHTML);
+    equal(div.childNodes.length, 2, "correct number of child nodes");
+    equal(div.childNodes[0].nodeValue, "test1");
+    equal(div.childNodes[1].nodeName.toLowerCase(), "span");
+});
+
+test("HTML innerHTML", function()
+{
+    expect(1);
+
+    var div = DOMBuilder.withMode("HTML", testInnerHTML);
+    equal(""+div, '<div>test1<span>test2</span></div>');
+});
+
 })();

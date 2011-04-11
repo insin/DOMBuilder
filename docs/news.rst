@@ -1,6 +1,12 @@
 News for DOMBuilder
 ===================
 
+Trunk
+-----
+
+- Added support for using the ``innerHTML`` attribute to specify an
+  element's entire contents consitently in DOM and HTML modes.
+
 Version 1.4.1
 -------------
 

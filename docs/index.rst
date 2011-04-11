@@ -281,6 +281,21 @@ the input is left blank::
 
 .. _`events which have jQuery shortcut methods`: http://api.jquery.com/category/events/
 
+Other "Special" Attributes
+##########################
+
+Other attributes which trigger special handling or explicit compatibility
+handling between DOM and HTML modes.
+
+``innerHTML``
+   If you specify an ``innerHTML`` attribute, the given String will be the
+   sole used to provide the element's contents.
+
+   * In DOM mode, the element's ``innerHTML`` property will be set and no
+     further children will be appended, even if given.
+   * In HTML mode, the given HTML will be used, unescaped, as the
+     element's contents.
+
 Manual Element Creation
 -----------------------
 
