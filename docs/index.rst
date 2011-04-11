@@ -296,6 +296,8 @@ handling between DOM and HTML modes.
    * In HTML mode, the given HTML will be used, unescaped, as the
      element's contents.
 
+   .. versionadded:: 1.4.2
+
 Manual Element Creation
 -----------------------
 

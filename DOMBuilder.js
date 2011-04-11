@@ -659,7 +659,7 @@ function createElementFromArguments(tagName, args)
 // DOMBuilder API --------------------------------------------------------------
 
 var DOMBuilder = {
-    version: "1.4.2 beta",
+    version: "1.4.2",
 
     /**
      * Determines which mode the ``createElement`` function will operate in.
