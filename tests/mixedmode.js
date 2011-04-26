@@ -204,4 +204,26 @@ test("HTML innerHTML", function()
     equal(""+div, '<div>test1<span>test2</span></div>');
 });
 
+function testNodeChecks()
+{
+    return dom.DIV(null, undefined, true, false, 1, 0);
+}
+
+test("DOM child checks", function()
+{
+    expect(2);
+
+    var div = DOMBuilder.withMode("DOM", testNodeChecks);
+    equal(div.childNodes.length, 6, "correct number of child nodes");
+    equal(div.innerHTML, "nullundefinedtruefalse10", "Children coerced to String");
+});
+
+test("HTML child checks", function()
+{
+    expect(1);
+
+    var div = DOMBuilder.withMode("HTML", testNodeChecks);
+    equal("" + div, "<div>nullundefinedtruefalse10</div>");
+});
+
 })();

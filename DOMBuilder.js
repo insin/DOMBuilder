@@ -659,7 +659,7 @@ function createElementFromArguments(tagName, args)
 // DOMBuilder API --------------------------------------------------------------
 
 var DOMBuilder = {
-    version: "1.4.2",
+    version: "1.4.3",
 
     /**
      * Determines which mode the ``createElement`` function will operate in.
@@ -754,7 +754,7 @@ var DOMBuilder = {
             for (var i = 0, l = children.length; i < l; i++)
             {
                 var child = children[i];
-                if (child.nodeType)
+                if (child && child.nodeType)
                 {
                     el.appendChild(child);
                 }
