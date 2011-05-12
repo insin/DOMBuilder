@@ -131,7 +131,16 @@ if (typeof jQuery != "undefined")
     {
         createElement = function(tagName, attributes)
         {
-            return jQuery("<" + tagName + ">", attributes).get(0);
+            if ("innerHTML" in attributes)
+            {
+                var html = attributes.innerHTML;
+                delete attributes.innerHTML;
+                return jQuery("<" + tagName + ">", attributes).html(html).get(0);
+            }
+            else
+            {
+                return jQuery("<" + tagName + ">", attributes).get(0);
+            }
         };
         addEvent = function(id, event, handler)
         {
@@ -177,6 +186,12 @@ else
         createElement = function(tagName, attributes)
         {
             var el = document.createElement(tagName); // Damn you, IE
+
+            if ("innerHTML" in attributes)
+            {
+                setInnerHTML(el, attributes.innerHTML);
+                delete attributes.innerHTML;
+            }
 
             for (var name in attributes)
             {
@@ -392,7 +407,7 @@ HTMLElement.prototype.toString = function()
     for (var attr in this.attributes)
     {
         // innerHTML is a special case, as we can use it to (perhaps
-        // inadvisedly) to specify entire contents as a string.
+        // inadvisedly) specify entire contents as a string.
         if (attr === "innerHTML")
         {
             continue;
@@ -744,11 +759,13 @@ var DOMBuilder = {
             return new HTMLElement(tagName, attributes, children);
         }
 
+        var innerHTML = ("innerHTML" in attributes);
+
         // Create the element and set its attributes and event listeners
         var el = createElement(tagName, attributes);
 
         // If content was set via innerHTML, we're done...
-        if (!("innerHTML" in attributes))
+        if (!innerHTML)
         {
             // ...otherwise, append children
             for (var i = 0, l = children.length; i < l; i++)
