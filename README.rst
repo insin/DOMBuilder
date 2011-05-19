@@ -7,14 +7,12 @@ Elements and HTML in JavaScript, providing element creation functions
 which give you a more declarative, compact API to work with when creating
 content in code.
 
-Version 1.4.1 released on 4th March 2011
+Version 1.4.4 released on 19th May 2011
 ========================================
 
-`v1.4.1 documentation at readthedocs.org`_.
+`v1.4.4 documentation at readthedocs.org`_.
 
-.. _`v1.4.1 documentation at readthedocs.org`: http://readthedocs.org/docs/dombuilder/en/1.4.1/index.html
-
-Bugfix release which also adds support for use as a Node.js module to generate HTML.
+.. _`v1.4.4 documentation at readthedocs.org`: http://readthedocs.org/docs/dombuilder/en/1.4.4/
 
 Install for `Node.js`_ using Node Package Manager (npm)::
 
@@ -138,8 +136,8 @@ and inserted on the client when you're looking for performance gains, and sanity
 check DOM creation code in unit tests without having to verify DOM trees, by
 generating HTML instead.
 
-.. _`output mode`: http://readthedocs.org/docs/dombuilder/en/1.4.1/htmlmode.html#DOMBuilder.mode
+.. _`output mode`: http://readthedocs.org/docs/dombuilder/en/1.4.4/htmlmode.html#DOMBuilder.mode
 
 `Read the documentation to find out more...`_
 
-.. _`Read the documentation to find out more...`: http://readthedocs.org/docs/dombuilder/en/1.4.1/index.html
+.. _`Read the documentation to find out more...`: http://readthedocs.org/docs/dombuilder/en/1.4.4/index.html
