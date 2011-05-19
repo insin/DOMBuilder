@@ -1,10 +1,60 @@
-function Variable(name) {
-  this.name = name;
+var toString = Object.prototype.toString
+  , slice = Array.prototype.slice;
+
+function isFunction(o) {
+  return (toString.call(o) === "[object Function]");
 }
 
-function VariableNotFoundError(name, context) {
-  this.name = name;
-  this.context = context;
+function inheritFrom(child, parent) {
+  function F() {};
+  F.prototype = parent.prototype;
+  child.prototype = new F();
+  child.prototype.constructor = child;
+}
+
+var VAR_LOOKUP_SEPARATOR = '.';
+
+function VariableNotFoundError(message) {
+  Error.call(this, message);
+  this.message = message;
+}
+inheritFrom(VariableNotFoundError, Error);
+
+function Variable(variable) {
+  if (!(this instanceof Variable)) return new Variable(variable);
+  this.variable = variable;
+}
+
+Variable.prototype.resolve = function(context) {
+  // First path part is always a context lookup
+  var path = this.variable.split(VAR_LOOKUP_SEPARATOR)
+    , lookup = path.shift()
+    , current = context.get(lookup);
+  if (typeof current == 'undefined') {
+    throw new VariableNotFoundError('Could not find [' + lookup + '] in ' + context);
+  } else if (isFunction(current)) {
+    current = current();
+  }
+
+  // Any further lookups are against current object properties
+  if (path.length) {
+    var l = path.length, next;
+    for (var i = 0; i < l; i++) {
+      lookup = path[i];
+      if (typeof current[lookup] == 'undefined') {
+        throw new VariableNotFoundError('Could not find [' + lookup + '] in ' + current);
+      }
+      next = current[lookup];
+      // Call methods with the current object as context when we find 'em
+      if (isFunction(next)) {
+        current = next.call(current);
+      } else {
+        current = next;
+      }
+    }
+  }
+
+  return current;
 }
 
 function Context(initial) {
@@ -29,10 +79,6 @@ Context.prototype.set = function(name, value) {
   this.top[name] = value;
 };
 
-Context.prototype.del = function(name, value) {
-  delete this.top[name];
-};
-
 Context.prototype.zip = function(names, values) {
   var top = this.stack[this.stack.length - 1]
     , l = Math.min(names.length, values.length)
@@ -42,8 +88,7 @@ Context.prototype.zip = function(names, values) {
   }
 };
 
-Context.prototype.resolve = function(variable) {
-  var name = (variable instanceof Variable ? variable.name : ""+variable);
+Context.prototype.get = function(name) {
   if (this.top.hasOwnProperty(name)) {
     return this.top[name];
   }
@@ -55,27 +100,19 @@ Context.prototype.resolve = function(variable) {
   return undefined;
 };
 
-Context.prototype.resolveRequired = function(variable) {
-  var result = this.resolve(variable);
-  if (result === undefined) {
-    throw new VariableNotFoundError(variable, this);
-  }
-  return result;
-};
-
 var UNPACK_SEP_RE = /, ?/g;
 
 function ForNode(props, contents) {
   for (var prop in props) {
     this.loopVars = prop.split(UNPACK_SEP_RE);
-    this.listVar = props[prop];
+    this.listVar = Variable(props[prop]);
     break;
   }
   this.contents = contents;
 }
 
 ForNode.prototype.render = function(context) {
-  var list = context.resolveRequired(this.listVar)
+  var list = this.listVar.resolve(context)
     , l = list.length
     , item
     , results = []
@@ -86,7 +123,7 @@ ForNode.prototype.render = function(context) {
       , revcounter0: l - 1
       , first: true
       , last: l === 1
-      , parentloop: context.resolve('forloop')
+      , parentloop: context.get('forloop')
       };
   context.push();
   context.set('forloop', forloop);
@@ -116,10 +153,14 @@ ForNode.prototype.render = function(context) {
   return results;
 };
 
-function EndFornode() { }
+function EndForNode() { }
+
+function $var(variable) {
+  return new Variable(variable);
+}
 
 function $for(props) {
-  return new ForNode(props, Array.prototype.slice.call(arguments, 1));
+  return new ForNode(props, slice.call(arguments, 1));
 }
 
 function $endfor() {
@@ -131,7 +172,7 @@ function $endfor() {
 function Template(props, contents) {
   this.name = props.name;
   this.extends_ = props['extends'];
-  this.contents = contents;
+  this.contents = contents; // TODO Check for dynamic content
 }
 
 function Block(name, contents) {
@@ -139,12 +180,26 @@ function Block(name, contents) {
   this.contents = contents;
 }
 
+var VAR_START = '{{';
+var VAR_END = '}}';
+
 // These need to hook into the DOMBuilder API via the introduction of a new
 // mode, to be used when instantiating Template objects.
-function TemplateNode() { }
-function TemplateTextNode() { }
+function TemplateElement(tagName, attributes, children) {
+    this.tagName = tagName;
+    this.attributes = attributes; // TODO Check attributes for dynamic content
+    this.children = children; // TODO Check children for dynamic content, convert strings to TemplateText
+}
+function TemplateFragment(children) {
+    this.children = children; // TODO Check children for dynamic content, convert strings to TemplateText
+}
+function TemplateText(text) {
+    this.text = text; // TODO Check for dynamic content
+}
 
-function TemplateHTMLNode() { }
+function TemplateHTMLNode(html) {
+   this.text = text; // TODO Check for dynamic content
+}
 
 function IfNode(props, contents) { }
 
@@ -152,15 +207,15 @@ function EndIfNode() { }
 
 // Template convenience functions
 function $template(props) {
-  return new Template(props, Array.prototype.slice.call(arguments, 1));
+  return new Template(props, slice.call(arguments, 1));
 }
 
 function $block(name) {
-  return new Block(name, Array.prototype.slice.call(arguments, 1));
+  return new Block(name, slice.call(arguments, 1));
 }
 
 function $if(props) {
-  return new IfNode(props, Array.prototype.slice.call(arguments, 1));
+  return new IfNode(props, slice.call(arguments, 1));
 }
 
 function $endif() {
@@ -169,10 +224,6 @@ function $endif() {
 
 function $html(contents) {
   return new RawHTMLNode(contents);
-}
-
-function $var(name) {
-  return new Variable(name);
 }
 
 // Helper functions

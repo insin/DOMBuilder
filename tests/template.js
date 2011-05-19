@@ -10,7 +10,7 @@ function shallowCopy(a) {
   return b;
 }
 
-test("Context", function() {
+test('Context', function() {
   // Instantiation with context
   var content = {test1: 1, test2: 2};
   var c = new Context(content);
@@ -27,11 +27,8 @@ test("Context", function() {
   // Setting and getting variables
   c.set('test', 42);
   deepEqual(c.top, {test: 42}, 'Variable added to top context object');
-  strictEqual(c.resolve('test'), 42, 'Set values resolve via string');
-  strictEqual(c.resolve(new Variable('test')), 42, 'Set values resolve via Variable');
-  strictEqual(c.resolve($var('test')), 42, 'Set values resolve via Variable created with $var');
-  strictEqual(c.resolve('missing'), undefined, 'null returned for unknown context variables');
-  raises(function() { c.resolveRequired('missing'); }, VariableNotFoundError, 'Exception thrown if required context variable missing');
+  strictEqual(c.get('test'), 42, 'Set values got via string');
+  strictEqual(c.get('missing'), undefined, 'undefined returned for unknown context variables');
 
   // Setting multiple variables
   c.zip(['a', 'b'], [2, 3]);
@@ -49,10 +46,9 @@ test("Context", function() {
   deepEqual(c.stack[0], {test: 42, a: 2, b: 3}, 'Other context objects not touched');
 
   // Getting variables with multiple contexts in play
-  strictEqual(c.resolve('stack'), 99, 'Top context variable resolves');
-  strictEqual(c.resolve('test'), 42, 'Prior context objects searched');
-  strictEqual(c.resolve('missing'), undefined, 'null returned for unknown context variables');
-  raises(function() { c.resolveRequired('missing'); }, VariableNotFoundError, 'Exception thrown if required context variable missing');
+  strictEqual(c.get('stack'), 99, 'Top context variable found');
+  strictEqual(c.get('test'), 42, 'Prior context objects searched');
+  strictEqual(c.get('missing'), undefined, 'undefined returned for unknown context variables');
 
   // Popping contexts
   c.pop();
@@ -66,23 +62,52 @@ test("Context", function() {
 
   // 'new' keyword is optional
   c = Context({'test': true});
-  ok(c.resolve('test'), '"new" keyword is optional');
+  ok(c.get('test'), '"new" keyword is optional');
 });
 
-test("ForNode", function() {
+test('Variable', function() {
+  // Variables resolve against contexts
+  var v = Variable('test');
+  strictEqual(v.resolve(Context({test: 42})), 42, 'Variable resolved');
+  raises(function() { v.resolve(Context()) }, VariableNotFoundError, 'Exception thrown if context variable missing');
+
+  // Nested lookups are supported with the . operator
+  v = Variable('test.foo.bar');
+  strictEqual(v.resolve(Context({test: {foo: {bar: 42}}})), 42, 'Nested lookups performed');
+  raises(function() { v.resolve(Context({test: {food: {bar: 42}}})); }, VariableNotFoundError, 'Exception thrown for invalid nested lookups');
+
+  // Functions found during variable resolution will be called
+  strictEqual(v.resolve(Context({
+    test: function() {
+      return {
+        foo: function() {
+          return {bar: 42};
+        }
+      }
+    }
+  })), 42, 'Functions are called if part of lookup path');
+  strictEqual(Variable('test.bar').resolve(Context({
+    test: {
+      foo: 42,
+      bar: function() { return this.foo; }
+    }
+  })), 42, 'Nested lookup functions called with appropriate context object');
+});
+
+test('ForNode', function() {
   var items, forloops = [];
   var f = new ForNode({'item': 'items'}, [{render: function(context) {
-    forloops.push(shallowCopy(context.resolve('forloop')));
-    return context.resolve('item')
+    forloops.push(shallowCopy(Variable('forloop').resolve(context)));
+    return Variable('item').resolve(context)
   }}])
 
   // Zero items
-  items = f.render(new Context({'items': []}));
+  items = f.render(Context({'items': []}));
   deepEqual(items, [], 'Zero items - item context as expected');
   deepEqual(forloops, [], 'Zero items - forloop context as expected');
 
   // SIngle item
-  items = f.render(new Context({'items': [1]}));
+  items = f.render(Context({'items': [1]}));
   deepEqual(items, [1], 'Single item - item context as expected');
   deepEqual(forloops, [{
       counter: 1,
@@ -96,7 +121,7 @@ test("ForNode", function() {
 
   // Two items
   forloops = [];
-  items = f.render(new Context({'items': [1,2]}));
+  items = f.render(Context({'items': [1,2]}));
   deepEqual(items, [1,2], 'Two items - item context as expected');
   deepEqual(forloops, [{
       counter: 1,
@@ -118,7 +143,7 @@ test("ForNode", function() {
 
   // Three items
   forloops = [];
-  items = f.render(new Context({'items': [1,2,3]}));
+  items = f.render(Context({'items': [1,2,3]}));
   deepEqual(items, [1,2,3], 'Three items - item context as expected');
   deepEqual(forloops, [{
       counter: 1,
@@ -149,10 +174,10 @@ test("ForNode", function() {
   // Multiple loop context variables
   forloops = [];
   f = new ForNode({'a, b': 'items'}, [{render: function(context) {
-    forloops.push(shallowCopy(context.resolve('forloop')));
-    return [context.resolve('a'), context.resolve('b')];
-  }}])
-  items = f.render(new Context({'items': [[1,1],[2,2],[3,3]]}));
+    forloops.push(shallowCopy(Variable('forloop').resolve(context)));
+    return [Variable('a').resolve(context), Variable('a').resolve(context)];
+  }}]);
+  items = f.render(Context({'items': [[1,1],[2,2],[3,3]]}));
   deepEqual(items, [[1,1],[2,2],[3,3]], 'Multiple loop context variables - item context as expected');
   deepEqual(forloops, [{
       counter: 1,
@@ -184,8 +209,8 @@ test("ForNode", function() {
 test('$for', function() {
   var items, forloops = [];
   var f = $for({'item': 'items'}, {render: function(context) {
-    forloops.push(shallowCopy(context.resolve('forloop')));
-    return context.resolve('item')
+    forloops.push(shallowCopy(Variable('forloop').resolve(context)));
+    return Variable('item').resolve(context);
   }})
 
   items = f.render(new Context({'items': [1,2]}));
