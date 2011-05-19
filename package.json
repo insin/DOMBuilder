@@ -1,6 +1,6 @@
 {
   "name": "DOMBuilder",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "Builder library - generate HTML or DOM Elements (mostly) interchangeably",
   "tags": ["DOM", "HTML", "builder", "fragments"],
   "author": "Jonathan Buchanan <jonathan.buchanan@gmail.com> (https://github.com/insin)",

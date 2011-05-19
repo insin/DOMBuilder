@@ -226,4 +226,12 @@ test("HTML child checks", function()
     equal("" + div, "<div>nullundefinedtruefalse10</div>");
 });
 
+test("Arguments supplied to withMode", function()
+{
+    expect(1);
+
+    var div = DOMBuilder.withMode("HTML", function(a,b,c) { return dom.DIV(a, b, c); }, 1, 2, 3);
+    equal("" + div, "<div>123</div>");
+});
+
 })();

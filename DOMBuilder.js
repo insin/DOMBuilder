@@ -674,7 +674,7 @@ function createElementFromArguments(tagName, args)
 // DOMBuilder API --------------------------------------------------------------
 
 var DOMBuilder = {
-    version: "1.4.3",
+    version: "1.4.4",
 
     /**
      * Determines which mode the ``createElement`` function will operate in.
@@ -707,7 +707,7 @@ var DOMBuilder = {
         this.mode = mode;
         try
         {
-            return func();
+            return func.apply(null, Array.prototype.slice.call(arguments, 2));
         }
         finally
         {

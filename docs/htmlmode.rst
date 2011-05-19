@@ -225,10 +225,13 @@ If you're going to be working with mixed output types, forgetting to reset
 :js:attr:`DOMBuilder.mode` would be catastrophic, so DOMBuilder provides
 :js:func:`DOMBuilder.withMode` to manage it for you.
 
-.. js:function:: DOMBuilder.withMode(mode, func)
+.. js:function:: DOMBuilder.withMode(mode, func[, args...])
 
    Calls a function, with :js:attr:`DOMBuilder.mode` set to the given value
    for the duration of the function call, and returns its output.
+
+   Any additional arguments passed after the ``func`` argument will be passed
+   to the function when it is called.
 
 The following `FireBug`_ console session shows :js:func:`DOMBuilder.withMode` in action::
 
