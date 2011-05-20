@@ -12,14 +12,37 @@ function inheritFrom(child, parent) {
   child.prototype.constructor = child;
 }
 
+/** Separator used for object lookups. */
 var VAR_LOOKUP_SEPARATOR = '.';
+/** Separator for specifying multiple variable names to be unpacked. */
+var UNPACK_SEPARATOR_RE = /, ?/;
+/** RegExp for template variables. */
+var VARIABLE_RE = /{{(.*?)}}/;
+/** RegExp for trimming whitespace. */
+var TRIM_RE = /^\s+|\s+$/g;
 
+/**
+ * Thrown when a Variable cannot be resolved.
+ */
 function VariableNotFoundError(message) {
   Error.call(this, message);
   this.message = message;
 }
 inheritFrom(VariableNotFoundError, Error);
 
+/**
+ * Thrown when expressions cannot be parsed.
+ */
+function TemplateSyntaxError(message) {
+  Error.call(this, message);
+  this.message = message;
+}
+inheritFrom(TemplateSyntaxError, Error);
+
+/**
+ * Resolves variables based on a context, supporting object property lookups
+ * specified with '.' separators.
+ */
 function Variable(variable) {
   if (!(this instanceof Variable)) return new Variable(variable);
   this.variable = variable;
@@ -113,11 +136,14 @@ Context.prototype.get = function(name) {
   return undefined;
 };
 
-var UNPACK_SEP_RE = /, ?/g;
-
+/**
+ * Supports looping over a list obtained from the context, creating new
+ * context variables with list contents and calling render on all its
+ * contents.
+ */
 function ForNode(props, contents) {
   for (var prop in props) {
-    this.loopVars = prop.split(UNPACK_SEP_RE);
+    this.loopVars = prop.split(UNPACK_SEPARATOR_RE);
     this.listVar = Variable(props[prop]);
     break;
   }
@@ -166,16 +192,64 @@ ForNode.prototype.render = function(context) {
   return results;
 };
 
+/**
+ * Marker for the end of a ForNode, where its contents are specified as
+ * siblings to reduce the amount of nesting required.
+ */
 function EndForNode() { }
 
+function TemplateText(text) {
+  this.dynamic = VARIABLE_RE.test(text);
+  if (this.dynamic) {
+    this.func = this.parse(text);
+  } else {
+    this.text = text;
+  }
+}
+
+/**
+ * Creates a function which accepts context and performs replacement by
+ * variable resolution on the given expression.
+ */
+TemplateText.prototype.parse = (function() {
+  var escapeString = function(s) {
+    return s.replace('\\', '\\\\').replace('"', '\\"');
+  }
+  return function(expr) {
+    var code = ['var a = []']
+      , bits = expr.split(VARIABLE_RE)
+      , l = bits.length
+      ;
+    for (var i = 0; i < l; i++) {
+      if (i % 2) {
+        code.push('a.push(Variable("' +
+                  escapeString(bits[i].replace(TRIM_RE, '')) +
+                  '").resolve(c))');
+      } else {
+        code.push('a.push("' + escapeString(bits[i]) + '")');
+      }
+    }
+    code.push('return a.join("")');
+    console.log(code);
+    return new Function('c', code.join(';'));
+  };
+})();
+
+TemplateText.prototype.render = function(context) {
+  return (this.dynamic ? this.func(context) : this.text);
+};
+
+/** Convenience method for creating a Variable in a template definition. */
 function $var(variable) {
   return new Variable(variable);
 }
 
+/** Convenience method for creating a ForNode in a template definition. */
 function $for(props) {
   return new ForNode(props, slice.call(arguments, 1));
 }
 
+/** Convenience method for creating an EndForNode in a template definition. */
 function $endfor() {
   return new EndForNode();
 }
@@ -193,28 +267,25 @@ function Block(name, contents) {
   this.contents = contents;
 }
 
-var VAR_START = '{{';
-var VAR_END = '}}';
-
 // These need to hook into the DOMBuilder API via the introduction of a new
 // mode, to be used when instantiating Template objects.
-function TemplateElement(tagName, attributes, children) {
+function TemplateElement(tagName, attributes, contents) {
     this.tagName = tagName;
-    this.attributes = attributes; // TODO Check attributes for dynamic content
-    this.children = children; // TODO Check children for dynamic content, convert strings to TemplateText
+    this.attributes = attributes;
+    this.contents = contents;
 }
 function TemplateFragment(children) {
-    this.children = children; // TODO Check children for dynamic content, convert strings to TemplateText
-}
-function TemplateText(text) {
-    this.text = text; // TODO Check for dynamic content
+    this.contents = contents;
 }
 
 function TemplateHTMLNode(html) {
-   this.text = text; // TODO Check for dynamic content
+   this.html = html;
 }
 
-function IfNode(props, contents) { }
+function IfNode(expr, contents) {
+    this.expr = expr;
+    this.contents = contents;
+}
 
 function EndIfNode() { }
 
@@ -240,6 +311,15 @@ function $html(contents) {
 }
 
 // Helper functions
+function checkDynamicContents(contents) {
+  var content
+    , l = l = contents.length
+    ;
+  for (var i = 0; i < l; i++) {
+    content = contents[i];
+
+  }
+}
 function processMarkerNodes(item) {
   // Find these
   // $for/$if, element, element, $endfor/$endif

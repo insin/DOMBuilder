@@ -74,12 +74,15 @@ test('Variable', function() {
   // Variables resolve against contexts
   var v = Variable('test');
   strictEqual(v.resolve(Context({test: 42})), 42, 'Variable resolved');
-  raises(function() { v.resolve(Context()) }, VariableNotFoundError, 'Exception thrown if context variable missing');
+  raises(function() { v.resolve(Context()) }, VariableNotFoundError,
+         'Exception thrown if context variable missing');
 
   // Nested lookups are supported with the . operator
   v = Variable('test.foo.bar');
-  strictEqual(v.resolve(Context({test: {foo: {bar: 42}}})), 42, 'Nested lookups performed');
-  raises(function() { v.resolve(Context({test: {food: {bar: 42}}})); }, VariableNotFoundError, 'Exception thrown for invalid nested lookups');
+  strictEqual(v.resolve(Context({test: {foo: {bar: 42}}})), 42,
+              'Nested lookups performed');
+  raises(function() { v.resolve(Context({test: {food: {bar: 42}}})); },
+         VariableNotFoundError, 'Exception thrown for invalid nested lookups');
 
   // Functions found during variable resolution will be called
   strictEqual(v.resolve(Context({
@@ -183,7 +186,8 @@ test('ForNode', function() {
     return [Variable('a').resolve(context), Variable('a').resolve(context)];
   }}]);
   items = f.render(Context({'items': [[1,1],[2,2],[3,3]]}));
-  deepEqual(items, [[1,1],[2,2],[3,3]], 'Multiple loop context variables - item context as expected');
+  deepEqual(items, [[1,1],[2,2],[3,3]],
+            'Multiple loop context variables - item context as expected');
   deepEqual(forloops, [{
       counter: 1,
       counter0: 0,
@@ -237,6 +241,38 @@ test('$for', function() {
       last: true,
       parentloop: undefined
     }], 'Two items - forloop context as expected');
+});
+
+test('TemplateText', function() {
+  var c = Context({test: 42, foo: 'bar'});
+
+  // Static text
+  var t = new TemplateText('test');
+  ok(!t.dynamic, 'Static text recognised');
+  equal(t.render(c), 'test', 'Rendering static text');
+
+  // Dynamic text
+  t = new TemplateText('{{test}}');
+  ok(t.dynamic, 'Dynamic content recognised');
+  equal(t.render(c), '42', 'Rendering dynamic content');
+
+  t = new TemplateText('{{ test }}');
+  ok(t.dynamic, 'Dynamic text with whitespace in variable name recognised');
+  equal(t.render(c), '42', 'Whitespace trimmed from variable name');
+
+  t = new TemplateText('{{ test }}{{foo}}');
+  ok(t.dynamic, 'Dynamic text with multiple variable names recognised');
+  equal(t.render(c), '42bar', 'Rendering with multiple variable names');
+
+  t = new TemplateText('The quick brown {{ test }} jumped over the lazy {{foo}}.');
+  ok(t.dynamic, 'Mixed content recognised as dynamic');
+  equal(t.render(c), 'The quick brown 42 jumped over the lazy bar.',
+        'Rendering mixed content');
+
+  t = new TemplateText('The quick brown {{ test.toExponential }} jumped over the lazy {{foo.toUpperCase}}.');
+  ok(t.dynamic, 'Mixed content with variable lookup recognised as dynamic');
+  equal(t.render(c), 'The quick brown 4.2e+1 jumped over the lazy BAR.',
+        'Variable lookup performed');
 });
 
 })();
