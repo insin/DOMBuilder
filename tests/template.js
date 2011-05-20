@@ -15,50 +15,55 @@ test('Context', function() {
   var content = {test1: 1, test2: 2};
   var c = new Context(content);
   equal(c.stack.length, 1, 'Stack is initialised with a single context');
-  ok(c.top === c.stack[0], 'Initial top is reference to top of stack');
-  ok(c.top === content, 'Initial context object is the given object');
+  ok(c._top === c.stack[0], 'Initial top is reference to top of stack');
+  ok(c._top === content, 'Initial context object is the given object');
 
   // Instantiation
   var c = new Context();
   equal(c.stack.length, 1, 'Stack is initialised with a single context');
-  ok(c.top === c.stack[0], 'Initial top is reference to top of stack')
-  deepEqual(c.top, {}, 'Initial context object is empty');
+  ok(c._top === c.stack[0], 'Initial top is reference to top of stack')
+  deepEqual(c._top, {}, 'Initial context object is empty');
 
   // Setting and getting variables
   c.set('test', 42);
-  deepEqual(c.top, {test: 42}, 'Variable added to top context object');
+  deepEqual(c._top, {test: 42}, 'Variable added to top context object');
   strictEqual(c.get('test'), 42, 'Set values got via string');
-  strictEqual(c.get('missing'), undefined, 'undefined returned for unknown context variables');
+  strictEqual(c.get('missing'), undefined,
+              'undefined returned for unknown context variables');
 
   // Setting multiple variables
   c.zip(['a', 'b'], [2, 3]);
-  deepEqual(c.top, {test: 42, a: 2, b: 3}, 'Variables added to top context object');
+  deepEqual(c._top, {test: 42, a: 2, b: 3},
+            'Variables added to top context object');
 
   // Pushing a new context
   c.push();
   equal(c.stack.length, 2, 'Stack gained a new context object');
-  ok(c.top === c.stack[1], 'Top references top of stack')
-  deepEqual(c.top, {}, 'Initial context object is empty');
+  ok(c._top === c.stack[1], 'Top references top of stack')
+  deepEqual(c._top, {}, 'Initial context object is empty');
 
   // Setting variables in new context
   c.set('stack', 99);
-  deepEqual(c.top, {stack: 99}, 'Top context object modified');
-  deepEqual(c.stack[0], {test: 42, a: 2, b: 3}, 'Other context objects not touched');
+  deepEqual(c._top, {stack: 99}, 'Top context object modified');
+  deepEqual(c.stack[0], {test: 42, a: 2, b: 3},
+            'Other context objects not touched');
 
   // Getting variables with multiple contexts in play
   strictEqual(c.get('stack'), 99, 'Top context variable found');
   strictEqual(c.get('test'), 42, 'Prior context objects searched');
-  strictEqual(c.get('missing'), undefined, 'undefined returned for unknown context variables');
+  strictEqual(c.get('missing'), undefined,
+              'undefined returned for unknown context variables');
 
   // Popping contexts
   c.pop();
   equal(c.stack.length, 1, 'Top context object removed');
-  ok(c.top === c.stack[0], 'Top references top of stack')
+  ok(c._top === c.stack[0], 'Top references top of stack')
   deepEqual(c.stack[0], {test: 42, a: 2, b: 3}, 'Context objects not touched');
 
   // Popping single context
   c.pop();
-  equal(c.stack.length, 1, 'Popping has no effect if the stack has only one element');
+  equal(c.stack.length, 1,
+        'Popping has no effect if the stack has only one element');
 
   // 'new' keyword is optional
   c = Context({'test': true});

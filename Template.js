@@ -57,28 +57,35 @@ Variable.prototype.resolve = function(context) {
   return current;
 }
 
+/**
+ * Manages a stack of objects holding template context variables.
+ */
 function Context(initial) {
   if (!(this instanceof Context)) return new Context(initial);
   this.stack = [initial || {}];
-  this.top = this.stack[0];
+  this._top = this.stack[0];
 }
 
 Context.prototype.push = function() {
   this.stack.push({});
-  this.top = this.stack[this.stack.length - 1];
+  this._top = this.stack[this.stack.length - 1];
 };
 
 Context.prototype.pop = function() {
   if (this.stack.length > 1) {
     this.stack.pop();
   }
-  this.top = this.stack[this.stack.length - 1];
+  this._top = this.stack[this.stack.length - 1];
 };
 
 Context.prototype.set = function(name, value) {
-  this.top[name] = value;
+  this._top[name] = value;
 };
 
+/**
+ * Adds multiple items to the current context object, where names and values are
+ * provided as lists.
+ */
 Context.prototype.zip = function(names, values) {
   var top = this.stack[this.stack.length - 1]
     , l = Math.min(names.length, values.length)
@@ -88,9 +95,15 @@ Context.prototype.zip = function(names, values) {
   }
 };
 
+/**
+ * Gets variables, checking all context objects from top to bottom.
+ *
+ * Returns undefined for variables which are not set, to distinguish from
+ * variables which are set, but are null.
+ */
 Context.prototype.get = function(name) {
-  if (this.top.hasOwnProperty(name)) {
-    return this.top[name];
+  if (this._top.hasOwnProperty(name)) {
+    return this._top[name];
   }
   for (var i = this.stack.length - 2; i >= 0; i--) {
     if (this.stack[i].hasOwnProperty(name)) {
