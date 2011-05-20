@@ -12,6 +12,20 @@ function inheritFrom(child, parent) {
   child.prototype.constructor = child;
 }
 
+function lookup(a) {
+  var obj = {}
+    , l = a.length
+    ;
+  for (var i = 0; i < l; i++) {
+    obj[a[i]] = true;
+  }
+  return obj;
+}
+
+function escapeString(s) {
+  return s.replace('\\', '\\\\').replace('"', '\\"');
+}
+
 /** Separator used for object lookups. */
 var VAR_LOOKUP_SEPARATOR = '.';
 /** Separator for specifying multiple variable names to be unpacked. */
@@ -136,6 +150,14 @@ Context.prototype.get = function(name) {
   return undefined;
 };
 
+Context.prototype.render = function(contents) {
+  var results = [];
+  for (var i = 0, l = contents.length; i < l; i++) {
+    results.push(contents[i].render(this));
+  }
+  return results;
+};
+
 /**
  * Supports looping over a list obtained from the context, creating new
  * context variables with list contents and calling render on all its
@@ -198,6 +220,75 @@ ForNode.prototype.render = function(context) {
  */
 function EndForNode() { }
 
+/**
+ * Executes a boolean test using variables obtained from the context,
+ * calling render on all its if the result is true.
+ */
+function IfNode(expr, contents) {
+  if (isFunction(expr)) {
+    this.test = expr;
+  } else {
+    this.test = this.parse(expr);
+  }
+  this.contents = contents;
+}
+
+IfNode.prototype.parse = (function() {
+  var ops = lookup('( ) && || == === <= < >= > != !== !! !'.split(' '))
+    , opsRE = /(\(|\)|&&|\|\||={2,3}|<=|<|>=|>|!={1,2}|!{1,2})/
+    , numberRE = /^-?(?:\d+(?:\.\d+)?|(?:\d+)?\.\d+)$/
+    , quotes = lookup(['"', "'"])
+    , isQuotedString = function(s) {
+        var q = s.charAt(0);
+        return (s.length > 1 &&
+                typeof quotes[q] != 'undefined' &&
+                s.lastIndexOf(q) == s.length - 1);
+      }
+    ;
+  return function(expr) {
+    var code = ['return (']
+      , bits = expr.split(opsRE)
+      , l = bits.length
+      , bit
+      ;
+    for (var i = 0; i < l; i++) {
+      bit = bits[i];
+      if (typeof ops[bit] != 'undefined') {
+        code.push(bit);
+      } else {
+        bit = bit.replace(TRIM_RE, '');
+        if (bit) {
+          if (numberRE.test(bit) || isQuotedString(bit)) {
+            code.push(bit);
+          } else {
+            code.push('Variable("' + escapeString(bit) + '").resolve(c)');
+          }
+        }
+      }
+    }
+    code.push(');');
+    try {
+      return new Function('c', code.join(' '));
+    } catch (e) {
+      throw new TemplateSyntaxError('Invalid $if expression (' + e.message +
+                                    '): ' + expr);
+    }
+  }
+})();
+
+IfNode.prototype.render = function(context) {
+  if (this.test(context)) {
+    return context.render(this.contents);
+  }
+  return [];
+}
+
+/**
+ * Marker for the end of an IfNode, where its contents are specified as
+ * siblings to reduce the amount of nesting required.
+ */
+function EndIfNode() { }
+
 function TemplateText(text) {
   this.dynamic = VARIABLE_RE.test(text);
   if (this.dynamic) {
@@ -211,29 +302,23 @@ function TemplateText(text) {
  * Creates a function which accepts context and performs replacement by
  * variable resolution on the given expression.
  */
-TemplateText.prototype.parse = (function() {
-  var escapeString = function(s) {
-    return s.replace('\\', '\\\\').replace('"', '\\"');
-  }
-  return function(expr) {
-    var code = ['var a = []']
-      , bits = expr.split(VARIABLE_RE)
-      , l = bits.length
-      ;
-    for (var i = 0; i < l; i++) {
-      if (i % 2) {
-        code.push('a.push(Variable("' +
-                  escapeString(bits[i].replace(TRIM_RE, '')) +
-                  '").resolve(c))');
-      } else {
-        code.push('a.push("' + escapeString(bits[i]) + '")');
-      }
+TemplateText.prototype.parse = function(expr) {
+  var code = ['var a = []']
+    , bits = expr.split(VARIABLE_RE)
+    , l = bits.length
+    ;
+  for (var i = 0; i < l; i++) {
+    if (i % 2) {
+      code.push('a.push(Variable("' +
+                escapeString(bits[i].replace(TRIM_RE, '')) +
+                '").resolve(c))');
+    } else {
+      code.push('a.push("' + escapeString(bits[i]) + '")');
     }
-    code.push('return a.join("")');
-    console.log(code);
-    return new Function('c', code.join(';'));
-  };
-})();
+  }
+  code.push('return a.join("")');
+  return new Function('c', code.join(';'));
+}
 
 TemplateText.prototype.render = function(context) {
   return (this.dynamic ? this.func(context) : this.text);
@@ -252,6 +337,16 @@ function $for(props) {
 /** Convenience method for creating an EndForNode in a template definition. */
 function $endfor() {
   return new EndForNode();
+}
+
+/** Convenience method for creating an IfNode in a template definition. */
+function $if(props) {
+  return new IfNode(props, slice.call(arguments, 1));
+}
+
+/** Convenience method for creating an EndIfNode in a template definition. */
+function $endif() {
+  return new EndIfNode();
 }
 
 // WIP -----------------------------------------------------------------------
@@ -274,6 +369,7 @@ function TemplateElement(tagName, attributes, contents) {
     this.attributes = attributes;
     this.contents = contents;
 }
+
 function TemplateFragment(children) {
     this.contents = contents;
 }
@@ -282,13 +378,6 @@ function TemplateHTMLNode(html) {
    this.html = html;
 }
 
-function IfNode(expr, contents) {
-    this.expr = expr;
-    this.contents = contents;
-}
-
-function EndIfNode() { }
-
 // Template convenience functions
 function $template(props) {
   return new Template(props, slice.call(arguments, 1));
@@ -296,14 +385,6 @@ function $template(props) {
 
 function $block(name) {
   return new Block(name, slice.call(arguments, 1));
-}
-
-function $if(props) {
-  return new IfNode(props, slice.call(arguments, 1));
-}
-
-function $endif() {
-  return new EndIfNode();
 }
 
 function $html(contents) {

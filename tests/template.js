@@ -243,6 +243,59 @@ test('$for', function() {
     }], 'Two items - forloop context as expected');
 });
 
+test('IfNode', function() {
+  var c = Context({a: 41, b: 42, c: 43, d: '43', e: 43, f: true});
+
+  // Valid, supported expressions
+  var exprs = [
+    ['a > b', false]
+  , ['b > a', true]
+  , ['c == d', true]
+  , ['c != d', false]
+  , ['c === d', false]
+  , ['c !== d', true]
+  , ['c >= e', true]
+  , ['c <= e', true]
+  , ['c == d && (a > b || c > b)', true]
+  , ['!f', false]
+  , ['!!d', true]
+  , ['4 < a', true]
+  , ['"41" == a', true]
+  , ["'42' == b", true]
+  , ['"41" === (a)', false]
+  , ['41.0000000001 <= a', false]
+  , ['"" == f', false]
+  , ['!!""', false]
+  ];
+  for (var i = 0, expr; expr = exprs[i]; i++) {
+    strictEqual(new IfNode(expr[0]).test(c), expr[1], 'Valid: ' + expr[0]);
+  }
+
+  // Invalid or unsupported expressions
+  var invalidExprs = [
+    'a >> b'
+  , '(a > b'
+  , ')a > b'
+  , '""" > b'
+  ];
+  for (var i = 0, expr; expr = invalidExprs[i]; i++) {
+    raises(function() { new IfNode(expr) }, TemplateSyntaxError, 'Invalid: ' + expr);
+  }
+});
+
+test('$if', function() {
+  var c = Context({test: 5, a: 42});
+  var if_ = $if('test > 4', {
+    render: function(context) {
+      return Variable('a').resolve(context);
+    }
+  });
+
+  deepEqual(if_.render(c), [42], 'Returns rendered contents when condition is true');
+  c.set('test', '4');
+  deepEqual(if_.render(c), [], 'Returns empty list when condition is false');
+});
+
 test('TemplateText', function() {
   var c = Context({test: 42, foo: 'bar'});
 
