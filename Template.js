@@ -315,10 +315,10 @@ IfNode.prototype.render = function(context) {
  */
 function EndIfNode() { }
 
-function TemplateText(text) {
+function TextNode(text) {
   this.dynamic = VARIABLE_RE.test(text);
   if (this.dynamic) {
-    this.func = this.parse(text);
+    this.func = this._parseExpr(text);
   } else {
     this.text = text;
   }
@@ -328,7 +328,7 @@ function TemplateText(text) {
  * Creates a function which accepts context and performs replacement by
  * variable resolution on the given expression.
  */
-TemplateText.prototype.parse = function(expr) {
+TextNode.prototype._parseExpr = function(expr) {
   var code = ['var a = []']
     , bits = expr.split(VARIABLE_RE)
     , l = bits.length
@@ -346,7 +346,7 @@ TemplateText.prototype.parse = function(expr) {
   return new Function('c', code.join(';'));
 }
 
-TemplateText.prototype.render = function(context) {
+TextNode.prototype.render = function(context) {
   return (this.dynamic ? this.func(context) : this.text);
 };
 
@@ -364,7 +364,6 @@ function $for(props) {
 function $endfor() {
   return new EndForNode();
 }
-
 /** Convenience method for creating an IfNode in a template definition. */
 function $if(props) {
   return new IfNode(props, slice.call(arguments, 1));

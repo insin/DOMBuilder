@@ -310,33 +310,33 @@ test('$if', function() {
   deepEqual(if_.render(c), [], 'Returns empty list when condition is false');
 });
 
-test('TemplateText', function() {
+test('TextNode', function() {
   var c = Context({test: 42, foo: 'bar'});
 
   // Static text
-  var t = new TemplateText('test');
+  var t = new TextNode('test');
   ok(!t.dynamic, 'Static text recognised');
   equal(t.render(c), 'test', 'Rendering static text');
 
   // Dynamic text
-  t = new TemplateText('{{test}}');
+  t = new TextNode('{{test}}');
   ok(t.dynamic, 'Dynamic content recognised');
   equal(t.render(c), '42', 'Rendering dynamic content');
 
-  t = new TemplateText('{{ test }}');
+  t = new TextNode('{{ test }}');
   ok(t.dynamic, 'Dynamic text with whitespace in variable name recognised');
   equal(t.render(c), '42', 'Whitespace trimmed from variable name');
 
-  t = new TemplateText('{{ test }}{{foo}}');
+  t = new TextNode('{{ test }}{{foo}}');
   ok(t.dynamic, 'Dynamic text with multiple variable names recognised');
   equal(t.render(c), '42bar', 'Rendering with multiple variable names');
 
-  t = new TemplateText('The quick brown {{ test }} jumped over the lazy {{foo}}.');
+  t = new TextNode('The quick brown {{ test }} jumped over the lazy {{foo}}.');
   ok(t.dynamic, 'Mixed content recognised as dynamic');
   equal(t.render(c), 'The quick brown 42 jumped over the lazy bar.',
         'Rendering mixed content');
 
-  t = new TemplateText('The quick brown {{ test.toExponential }} jumped over the lazy {{foo.toUpperCase}}.');
+  t = new TextNode('The quick brown {{ test.toExponential }} jumped over the lazy {{foo.toUpperCase}}.');
   ok(t.dynamic, 'Mixed content with variable lookup recognised as dynamic');
   equal(t.render(c), 'The quick brown 4.2e+1 jumped over the lazy BAR.',
         'Variable lookup performed');
