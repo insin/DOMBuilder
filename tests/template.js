@@ -78,6 +78,51 @@ test('Context', function() {
   ok(c.get('test'), '"new" keyword is optional');
 });
 
+test('BlockContext', function() {
+  var b = new BlockContext();
+  deepEqual(b.blocks, {}, 'Initialised with empty lookup');
+
+  // Add some blocks
+  b.addBlocks({title: 9, body_class: 10, main: 11, sidebar: 12});
+  deepEqual(b.blocks, {
+      title: [9]
+    , body_class: [10]
+    , main: [11]
+    , sidebar: [12]
+  }, 'Grandchild template example');
+  b.addBlocks({content: 6, main: 7, sidebar: 8});
+  deepEqual(b.blocks, {
+      title: [9]
+    , body_class: [10]
+    , main: [7, 11]
+    , sidebar: [8, 12]
+    , content: [6]
+  }, 'Child template example');
+  b.addBlocks({fulltitle: 1, title: 2, extra_head: 3, body_class: 4, content: 5});
+  deepEqual(b.blocks, {
+      title: [2, 9]
+    , body_class: [4, 10]
+    , main: [7, 11]
+    , sidebar: [8, 12]
+    , content: [5, 6]
+    , fulltitle: [1]
+    , extra_head: [3]
+  }, 'Base template example');
+
+  // Get blocks
+  equals(b.getBlock('content'), 6, 'Getting an overriding block');
+  equals(b.pop('title'), 9, 'Popping an overriding block');
+  deepEqual(b.blocks, {
+      title: [2]
+    , body_class: [4, 10]
+    , main: [7, 11]
+    , sidebar: [8, 12]
+    , content: [5, 6]
+    , fulltitle: [1]
+    , extra_head: [3]
+  }, 'Overriding block was popped off');
+});
+
 test('Variable', function() {
   // Variables resolve against contexts
   var v = new Variable('test');

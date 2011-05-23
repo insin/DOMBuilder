@@ -183,6 +183,42 @@ Context.prototype.render = function(contents) {
   return results;
 };
 
+function BlockContext() {
+  this.blocks = {} // FIFO queues by block name
+}
+
+BlockContext.prototype.addBlocks = function(blocks) {
+  for (var name in blocks) {
+    if (typeof this.blocks[name] != 'undefined') {
+      this.blocks[name].unshift(blocks[name]);
+    } else {
+      this.blocks[name] = [blocks[name]];
+    }
+  }
+};
+
+BlockContext.prototype.push = function(name, block) {
+  this.blocks[name].push(block);
+};
+
+BlockContext.prototype.pop = function(name) {
+  if (typeof this.blocks[name] != 'undefined' &&
+      this.blocks[name].length) {
+    return this.blocks[name].pop();
+  }
+  return null;
+};
+
+BlockContext.prototype.getBlock = function(name) {
+  if (typeof this.blocks[name] != 'undefined') {
+    var blocks = this.blocks[name];
+    if (blocks.length) {
+      return blocks[blocks.length - 1];
+    }
+  }
+  return null;
+};
+
 /**
  * Supports looping over a list obtained from the context, creating new
  * context variables with list contents and calling render on all its
