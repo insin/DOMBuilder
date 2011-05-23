@@ -1,5 +1,6 @@
 var toString = Object.prototype.toString
-  , slice = Array.prototype.slice;
+  , slice = Array.prototype.slice
+  ;
 
 function isFunction(o) {
   return (toString.call(o) === "[object Function]");
@@ -36,10 +37,17 @@ var VARIABLE_RE = /{{(.*?)}}/;
 var TRIM_RE = /^\s+|\s+$/g;
 
 /**
+ * Thrown when pop() is called too many times on a Context.
+ */
+function ContextPopError() {
+  this.message = 'pop() was called more times than push()';
+}
+inheritFrom(ContextPopError, Error);
+
+/**
  * Thrown when a Variable cannot be resolved.
  */
 function VariableNotFoundError(message) {
-  Error.call(this, message);
   this.message = message;
 }
 inheritFrom(VariableNotFoundError, Error);
@@ -48,7 +56,6 @@ inheritFrom(VariableNotFoundError, Error);
  * Thrown when expressions cannot be parsed.
  */
 function TemplateSyntaxError(message) {
-  Error.call(this, message);
   this.message = message;
 }
 inheritFrom(TemplateSyntaxError, Error);
@@ -56,33 +63,40 @@ inheritFrom(TemplateSyntaxError, Error);
 /**
  * Resolves variables based on a context, supporting object property lookups
  * specified with '.' separators.
+/**
+ * Resolves variable expressions based on a context, supporting object property
+ * lookups specified with '.' separators.
  */
-function Variable(variable) {
-  if (!(this instanceof Variable)) return new Variable(variable);
-  this.variable = variable;
+function Variable(expr) {
+  this.expr = expr;
 }
 
 Variable.prototype.resolve = function(context) {
-  // First path part is always a context lookup
-  var path = this.variable.split(VAR_LOOKUP_SEPARATOR)
-    , lookup = path.shift()
-    , current = context.get(lookup);
-  if (typeof current == 'undefined') {
-    throw new VariableNotFoundError('Could not find [' + lookup + '] in ' + context);
+  // First lookup is in the context
+  var bits = this.expr.split(VAR_LOOKUP_SEPARATOR)
+    , bit = bits.shift()
+    , current = context.get(bit)
+    ;
+  if (!context.hasKey(bit)) {
+    throw new VariableNotFoundError('Could not find [' + bit + '] in ' + context);
   } else if (isFunction(current)) {
     current = current();
   }
 
   // Any further lookups are against current object properties
-  if (path.length) {
-    var l = path.length, next;
+  if (bits.length) {
+    var l = bits.length
+      , next
+      ;
     for (var i = 0; i < l; i++) {
-      lookup = path[i];
-      if (typeof current[lookup] == 'undefined') {
-        throw new VariableNotFoundError('Could not find [' + lookup + '] in ' + current);
+      bit = bits[i];
+      if (current === null ||
+          current === undefined ||
+          typeof current[bit] == 'undefined') {
+        throw new VariableNotFoundError('Could not find [' + bit + '] in ' + current);
       }
-      next = current[lookup];
-      // Call methods with the current object as context when we find 'em
+      next = current[bit];
+      // Call functions with the current object as context
       if (isFunction(next)) {
         current = next.call(current);
       } else {
@@ -100,23 +114,21 @@ Variable.prototype.resolve = function(context) {
 function Context(initial) {
   if (!(this instanceof Context)) return new Context(initial);
   this.stack = [initial || {}];
-  this._top = this.stack[0];
 }
 
-Context.prototype.push = function() {
-  this.stack.push({});
-  this._top = this.stack[this.stack.length - 1];
+Context.prototype.push = function(context) {
+  this.stack.push(context || {});
 };
 
 Context.prototype.pop = function() {
-  if (this.stack.length > 1) {
-    this.stack.pop();
+  if (this.stack.length == 1) {
+    throw new ContextPopError();
   }
-  this._top = this.stack[this.stack.length - 1];
+  return this.stack.pop();
 };
 
 Context.prototype.set = function(name, value) {
-  this._top[name] = value;
+  this.stack[this.stack.length - 1][name] = value;
 };
 
 /**
@@ -138,18 +150,31 @@ Context.prototype.zip = function(names, values) {
  * Returns undefined for variables which are not set, to distinguish from
  * variables which are set, but are null.
  */
-Context.prototype.get = function(name) {
-  if (this._top.hasOwnProperty(name)) {
-    return this._top[name];
-  }
-  for (var i = this.stack.length - 2; i >= 0; i--) {
+Context.prototype.get = function(name, d) {
+  for (var i = this.stack.length - 1; i >= 0; i--) {
     if (this.stack[i].hasOwnProperty(name)) {
       return this.stack[i][name];
     }
   }
-  return undefined;
+  return d !== undefined ? d : null;
 };
 
+/**
+ * Determine if a particular key is set in the context.
+ */
+Context.prototype.hasKey = function(name) {
+  for (var i = 0, l = this.stack.length; i < l; i++) {
+    if (this.stack[i].hasOwnProperty(name)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+/**
+ * Convenience method for calling render() on a list of content items
+ * with this context.
+ */
 Context.prototype.render = function(contents) {
   var results = [];
   for (var i = 0, l = contents.length; i < l; i++) {
@@ -166,7 +191,7 @@ Context.prototype.render = function(contents) {
 function ForNode(props, contents) {
   for (var prop in props) {
     this.loopVars = prop.split(UNPACK_SEPARATOR_RE);
-    this.listVar = Variable(props[prop]);
+    this.listVar = new Variable(props[prop]);
     break;
   }
   this.contents = contents;
@@ -185,7 +210,8 @@ ForNode.prototype.render = function(context) {
       , first: true
       , last: l === 1
       , parentloop: context.get('forloop')
-      };
+      }
+    ;
   context.push();
   context.set('forloop', forloop);
   for (var i = 0; i < l; i++) {
@@ -261,7 +287,7 @@ IfNode.prototype.parse = (function() {
           if (numberRE.test(bit) || isQuotedString(bit)) {
             code.push(bit);
           } else {
-            code.push('Variable("' + escapeString(bit) + '").resolve(c)');
+            code.push('new Variable("' + escapeString(bit) + '").resolve(c)');
           }
         }
       }
@@ -309,7 +335,7 @@ TemplateText.prototype.parse = function(expr) {
     ;
   for (var i = 0; i < l; i++) {
     if (i % 2) {
-      code.push('a.push(Variable("' +
+      code.push('a.push(new Variable("' +
                 escapeString(bits[i].replace(TRIM_RE, '')) +
                 '").resolve(c))');
     } else {
