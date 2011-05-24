@@ -8,6 +8,7 @@ Elements and HTML in JavaScript.
    :maxdepth: 1
 
    htmlmode
+   templates
    news
    license
 

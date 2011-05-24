@@ -2,6 +2,8 @@ module("Template");
 
 (function() {
 
+var templates = DOMBuilder.templates;
+
 function shallowCopy(a) {
   var b = {};
   for (var prop in a) {
@@ -13,12 +15,12 @@ function shallowCopy(a) {
 test('Context', function() {
   // Instantiation with context
   var content = {test1: 1, test2: 2};
-  var c = new Context(content);
+  var c = new templates.Context(content);
   equal(c.stack.length, 1, 'Stack is initialised with a single context');
   ok(c.stack[0] === content, 'Initial context object is the given object');
 
   // Instantiation
-  var c = new Context();
+  var c = new templates.Context();
   equal(c.stack.length, 1, 'Stack is initialised with a single context');
   deepEqual(c.stack[0], {}, 'Initial context object is empty');
 
@@ -66,7 +68,7 @@ test('Context', function() {
   deepEqual(c.stack[0], {test: 42, a: 2, b: 3}, 'Context objects not touched');
 
   // Popping too many times
-  raises(function() { c.pop(); }, ContextPopError, 'Calling pop() too much');
+  raises(function() { c.pop(); }, templates.ContextPopError, 'Calling pop() too much');
 
   // Pushing accepts a new context object
   c.push({'pushed': 'yes'});
@@ -74,12 +76,12 @@ test('Context', function() {
   equal(c.get('pushed'), 'yes', 'Provided context was used');
 
   // 'new' keyword is optional
-  c = Context({'test': true});
+  c = templates.Context({'test': true});
   ok(c.get('test'), '"new" keyword is optional');
 });
 
 test('BlockContext', function() {
-  var b = new BlockContext();
+  var b = new templates.BlockContext();
   deepEqual(b.blocks, {}, 'Initialised with empty lookup');
 
   // Add some blocks
@@ -125,26 +127,26 @@ test('BlockContext', function() {
 
 test('Variable', function() {
   // Variables resolve against contexts
-  var v = new Variable('test');
-  strictEqual(v.resolve(Context({test: 42})), 42, 'Variable resolved');
-  raises(function() { v.resolve(Context()) }, VariableNotFoundError,
+  var v = new templates.Variable('test');
+  strictEqual(v.resolve(templates.Context({test: 42})), 42, 'Variable resolved');
+  raises(function() { v.resolve(templates.Context()) }, templates.VariableNotFoundError,
          'Exception thrown if context variable missing');
 
   // Nested lookups are supported with the . operator
-  v = new Variable('test.foo.bar');
-  strictEqual(v.resolve(Context({test: {foo: {bar: 42}}})), 42,
+  v = new templates.Variable('test.foo.bar');
+  strictEqual(v.resolve(templates.Context({test: {foo: {bar: 42}}})), 42,
               'Nested lookups performed');
-  raises(function() { v.resolve(Context({test: {food: {bar: 42}}})); },
-         VariableNotFoundError, 'Exception thrown for invalid nested lookups');
-  raises(function() { v.resolve(Context({test: null})); },
-         VariableNotFoundError,
+  raises(function() { v.resolve(templates.Context({test: {food: {bar: 42}}})); },
+         templates.VariableNotFoundError, 'Exception thrown for invalid nested lookups');
+  raises(function() { v.resolve(templates.Context({test: null})); },
+         templates.VariableNotFoundError,
          'Attempted lookup on null raises appropriate error');
-  raises(function() { v.resolve(Context({test: undefined})); },
-         VariableNotFoundError,
+  raises(function() { v.resolve(templates.Context({test: undefined})); },
+         templates.VariableNotFoundError,
         'Attempted lookup on undefined raises appropriate error');
 
   // Functions found during variable resolution will be called
-  strictEqual(v.resolve(Context({
+  strictEqual(v.resolve(templates.Context({
     test: function() {
       return {
         foo: function() {
@@ -153,7 +155,7 @@ test('Variable', function() {
       }
     }
   })), 42, 'Functions are called if part of lookup path');
-  strictEqual(new Variable('test.bar').resolve(Context({
+  strictEqual(new templates.Variable('test.bar').resolve(templates.Context({
     test: {
       foo: 42,
       bar: function() { return this.foo; }
@@ -163,18 +165,18 @@ test('Variable', function() {
 
 test('ForNode', function() {
   var items, forloops = [];
-  var f = new ForNode({'item': 'items'}, [{render: function(context) {
-    forloops.push(shallowCopy(new Variable('forloop').resolve(context)));
-    return new Variable('item').resolve(context)
-  }}])
+  var f = templates.$for({'item': 'items'}, {render: function(context) {
+    forloops.push(shallowCopy(new templates.Variable('forloop').resolve(context)));
+    return new templates.Variable('item').resolve(context)
+  }})
 
   // Zero items
-  items = f.render(Context({'items': []}));
+  items = f.render(templates.Context({'items': []}));
   deepEqual(items, [], 'Zero items - item context as expected');
   deepEqual(forloops, [], 'Zero items - forloop context as expected');
 
   // SIngle item
-  items = f.render(Context({'items': [1]}));
+  items = f.render(templates.Context({'items': [1]}));
   deepEqual(items, [1], 'Single item - item context as expected');
   deepEqual(forloops, [{
       parentloop: {},
@@ -188,7 +190,7 @@ test('ForNode', function() {
 
   // Two items
   forloops = [];
-  items = f.render(Context({'items': [1,2]}));
+  items = f.render(templates.Context({'items': [1,2]}));
   deepEqual(items, [1,2], 'Two items - item context as expected');
   deepEqual(forloops, [{
       parentloop: {},
@@ -210,7 +212,7 @@ test('ForNode', function() {
 
   // Three items
   forloops = [];
-  items = f.render(Context({'items': [1,2,3]}));
+  items = f.render(templates.Context({'items': [1,2,3]}));
   deepEqual(items, [1,2,3], 'Three items - item context as expected');
   deepEqual(forloops, [{
       parentloop: {},
@@ -240,11 +242,12 @@ test('ForNode', function() {
 
   // Multiple loop context variables
   forloops = [];
-  f = new ForNode({'a, b': 'items'}, [{render: function(context) {
-    forloops.push(shallowCopy(new Variable('forloop').resolve(context)));
-    return [new Variable('a').resolve(context), new Variable('a').resolve(context)];
-  }}]);
-  items = f.render(Context({'items': [[1,1],[2,2],[3,3]]}));
+  f = templates.$for({'a, b': 'items'}, {render: function(context) {
+    forloops.push(shallowCopy(new templates.Variable('forloop').resolve(context)));
+    return [new templates.Variable('a').resolve(context),
+            new templates.Variable('a').resolve(context)];
+  }});
+  items = f.render(templates.Context({'items': [[1,1],[2,2],[3,3]]}));
   deepEqual(items, [[1,1],[2,2],[3,3]],
             'Multiple loop context variables - item context as expected');
   deepEqual(forloops, [{
@@ -274,36 +277,8 @@ test('ForNode', function() {
     }], 'Multiple loop context variables - forloop context as expected');
 });
 
-test('$for', function() {
-  var items, forloops = [];
-  var f = $for({'item': 'items'}, {render: function(context) {
-    forloops.push(shallowCopy(new Variable('forloop').resolve(context)));
-    return new Variable('item').resolve(context);
-  }})
-
-  items = f.render(new Context({'items': [1,2]}));
-  deepEqual(items, [1,2], 'Two items - item context as expected');
-  deepEqual(forloops, [{
-      parentloop: {},
-      counter: 1,
-      counter0: 0,
-      revcounter: 2,
-      revcounter0: 1,
-      first: true,
-      last: false
-    }, {
-      parentloop: {},
-      counter: 2,
-      counter0: 1,
-      revcounter: 1,
-      revcounter0: 0,
-      first: false,
-      last: true
-    }], 'Two items - forloop context as expected');
-});
-
 test('IfNode', function() {
-  var c = Context({a: 41, b: 42, c: 43, d: '43', e: 43, f: true});
+  var c = templates.Context({a: 41, b: 42, c: 43, d: '43', e: 43, f: true});
 
   // Valid, supported expressions
   var exprs = [
@@ -327,7 +302,7 @@ test('IfNode', function() {
   , ['!!""', false]
   ];
   for (var i = 0, expr; expr = exprs[i]; i++) {
-    strictEqual(new IfNode(expr[0]).test(c), expr[1], 'Valid: ' + expr[0]);
+    strictEqual(templates.$if(expr[0]).test(c), expr[1], 'Valid: ' + expr[0]);
   }
 
   // Invalid or unsupported expressions
@@ -338,15 +313,15 @@ test('IfNode', function() {
   , '""" > b'
   ];
   for (var i = 0, expr; expr = invalidExprs[i]; i++) {
-    raises(function() { new IfNode(expr) }, TemplateSyntaxError, 'Invalid: ' + expr);
+    raises(function() { templates.$if(expr) },
+           templates.TemplateSyntaxError,
+           'Invalid: ' + expr);
   }
-});
 
-test('$if', function() {
-  var c = Context({test: 5, a: 42});
-  var if_ = $if('test > 4', {
+  c = templates.Context({test: 5, a: 42});
+  var if_ = templates.$if('test > 4', {
     render: function(context) {
-      return new Variable('a').resolve(context);
+      return new templates.Variable('a').resolve(context);
     }
   });
 
@@ -356,32 +331,32 @@ test('$if', function() {
 });
 
 test('TextNode', function() {
-  var c = Context({test: 42, foo: 'bar'});
+  var c = templates.Context({test: 42, foo: 'bar'});
 
   // Static text
-  var t = new TextNode('test');
+  var t = templates.$text('test');
   ok(!t.dynamic, 'Static text recognised');
   equal(t.render(c), 'test', 'Rendering static text');
 
   // Dynamic text
-  t = new TextNode('{{test}}');
+  t = templates.$text('{{test}}');
   ok(t.dynamic, 'Dynamic content recognised');
   equal(t.render(c), '42', 'Rendering dynamic content');
 
-  t = new TextNode('{{ test }}');
+  t = templates.$text('{{ test }}');
   ok(t.dynamic, 'Dynamic text with whitespace in variable name recognised');
   equal(t.render(c), '42', 'Whitespace trimmed from variable name');
 
-  t = new TextNode('{{ test }}{{foo}}');
+  t = templates.$text('{{ test }}{{foo}}');
   ok(t.dynamic, 'Dynamic text with multiple variable names recognised');
   equal(t.render(c), '42bar', 'Rendering with multiple variable names');
 
-  t = new TextNode('The quick brown {{ test }} jumped over the lazy {{foo}}.');
+  t = templates.$text('The quick brown {{ test }} jumped over the lazy {{foo}}.');
   ok(t.dynamic, 'Mixed content recognised as dynamic');
   equal(t.render(c), 'The quick brown 42 jumped over the lazy bar.',
         'Rendering mixed content');
 
-  t = new TextNode('The quick brown {{ test.toExponential }} jumped over the lazy {{foo.toUpperCase}}.');
+  t = templates.$text('The quick brown {{ test.toExponential }} jumped over the lazy {{foo.toUpperCase}}.');
   ok(t.dynamic, 'Mixed content with variable lookup recognised as dynamic');
   equal(t.render(c), 'The quick brown 4.2e+1 jumped over the lazy BAR.',
         'Variable lookup performed');
@@ -390,13 +365,13 @@ test('TextNode', function() {
 test('BlockNode', function() {
   var c1 = {render: function(context) { return 'parent'; }}
   var c2 = {render: function(context) { return 'child'; }}
-  var b1 = new BlockNode('foo', [c1]);
-  var b2 = new BlockNode({name: 'foo'}, [new TextNode('{{ block.super }}'), c2]);
+  var b1 = templates.$block('foo', c1);
+  var b2 = templates.$block({name: 'foo'}, templates.$text('{{ block.super }}'), c2);
   equal(b1.name, 'foo', 'Block name as String argument');
   equal(b2.name, 'foo', 'Block name as Object argument');
-  var c = new Context();
-  c.renderContext.set(BLOCK_CONTEXT_KEY, new BlockContext());
-  var bc = c.renderContext.get(BLOCK_CONTEXT_KEY);
+  var c = templates.Context();
+  c.renderContext.set('blockContext', new templates.BlockContext());
+  var bc = c.renderContext.get('blockContext');
   bc.addBlocks({'foo': b2});
   bc.addBlocks({'foo': b1});
   deepEqual(b2.render(c), ['parent', 'child'], 'block.super renders parent contents');
@@ -405,18 +380,18 @@ test('BlockNode', function() {
 test('Template', function() {
   var c1 = {render: function(context) { return 'parent'; }}
   var c2 = {render: function(context) { return 'child'; }}
-  var b1 = new BlockNode('foo', [c1]);
-  var b2 = new BlockNode({name: 'foo'}, [new TextNode('{{ block.super }} then '), c2]);
-  var t1 = new Template({name: 'bar'}, [b1]);
-  var t2 = new Template({name: 'baz', extends: 'bar'}, [b2]);
-  var c = new Context();
+  var b1 = templates.$block('foo', c1);
+  var b2 = templates.$block({name: 'foo'}, templates.$text('{{ block.super }} then '), c2);
+  var t1 = templates.$template({name: 'bar'}, b1);
+  var t2 = templates.$template({name: 'baz', extends: 'bar'}, b2);
+  var c = templates.Context();
 
   var result = DOMBuilder.withMode('HTML', function() { return t2.render(c) });
   deepEqual(''+result, 'parent then child',
             'Template sets up block inheritance correctly');
 
   DOMBuilder.withMode('TEMPLATE', function() {
-    with (DOMBuilder.elementFunctions) {
+    with (templates) {
       $template({name: 'base'}
       , HTML(
           HEAD(TITLE(
@@ -443,9 +418,9 @@ test('Template', function() {
     }
   });
 
-  c = new Context();
+  c = templates.Context();
   result = DOMBuilder.withMode('HTML', function() {
-    return templates['child'].render(c);
+    return DOMBuilder._templates['child'].render(c);
   });
   equal(''+result,
 '<html>' +
@@ -453,9 +428,11 @@ test('Template', function() {
 '<body><div id="main">Child Content</div></body>' +
 '</html>');
 
-  raises(function() { new Template({name: 'test', extends: 'missing'}, []).render(Context()); },
-         TemplateNotFoundError,
-         'Missing parent template throws TemplateNotFoundError');
+  raises(function() {
+      templates.$template({name: 'test', extends: 'missing'}).render(templates.Context());
+    },
+    templates.TemplateNotFoundError,
+    'Missing parent template throws TemplateNotFoundError');
 });
 
 })();
