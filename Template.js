@@ -461,13 +461,13 @@ function IfNode(expr, contents) {
   if (isFunction(expr)) {
     this.test = expr;
   } else {
-    this.test = this.parse(expr);
+    this.test = this._parseExpr(expr);
   }
   this.contents = contents;
 }
 inheritFrom(IfNode, TemplateNode);
 
-IfNode.prototype.parse = (function() {
+IfNode.prototype._parseExpr = (function() {
   var ops = lookup('( ) && || == === <= < >= > != !== !! !'.split(' '))
     , opsRE = /(\(|\)|&&|\|\||={2,3}|<=|<|>=|>|!={1,2}|!{1,2})/
     , numberRE = /^-?(?:\d+(?:\.\d+)?|(?:\d+)?\.\d+)$/
