@@ -341,32 +341,32 @@ test('TextNode', function() {
   // Dynamic text
   t = templates.$text('{{test}}');
   ok(t.dynamic, 'Dynamic content recognised');
-  equal(t.render(c), '42', 'Rendering dynamic content');
+  deepEqual(t.render(c), [42], 'Rendering dynamic content');
 
   t = templates.$text('{{ test }}');
   ok(t.dynamic, 'Dynamic text with whitespace in variable name recognised');
-  equal(t.render(c), '42', 'Whitespace trimmed from variable name');
+  deepEqual(t.render(c), [42], 'Whitespace trimmed from variable name');
 
   t = templates.$text('{{ test }}{{foo}}');
   ok(t.dynamic, 'Dynamic text with multiple variable names recognised');
-  equal(t.render(c), '42bar', 'Rendering with multiple variable names');
+  deepEqual(t.render(c), [42, 'bar'], 'Rendering with multiple variable names');
 
   t = templates.$text('The quick brown {{ test }} jumped over the lazy {{foo}}.');
   ok(t.dynamic, 'Mixed content recognised as dynamic');
-  equal(t.render(c), 'The quick brown 42 jumped over the lazy bar.',
-        'Rendering mixed content');
+  deepEqual(t.render(c), ['The quick brown ', 42, ' jumped over the lazy ', 'bar', '.'],
+            'Rendering mixed content');
 
   t = templates.$text('The quick brown {{ test.toExponential }} jumped over the lazy {{foo.toUpperCase}}.');
   ok(t.dynamic, 'Mixed content with variable lookup recognised as dynamic');
-  equal(t.render(c), 'The quick brown 4.2e+1 jumped over the lazy BAR.',
-        'Variable lookup performed');
+  deepEqual(t.render(c), ['The quick brown ', '4.2e+1', ' jumped over the lazy ', 'BAR', '.'],
+            'Variable lookup performed');
 });
 
 test('BlockNode', function() {
   var c1 = {render: function(context) { return 'parent'; }}
   var c2 = {render: function(context) { return 'child'; }}
   var b1 = templates.$block('foo', c1);
-  var b2 = templates.$block({name: 'foo'}, templates.$text('{{ block.super }}'), c2);
+  var b2 = templates.$block({name: 'foo'}, templates.$var('block.super'), c2);
   equal(b1.name, 'foo', 'Block name as String argument');
   equal(b2.name, 'foo', 'Block name as Object argument');
   var c = templates.Context();
@@ -374,7 +374,7 @@ test('BlockNode', function() {
   var bc = c.renderContext.get('blockContext');
   bc.addBlocks({'foo': b2});
   bc.addBlocks({'foo': b1});
-  deepEqual(b2.render(c), ['parent', 'child'], 'block.super renders parent contents');
+  deepEqual(b2.render(c), [['parent'], 'child'], 'block.super renders parent contents');
 });
 
 test('Template', function() {

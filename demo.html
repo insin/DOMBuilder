@@ -247,6 +247,36 @@
           var html = testEvents();
           html.insertWithEvents(document.getElementById("htmlEvents"));
       });
+
+      var base, child, context;
+      DOMBuilder.withMode("TEMPLATE", function() {
+        with (DOMBuilder.templates) {
+          base = $template({name: 'base'}
+          , DIV({id: 'content'}
+            , $block('content'
+              , P('Default parent content')
+              )
+            )
+          );
+
+          child = $template({name: 'child', extends: 'base'}
+          , $block('content'
+            , H3($text('{{ message }}'))
+            , $var('block.super')
+            )
+          );
+
+          context = Context({message: 'Hello template inheriting world!'});
+        }
+      });
+
+      DOMBuilder.withMode("HTML", function() {
+        document.getElementById("htmlTemplate").innerHTML = ""+child.render(context);
+      });
+
+      DOMBuilder.withMode("DOM", function() {
+        document.getElementById("domTemplate").appendChild(child.render(context));
+      });
   };
 
   function createScriptAndWait(src, waitForName, then)
@@ -307,6 +337,12 @@
 
 <h2>Same code in HTML mode, using <code>innerHTML</code> and <code>addEvents</code></h2>
 <div id="htmlEvents"></div>
+
+<h2>HTML via Template Inheritance</h2>
+<div id="htmlTemplate"></div>
+
+<h2>DOM via Template Inheritance</h2>
+<div id="domTemplate"></div>
 
 <h2>Added using <code>with (DOMBuilder.elementFunctions)</code></h2>
 

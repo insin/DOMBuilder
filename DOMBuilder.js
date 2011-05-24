@@ -563,7 +563,7 @@ function Variable(expr) {
   this.expr = expr;
 }
 
-Variable.prototype.resolve = function(context) {
+Variable.prototype.resolve = Variable.prototype.render = function(context) {
   // First lookup is in the context
   var bits = this.expr.split(VAR_LOOKUP_SEPARATOR)
     , bit = bits.shift()
@@ -1021,11 +1021,11 @@ TextNode.prototype._parseExpr = function(expr) {
       code.push('a.push(new Variable("' +
                 escapeString(bits[i].replace(TRIM_RE, '')) +
                 '").resolve(c))');
-    } else {
+    } else if (bits[i]) {
       code.push('a.push("' + escapeString(bits[i]) + '")');
     }
   }
-  code.push('return a.join("")');
+  code.push('return a');
   var func = new Function('c', 'Variable', code.join(';'));
   return function(context) {
     return func(context, Variable);
