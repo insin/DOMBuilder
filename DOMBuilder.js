@@ -2,7 +2,6 @@
 {
 
 var modules = (typeof module !== 'undefined' && module.exports)
-  , dummy = function() {}
   , document = __global__.document
   , toString = Object.prototype.toString
   , hasOwn = Object.prototype.hasOwnProperty
