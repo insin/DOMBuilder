@@ -809,7 +809,7 @@ function blockLookup(blocks) {
 
 function Template(props, contents) {
   this.name = props.name;
-  this.extends_ = props['extends'] || null;
+  this.parent = props.extend || null;
   this.contents = contents;
   this.blocks = blockLookup(findNodesByType(contents, BlockNode));
   DOMBuilder._templates[this.name] = this;
@@ -839,13 +839,13 @@ Template.prototype._render = function(context) {
   }
   var blockContext = context.renderContext.get(BLOCK_CONTEXT_KEY);
   blockContext.addBlocks(this.blocks);
-  if (this.extends_) {
-    if (typeof DOMBuilder._templates[this.extends_] == 'undefined') {
+  if (this.parent) {
+    if (typeof DOMBuilder._templates[this.parent] == 'undefined') {
       throw new TemplateNotFoundError("Could not find template named '" +
-                                      this.extends_ + '"');
+                                      this.parent + '"');
     }
     // Call _render directly to add to the current render context
-    return DOMBuilder._templates[this.extends_]._render(context);
+    return DOMBuilder._templates[this.parent]._render(context);
   } else {
     // Top-level template - render contents
     return DOMBuilder.fragment(context.render(this.contents));

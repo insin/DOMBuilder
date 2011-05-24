@@ -383,7 +383,7 @@ test('Template', function() {
   var b1 = templates.$block('foo', c1);
   var b2 = templates.$block({name: 'foo'}, templates.$text('{{ block.super }} then '), c2);
   var t1 = templates.$template({name: 'bar'}, b1);
-  var t2 = templates.$template({name: 'baz', extends: 'bar'}, b2);
+  var t2 = templates.$template({name: 'baz', extend: 'bar'}, b2);
   var c = templates.Context();
 
   var result = DOMBuilder.withMode('HTML', function() { return t2.render(c) });
@@ -407,7 +407,7 @@ test('Template', function() {
         )
       );
 
-      $template({name: 'child', extends: 'base'}
+      $template({name: 'child', extend: 'base'}
       , $block('subtitle'
         , 'Child Subtitle'
         )
@@ -429,7 +429,7 @@ test('Template', function() {
 '</html>');
 
   raises(function() {
-      templates.$template({name: 'test', extends: 'missing'}).render(templates.Context());
+      templates.$template({name: 'test', extend: 'missing'}).render(templates.Context());
     },
     templates.TemplateNotFoundError,
     'Missing parent template throws TemplateNotFoundError');
