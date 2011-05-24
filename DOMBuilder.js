@@ -518,6 +518,44 @@ function escapeString(s) {
   return s.replace('\\', '\\\\').replace('"', '\\"');
 }
 
+/**
+ * Some browser implementations of String.prototype.split don't include matches
+ * from capturing RegExps.
+ */
+var splitBits = (function() {
+  var memo = {};
+  return function(expr, re) {
+    if (!re.global) {
+      if (!hasOwn.call(memo, re.source)) {
+        memo[re.source] = new RegExp(re.source, 'g');
+      }
+      re = memo[re.source];
+    }
+    var bits = []
+      , match
+      , lastIndex
+      , lastLastIndex = 0
+      , lastLength
+      ;
+    while(match = re.exec(expr)) {
+      lastIndex = match.index + match[0].length;
+      if (lastIndex > lastLastIndex) {
+        bits.push(expr.slice(lastLastIndex, match.index));
+        if (match.length > 1 && match.index < expr.length) {
+          bits.push.apply(bits, match.slice(1));
+        }
+        lastLength = match[0].length;
+        lastLastIndex = lastIndex;
+      }
+      if (re.lastIndex === match.index) {
+        re.lastIndex++;
+      }
+    }
+    bits.push(expr.slice(lastLastIndex));
+    return bits;
+  };
+})();
+
 // -------------------------------------------------------------- Exceptions ---
 
 /**
@@ -954,7 +992,7 @@ IfNode.prototype._parseExpr = (function() {
     ;
   return function(expr) {
     var code = ['return (']
-      , bits = expr.split(opsRE)
+      , bits = splitBits(expr, opsRE)
       , l = bits.length
       , bit
       ;
@@ -978,7 +1016,7 @@ IfNode.prototype._parseExpr = (function() {
       var func = new Function('c', 'Variable', code.join(' '));
       return function(context) {
         return func(context, Variable);
-      }
+      };
     } catch (e) {
       throw new TemplateSyntaxError('Invalid $if expression (' + e.message +
                                     '): ' + expr);
@@ -1013,7 +1051,7 @@ inheritFrom(TextNode, TemplateNode);
  */
 TextNode.prototype._parseExpr = function(expr) {
   var code = ['var a = []']
-    , bits = expr.split(VARIABLE_RE)
+    , bits = splitBits(expr, VARIABLE_RE)
     , l = bits.length
     ;
   for (var i = 0; i < l; i++) {
@@ -1029,7 +1067,7 @@ TextNode.prototype._parseExpr = function(expr) {
   var func = new Function('c', 'Variable', code.join(';'));
   return function(context) {
     return func(context, Variable);
-  }
+  };
 }
 
 TextNode.prototype.render = function(context) {
