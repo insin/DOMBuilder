@@ -6,6 +6,10 @@ function isFunction(o) {
   return (toString.call(o) === "[object Function]");
 }
 
+function isString(o) {
+  return (toString.call(o) === "[object String]");
+}
+
 function inheritFrom(child, parent) {
   function F() {};
   F.prototype = parent.prototype;
@@ -27,6 +31,9 @@ function escapeString(s) {
   return s.replace('\\', '\\\\').replace('"', '\\"');
 }
 
+// Template lookup
+var templates = {};
+
 /** Separator used for object lookups. */
 var VAR_LOOKUP_SEPARATOR = '.';
 /** Separator for specifying multiple variable names to be unpacked. */
@@ -35,6 +42,10 @@ var UNPACK_SEPARATOR_RE = /, ?/;
 var VARIABLE_RE = /{{(.*?)}}/;
 /** RegExp for trimming whitespace. */
 var TRIM_RE = /^\s+|\s+$/g;
+/** Context key for block inheritance context. */
+var BLOCK_CONTEXT_KEY = 'blockContext';
+
+// Exceptions ------------------------------------------------------------------
 
 /**
  * Thrown when pop() is called too many times on a Context.
@@ -53,7 +64,8 @@ function VariableNotFoundError(message) {
 inheritFrom(VariableNotFoundError, Error);
 
 /**
- * Thrown when expressions cannot be parsed.
+ * Thrown when expressions cannot be parsed or orherwise invalid contents are
+ * detected.
  */
 function TemplateSyntaxError(message) {
   this.message = message;
@@ -61,8 +73,15 @@ function TemplateSyntaxError(message) {
 inheritFrom(TemplateSyntaxError, Error);
 
 /**
- * Resolves variables based on a context, supporting object property lookups
- * specified with '.' separators.
+ * Thrown when a named template cannot be found.
+ */
+function TemplateNotFoundError(message) {
+  this.message = message;
+}
+inheritFrom(TemplateNotFoundError, Error);
+
+// Context ---------------------------------------------------------------------
+
 /**
  * Resolves variable expressions based on a context, supporting object property
  * lookups specified with '.' separators.
@@ -78,7 +97,8 @@ Variable.prototype.resolve = function(context) {
     , current = context.get(bit)
     ;
   if (!context.hasKey(bit)) {
-    throw new VariableNotFoundError('Could not find [' + bit + '] in ' + context);
+    throw new VariableNotFoundError('Could not find [' + bit +
+                                    '] in ' + context);
   } else if (isFunction(current)) {
     current = current();
   }
@@ -93,7 +113,8 @@ Variable.prototype.resolve = function(context) {
       if (current === null ||
           current === undefined ||
           typeof current[bit] == 'undefined') {
-        throw new VariableNotFoundError('Could not find [' + bit + '] in ' + current);
+        throw new VariableNotFoundError('Could not find [' + bit +
+                                        '] in ' + current);
       }
       next = current[bit];
       // Call functions with the current object as context
@@ -109,11 +130,13 @@ Variable.prototype.resolve = function(context) {
 }
 
 /**
- * Manages a stack of objects holding template context variables.
+ * Manages a stack of objects holding template context variables and rendering
+ * context.
  */
 function Context(initial) {
   if (!(this instanceof Context)) return new Context(initial);
   this.stack = [initial || {}];
+  this.renderContext = new RenderContext();
 }
 
 Context.prototype.push = function(context) {
@@ -178,9 +201,30 @@ Context.prototype.hasKey = function(name) {
 Context.prototype.render = function(contents) {
   var results = [];
   for (var i = 0, l = contents.length; i < l; i++) {
-    results.push(contents[i].render(this));
+    if (isString(contents[i])) {
+      results.push(contents[i]);
+    } else {
+      results.push(contents[i].render(this));
+    }
   }
   return results;
+};
+
+function RenderContext(initial) {
+  this.stack = [initial || {}];
+}
+inheritFrom(RenderContext, Context);
+
+RenderContext.prototype.get = function(name, d) {
+  var top = this.stack[this.stack.length - 1];
+  if (top.hasOwnProperty(name)) {
+    return top[name];
+  }
+  return d !== undefined ? d : null;
+};
+
+RenderContext.prototype.hasKey = function(name) {
+  return this.stack[this.stack.length - 1].hasOwnProperty(name);
 };
 
 function BlockContext() {
@@ -219,6 +263,150 @@ BlockContext.prototype.getBlock = function(name) {
   return null;
 };
 
+// Template --------------------------------------------------------------------
+
+function findNodesByType(contents, nodeType) {
+  var nodes = []
+    , l = contents.length
+    , node
+    ;
+  for (var i = 0; i < l; i++) {
+    node = contents[i];
+    if (node instanceof nodeType) {
+      nodes.push(node);
+    }
+    if (node instanceof TemplateNode && typeof node.contents != 'undefined') {
+      nodes.push.apply(nodes, findNodesByType(node.contents, nodeType));
+    }
+  }
+  return nodes;
+}
+
+function blockLookup(blocks) {
+  var lookup = {}
+    , block
+    ;
+  for (var i = 0; block = blocks[i]; i++) {
+    if (typeof lookup[block.name] != 'undefined') {
+      throw new TemplateSyntaxError("Block with name '" + block.name +
+                                    "' appears more than once.");
+    }
+    lookup[block.name] = block;
+  }
+  return lookup;
+}
+
+function Template(props, contents) {
+  this.name = props.name;
+  this.extends_ = props['extends'] || null;
+  this.contents = contents;
+  this.blocks = blockLookup(findNodesByType(contents, BlockNode));
+  templates[this.name] = this;
+}
+
+/**
+ * Creates a new rendering context and renders the template.
+ */
+Template.prototype.render = function(context) {
+  context.renderContext.push();
+  try {
+    return this._render(context);
+  }
+  finally {
+    context.renderContext.pop();
+  }
+};
+
+/**
+ * Rendering implementation - adds blocks to rendering context and either calls
+ * render on a parent template, or renders contents if this is a top-level
+ * template.
+ */
+Template.prototype._render = function(context) {
+  if (!context.renderContext.hasKey(BLOCK_CONTEXT_KEY)) {
+    context.renderContext.set(BLOCK_CONTEXT_KEY, new BlockContext());
+  }
+  var blockContext = context.renderContext.get(BLOCK_CONTEXT_KEY);
+  blockContext.addBlocks(this.blocks);
+  if (this.extends_) {
+    if (typeof templates[this.extends_] == 'undefined') {
+      throw new TemplateNotFoundError("Could not find template named '" +
+                                      this.extends_ + '"');
+    }
+    // Call _render directly to add to the current render context
+    return templates[this.extends_]._render(context);
+  } else {
+    // Top-level template - render contents
+    return DOMBuilder.fragment(context.render(this.contents));
+  }
+};
+
+// Template Nodes --------------------------------------------------------------
+
+/**
+ * Base for template content nodes.
+ */
+function TemplateNode() {}
+
+/**
+ * A named section which may be overridden by child templates.
+ */
+function BlockNode(name, contents) {
+  this.name = isString(name) ? name : name.name;
+  this.contents = contents;
+}
+inheritFrom(BlockNode, TemplateNode);
+
+BlockNode.prototype.render = function(context) {
+  var blockContext = context.renderContext.get(BLOCK_CONTEXT_KEY)
+    , results, push, block
+    ;
+  context.push();
+  if (blockContext === null) {
+    context.set('block', this);
+    results = context.render(this.contents);
+  } else {
+    push = block = blockContext.pop(this.name);
+    if (block === null) {
+      block = this;
+    }
+    block = new BlockNode(block.name, block.contents);
+    block.context = context;
+    context.set('block', block);
+    results = context.render(block.contents);
+    if (push !== null) {
+      blockContext.push(this.name, push);
+    }
+  }
+  context.pop();
+  return results;
+}
+
+BlockNode.prototype['super'] = function(context) {
+  var renderContext = this.context.renderContext;
+  if (renderContext.hasKey(BLOCK_CONTEXT_KEY) &&
+      renderContext.get(BLOCK_CONTEXT_KEY).getBlock(this.name) !== null) {
+    return this.render(this.context);
+  }
+  return '';
+}
+
+/**
+ * An HTML element and its contents.
+ */
+function ElementNode(tagName, attributes, contents) {
+  this.tagName = tagName;
+  this.attributes = attributes;
+  this.contents = contents;
+}
+inheritFrom(ElementNode, TemplateNode);
+
+ElementNode.prototype.render = function(context) {
+  return DOMBuilder.createElement(this.tagName,
+                                  this.attributes,
+                                  context.render(this.contents));
+}
+
 /**
  * Supports looping over a list obtained from the context, creating new
  * context variables with list contents and calling render on all its
@@ -232,21 +420,14 @@ function ForNode(props, contents) {
   }
   this.contents = contents;
 }
+inheritFrom(ForNode, TemplateNode);
 
 ForNode.prototype.render = function(context) {
   var list = this.listVar.resolve(context)
+    , results = []
+    , forloop = {parentloop: context.get('forloop', {})}
     , l = list.length
     , item
-    , results = []
-    , forloop = {
-        counter: 1
-      , counter0: 0
-      , revcounter: l
-      , revcounter0: l - 1
-      , first: true
-      , last: l === 1
-      , parentloop: context.get('forloop')
-      }
     ;
   context.push();
   context.set('forloop', forloop);
@@ -259,28 +440,18 @@ ForNode.prototype.render = function(context) {
       context.zip(this.loopVars, item);
     }
     // Update loop status variables
-    if (i > 0) {
-      forloop.counter++;
-      forloop.counter0++;
-      forloop.revcounter--;
-      forloop.revcounter0--;
-      forloop.first = false;
-      forloop.last = (i === l - 1);
-    }
+    forloop.counter = i + 1;
+    forloop.counter0 = i;
+    forloop.revcounter = l - i;
+    forloop.revcounter0 = l - i - 1;
+    forloop.first = (i === 0);
+    forloop.last = (i === l - 1);
     // Render contents
-    for (var j = 0, k = this.contents.length; j < k; j++) {
-      results.push(this.contents[j].render(context));
-    }
+    results.push.apply(results, context.render(this.contents));
   }
   context.pop();
   return results;
 };
-
-/**
- * Marker for the end of a ForNode, where its contents are specified as
- * siblings to reduce the amount of nesting required.
- */
-function EndForNode() { }
 
 /**
  * Executes a boolean test using variables obtained from the context,
@@ -294,6 +465,7 @@ function IfNode(expr, contents) {
   }
   this.contents = contents;
 }
+inheritFrom(IfNode, TemplateNode);
 
 IfNode.prototype.parse = (function() {
   var ops = lookup('( ) && || == === <= < >= > != !== !! !'.split(' '))
@@ -346,11 +518,9 @@ IfNode.prototype.render = function(context) {
 }
 
 /**
- * Marker for the end of an IfNode, where its contents are specified as
- * siblings to reduce the amount of nesting required.
+ * Wraps static text context and text context which contains template variable
+ * definitions to be inserted at render time.
  */
-function EndIfNode() { }
-
 function TextNode(text) {
   this.dynamic = VARIABLE_RE.test(text);
   if (this.dynamic) {
@@ -359,6 +529,7 @@ function TextNode(text) {
     this.text = text;
   }
 }
+inheritFrom(TextNode, TemplateNode);
 
 /**
  * Creates a function which accepts context and performs replacement by
@@ -386,85 +557,37 @@ TextNode.prototype.render = function(context) {
   return (this.dynamic ? this.func(context) : this.text);
 };
 
-/** Convenience method for creating a Variable in a template definition. */
-function $var(variable) {
-  return new Variable(variable);
-}
+// Template convenience functions ----------------------------------------------
 
-/** Convenience method for creating a ForNode in a template definition. */
-function $for(props) {
-  return new ForNode(props, slice.call(arguments, 1));
-}
-
-/** Convenience method for creating an EndForNode in a template definition. */
-function $endfor() {
-  return new EndForNode();
-}
-/** Convenience method for creating an IfNode in a template definition. */
-function $if(props) {
-  return new IfNode(props, slice.call(arguments, 1));
-}
-
-/** Convenience method for creating an EndIfNode in a template definition. */
-function $endif() {
-  return new EndIfNode();
-}
-
-// WIP -----------------------------------------------------------------------
-
-function Template(props, contents) {
-  this.name = props.name;
-  this.extends_ = props['extends'];
-  this.contents = contents; // TODO Check for dynamic content
-}
-
-function Block(name, contents) {
-  this.name = name;
-  this.contents = contents;
-}
-
-// These need to hook into the DOMBuilder API via the introduction of a new
-// mode, to be used when instantiating Template objects.
-function TemplateElement(tagName, attributes, contents) {
-    this.tagName = tagName;
-    this.attributes = attributes;
-    this.contents = contents;
-}
-
-function TemplateFragment(children) {
-    this.contents = contents;
-}
-
-function TemplateHTMLNode(html) {
-   this.html = html;
-}
-
-// Template convenience functions
 function $template(props) {
   return new Template(props, slice.call(arguments, 1));
 }
 
 function $block(name) {
-  return new Block(name, slice.call(arguments, 1));
+  return new BlockNode(name, slice.call(arguments, 1));
 }
 
-function $html(contents) {
-  return new RawHTMLNode(contents);
+function $var(variable) {
+  return new Variable(variable);
 }
 
-// Helper functions
-function checkDynamicContents(contents) {
-  var content
-    , l = l = contents.length
-    ;
-  for (var i = 0; i < l; i++) {
-    content = contents[i];
+function $for(props) {
+  return new ForNode(props, slice.call(arguments, 1));
+}
 
-  }
+function $if(props) {
+  return new IfNode(props, slice.call(arguments, 1));
 }
-function processMarkerNodes(item) {
-  // Find these
-  // $for/$if, element, element, $endfor/$endif
-  // And end up with this
-  // $for/$if[contents=[element, element]
-}
+
+// Nice to have later ----------------------------------------------------------
+
+// End marker Nodes, for marking the end of content when contents are being
+// specified as siblings to reduce the amount of nesting required.
+function EndBlockNode() { }
+function EndForNode() { }
+function EndIfNode() { }
+
+// Convenience methods for creating end Nodes in template definitions
+function $endblock() { return new EndBlockNode(); }
+function $endfor() { return new EndForNode(); }
+function $endif() { return new EndIfNode(); }

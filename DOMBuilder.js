@@ -86,7 +86,8 @@ function isObject(o)
 {
     return (!!o && toString.call(o) === "[object Object]" &&
             !o.nodeType &&
-            !(o instanceof SafeString))
+            !(o instanceof SafeString) &&
+            !(o instanceof TemplateNode))
 }
 
 /**
@@ -605,6 +606,10 @@ function createElementFunction(tagName)
             {
                 return document.createElement(tagName);
             }
+            else if (DOMBuilder.mode == "TEMPLATE")
+            {
+                return new ElementNode(tagName);
+            }
             else
             {
                 return new HTMLElement(tagName);
@@ -754,7 +759,11 @@ var DOMBuilder = {
         children = children || [];
         flatten(children);
 
-        if (this.mode != "DOM")
+        if (this.mode == "TEMPLATE")
+        {
+            return new ElementNode(tagName, attributes, children);
+        }
+        else if (this.mode != "DOM")
         {
             return new HTMLElement(tagName, attributes, children);
         }

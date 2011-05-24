@@ -177,13 +177,13 @@ test('ForNode', function() {
   items = f.render(Context({'items': [1]}));
   deepEqual(items, [1], 'Single item - item context as expected');
   deepEqual(forloops, [{
+      parentloop: {},
       counter: 1,
       counter0: 0,
       revcounter: 1,
       revcounter0: 0,
       first: true,
-      last: true,
-      parentloop: null
+      last: true
     }], 'Single item - forloop context as expected');
 
   // Two items
@@ -191,21 +191,21 @@ test('ForNode', function() {
   items = f.render(Context({'items': [1,2]}));
   deepEqual(items, [1,2], 'Two items - item context as expected');
   deepEqual(forloops, [{
+      parentloop: {},
       counter: 1,
       counter0: 0,
       revcounter: 2,
       revcounter0: 1,
       first: true,
-      last: false,
-      parentloop: null
+      last: false
     }, {
+      parentloop: {},
       counter: 2,
       counter0: 1,
       revcounter: 1,
       revcounter0: 0,
       first: false,
-      last: true,
-      parentloop: null
+      last: true
     }], 'Two items - forloop context as expected');
 
   // Three items
@@ -213,29 +213,29 @@ test('ForNode', function() {
   items = f.render(Context({'items': [1,2,3]}));
   deepEqual(items, [1,2,3], 'Three items - item context as expected');
   deepEqual(forloops, [{
+      parentloop: {},
       counter: 1,
       counter0: 0,
       revcounter: 3,
       revcounter0: 2,
       first: true,
-      last: false,
-      parentloop: null
+      last: false
     }, {
+      parentloop: {},
       counter: 2,
       counter0: 1,
       revcounter: 2,
       revcounter0: 1,
       first: false,
-      last: false,
-      parentloop: null
+      last: false
     }, {
+      parentloop: {},
       counter: 3,
       counter0: 2,
       revcounter: 1,
       revcounter0: 0,
       first: false,
-      last: true,
-      parentloop: null
+      last: true
     }], 'Three items - forloop context as expected');
 
   // Multiple loop context variables
@@ -248,29 +248,29 @@ test('ForNode', function() {
   deepEqual(items, [[1,1],[2,2],[3,3]],
             'Multiple loop context variables - item context as expected');
   deepEqual(forloops, [{
+      parentloop: {},
       counter: 1,
       counter0: 0,
       revcounter: 3,
       revcounter0: 2,
       first: true,
-      last: false,
-      parentloop: null
+      last: false
     }, {
+      parentloop: {},
       counter: 2,
       counter0: 1,
       revcounter: 2,
       revcounter0: 1,
       first: false,
-      last: false,
-      parentloop: null
+      last: false
     }, {
+      parentloop: {},
       counter: 3,
       counter0: 2,
       revcounter: 1,
       revcounter0: 0,
       first: false,
-      last: true,
-      parentloop: null
+      last: true
     }], 'Multiple loop context variables - forloop context as expected');
 });
 
@@ -284,21 +284,21 @@ test('$for', function() {
   items = f.render(new Context({'items': [1,2]}));
   deepEqual(items, [1,2], 'Two items - item context as expected');
   deepEqual(forloops, [{
+      parentloop: {},
       counter: 1,
       counter0: 0,
       revcounter: 2,
       revcounter0: 1,
       first: true,
-      last: false,
-      parentloop: null
+      last: false
     }, {
+      parentloop: {},
       counter: 2,
       counter0: 1,
       revcounter: 1,
       revcounter0: 0,
       first: false,
-      last: true,
-      parentloop: null
+      last: true
     }], 'Two items - forloop context as expected');
 });
 
@@ -385,6 +385,77 @@ test('TextNode', function() {
   ok(t.dynamic, 'Mixed content with variable lookup recognised as dynamic');
   equal(t.render(c), 'The quick brown 4.2e+1 jumped over the lazy BAR.',
         'Variable lookup performed');
+});
+
+test('BlockNode', function() {
+  var c1 = {render: function(context) { return 'parent'; }}
+  var c2 = {render: function(context) { return 'child'; }}
+  var b1 = new BlockNode('foo', [c1]);
+  var b2 = new BlockNode({name: 'foo'}, [new TextNode('{{ block.super }}'), c2]);
+  equal(b1.name, 'foo', 'Block name as String argument');
+  equal(b2.name, 'foo', 'Block name as Object argument');
+  var c = new Context();
+  c.renderContext.set(BLOCK_CONTEXT_KEY, new BlockContext());
+  var bc = c.renderContext.get(BLOCK_CONTEXT_KEY);
+  bc.addBlocks({'foo': b2});
+  bc.addBlocks({'foo': b1});
+  deepEqual(b2.render(c), ['parent', 'child'], 'block.super renders parent contents');
+});
+
+test('Template', function() {
+  var c1 = {render: function(context) { return 'parent'; }}
+  var c2 = {render: function(context) { return 'child'; }}
+  var b1 = new BlockNode('foo', [c1]);
+  var b2 = new BlockNode({name: 'foo'}, [new TextNode('{{ block.super }} then '), c2]);
+  var t1 = new Template({name: 'bar'}, [b1]);
+  var t2 = new Template({name: 'baz', extends: 'bar'}, [b2]);
+  var c = new Context();
+
+  var result = DOMBuilder.withMode('HTML', function() { return t2.render(c) });
+  deepEqual(''+result, 'parent then child',
+            'Template sets up block inheritance correctly');
+
+  DOMBuilder.withMode('TEMPLATE', function() {
+    with (DOMBuilder.elementFunctions) {
+      $template({name: 'base'}
+      , HTML(
+          HEAD(TITLE(
+            $block('fulltitle'
+            , 'Test Template | ', $block('subtitle', 'Default Subtitle')
+            )
+          ))
+        , BODY(
+            DIV({id: 'main'}
+            , $block('content', 'Default Content')
+            )
+          )
+        )
+      );
+
+      $template({name: 'child', extends: 'base'}
+      , $block('subtitle'
+        , 'Child Subtitle'
+        )
+      , $block('content'
+        , 'Child Content'
+        )
+      );
+    }
+  });
+
+  c = new Context();
+  result = DOMBuilder.withMode('HTML', function() {
+    return templates['child'].render(c);
+  });
+  equal(''+result,
+'<html>' +
+'<head><title>Test Template | Child Subtitle</title></head>' +
+'<body><div id="main">Child Content</div></body>' +
+'</html>');
+
+  raises(function() { new Template({name: 'test', extends: 'missing'}, []).render(Context()); },
+         TemplateNotFoundError,
+         'Missing parent template throws TemplateNotFoundError');
 });
 
 })();
