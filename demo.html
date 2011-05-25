@@ -260,8 +260,8 @@
 
         child = $template({name: 'child', extend: 'base'}
         , $block('content'
-          , H3($text('{{ message }}'))
-          , $var('block.super')
+          , H3('{{ message }}')
+          , 'Before {{ block.super }} After'
           )
         );
 

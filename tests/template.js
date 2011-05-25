@@ -412,12 +412,12 @@ test('Template', function() {
       , 'Child Subtitle'
       )
     , $block('content'
-      , 'Child Content'
+      , '{{ message }}'
       )
     );
   }
 
-  c = templates.Context();
+  c = templates.Context({message: 'Child Content'});
   result = DOMBuilder.withMode('HTML', function() {
     return child.render(c);
   });

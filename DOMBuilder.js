@@ -856,14 +856,28 @@ Template.prototype._render = function(context) {
 /**
  * Base for template content nodes.
  */
-function TemplateNode() {}
+function TemplateNode(contents) {
+  this.contents = contents || [];
+  if (this.contents.length) {
+    this.parseContents();
+  }
+}
+
+TemplateNode.prototype.parseContents = function() {
+  for (var i = 0, l = this.contents.length, node; i < l; i++) {
+    node = this.contents[i];
+    if (isString(node) && VARIABLE_RE.test(node)) {
+      this.contents[i] = new TextNode(node);
+    }
+  }
+}
 
 /**
  * A named section which may be overridden by child templates.
  */
 function BlockNode(name, contents) {
   this.name = isString(name) ? name : name.name;
-  this.contents = contents;
+  TemplateNode.call(this, contents);
 }
 inheritFrom(BlockNode, TemplateNode);
 
@@ -907,7 +921,7 @@ BlockNode.prototype['super'] = function(context) {
 function ElementNode(tagName, attributes, contents) {
   this.tagName = tagName;
   this.attributes = attributes;
-  this.contents = contents;
+  TemplateNode.call(this, contents);
 }
 inheritFrom(ElementNode, TemplateNode);
 
@@ -928,7 +942,7 @@ function ForNode(props, contents) {
     this.listVar = new Variable(props[prop]);
     break;
   }
-  this.contents = contents;
+  TemplateNode.call(this, contents);
 }
 inheritFrom(ForNode, TemplateNode);
 
@@ -973,7 +987,7 @@ function IfNode(expr, contents) {
   } else {
     this.test = this._parseExpr(expr);
   }
-  this.contents = contents;
+  TemplateNode.call(this, contents);
 }
 inheritFrom(IfNode, TemplateNode);
 
