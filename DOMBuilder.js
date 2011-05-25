@@ -863,9 +863,14 @@ function TemplateNode(contents) {
   }
 }
 
+/**
+ * Wraps any contents which can be specified without a Node for convenience with
+ * an appropriate Node.
+ */
 TemplateNode.prototype.parseContents = function() {
   for (var i = 0, l = this.contents.length, node; i < l; i++) {
     node = this.contents[i];
+    // Strings which contain template variables should be wrapped in a TextNode
     if (isString(node) && VARIABLE_RE.test(node)) {
       this.contents[i] = new TextNode(node);
     }
@@ -942,6 +947,10 @@ function ForNode(props, contents) {
     this.listVar = new Variable(props[prop]);
     break;
   }
+  this.emptyContents = ((contents.length &&
+                         contents[contents.length - 1] instanceof EmptyNode)
+                        ? contents.pop().contents
+                        : []);
   TemplateNode.call(this, contents);
 }
 inheritFrom(ForNode, TemplateNode);
@@ -953,6 +962,9 @@ ForNode.prototype.render = function(context) {
     , l = list.length
     , item
     ;
+  if (list.length < 1) {
+    return context.render(this.emptyContents);
+  }
   context.push();
   context.set('forloop', forloop);
   for (var i = 0; i < l; i++) {
@@ -978,6 +990,19 @@ ForNode.prototype.render = function(context) {
 };
 
 /**
+ * Provides content for a ForNode if its list of items is empty. Instances of
+ * this node will be ignored unless they are the last node in a ForNode's
+ * content.
+ */
+function EmptyNode(contents) {
+  TemplateNode.call(this, contents);
+}
+inheritFrom(EmptyNode, TemplateNode);
+EmptyNode.prototype.render = function(context) {
+  return [];
+}
+
+/**
  * Executes a boolean test using variables obtained from the context,
  * calling render on all its if the result is true.
  */
@@ -987,6 +1012,10 @@ function IfNode(expr, contents) {
   } else {
     this.test = this._parseExpr(expr);
   }
+  this.elseContents = ((contents.length &&
+                        contents[contents.length - 1] instanceof ElseNode)
+                       ? contents.pop().contents
+                       : []);
   TemplateNode.call(this, contents);
 }
 inheritFrom(IfNode, TemplateNode);
@@ -1040,7 +1069,21 @@ IfNode.prototype._parseExpr = (function() {
 IfNode.prototype.render = function(context) {
   if (this.test(context)) {
     return context.render(this.contents);
+  } else {
+    return context.render(this.elseContents);
   }
+}
+
+/**
+ * Provides content for an IfNode when its test returns ``false``. Instances of
+ * this node will be ignored unless they are the last node in an IfNodes's
+ * content.
+ */
+function ElseNode(contents) {
+  TemplateNode.call(this, contents);
+}
+inheritFrom(ElseNode, TemplateNode);
+ElseNode.prototype.render = function(context) {
   return [];
 }
 
@@ -1087,14 +1130,6 @@ TextNode.prototype.render = function(context) {
   return (this.dynamic ? this.func(context) : this.text);
 };
 
-// ------------------------------------------------------------- End Markers ---
-
-// End marker Nodes, for marking the end of content when contents are being
-// specified as siblings to reduce the amount of nesting required.
-function EndBlockNode() { }
-function EndForNode() { }
-function EndIfNode() { }
-
 // ------------------------------------------ Template Convenience Functions ---
 
 function $template(props) {
@@ -1117,13 +1152,17 @@ function $for(props) {
   return new ForNode(props, slice.call(arguments, 1));
 }
 
+function $empty() {
+  return new EmptyNode(slice.call(arguments));
+}
+
 function $if(expr) {
   return new IfNode(expr, slice.call(arguments, 1));
 }
 
-function $endblock() { return new EndBlockNode(); }
-function $endfor() { return new EndForNode(); }
-function $endif() { return new EndIfNode(); }
+function $else() {
+  return new ElseNode(slice.call(arguments));
+}
 
 // === DOMBuilder API ==========================================================
 
@@ -1525,7 +1564,9 @@ var DOMBuilder = {
   , $var: $var
   , $text: $text
   , $for: $for
+  , $empty: $empty
   , $if: $if
+  , $else: $else
   })
 };
 

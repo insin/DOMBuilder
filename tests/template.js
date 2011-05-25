@@ -275,6 +275,11 @@ test('ForNode', function() {
       first: false,
       last: true
     }], 'Multiple loop context variables - forloop context as expected');
+
+  f = templates.$for({'item': 'items'}, templates.$empty('No items.'));
+  deepEqual(f.render(templates.Context({items: []})),
+            ['No items.'],
+            '$empty contents rendered when list is empty');
 });
 
 test('IfNode', function() {
@@ -318,16 +323,18 @@ test('IfNode', function() {
            'Invalid: ' + expr);
   }
 
-  c = templates.Context({test: 5, a: 42});
   var if_ = templates.$if('test > 4', {
     render: function(context) {
       return new templates.Variable('a').resolve(context);
     }
-  });
+  }, templates.$else('{{ test }} displeased me.'));
 
-  deepEqual(if_.render(c), [42], 'Returns rendered contents when condition is true');
-  c.set('test', '4');
-  deepEqual(if_.render(c), [], 'Returns empty list when condition is false');
+  c = templates.Context({test: 5, a: 42});
+  deepEqual(if_.render(c), [42], 'Returns $if contents when condition is true');
+  c.set('test', 4);
+  deepEqual(if_.render(c),
+            [[4, ' displeased me.']],
+            'Returns $else contents when condition is false');
 });
 
 test('TextNode', function() {
