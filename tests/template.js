@@ -390,37 +390,36 @@ test('Template', function() {
   deepEqual(''+result, 'parent then child',
             'Template sets up block inheritance correctly');
 
-  DOMBuilder.withMode('TEMPLATE', function() {
-    with (templates) {
-      $template({name: 'base'}
-      , HTML(
-          HEAD(TITLE(
-            $block('fulltitle'
-            , 'Test Template | ', $block('subtitle', 'Default Subtitle')
-            )
-          ))
-        , BODY(
-            DIV({id: 'main'}
-            , $block('content', 'Default Content')
-            )
+  var base, child;
+  with (templates) {
+    base = $template({name: 'base'}
+    , HTML(
+        HEAD(TITLE(
+          $block('fulltitle'
+          , 'Test Template | ', $block('subtitle', 'Default Subtitle')
+          )
+        ))
+      , BODY(
+          DIV({id: 'main'}
+          , $block('content', 'Default Content')
           )
         )
-      );
+      )
+    );
 
-      $template({name: 'child', extend: 'base'}
-      , $block('subtitle'
-        , 'Child Subtitle'
-        )
-      , $block('content'
-        , 'Child Content'
-        )
-      );
-    }
-  });
+    child = $template({name: 'child', extend: 'base'}
+    , $block('subtitle'
+      , 'Child Subtitle'
+      )
+    , $block('content'
+      , 'Child Content'
+      )
+    );
+  }
 
   c = templates.Context();
   result = DOMBuilder.withMode('HTML', function() {
-    return DOMBuilder._templates['child'].render(c);
+    return child.render(c);
   });
   equal(''+result,
 '<html>' +

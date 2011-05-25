@@ -249,26 +249,24 @@
       });
 
       var base, child, context;
-      DOMBuilder.withMode("TEMPLATE", function() {
-        with (DOMBuilder.templates) {
-          base = $template({name: 'base'}
-          , DIV({id: 'content'}
-            , $block('content'
-              , P('Default parent content')
-              )
-            )
-          );
-
-          child = $template({name: 'child', extend: 'base'}
+      with (DOMBuilder.templates) {
+        base = $template({name: 'base'}
+        , DIV({id: 'content'}
           , $block('content'
-            , H3($text('{{ message }}'))
-            , $var('block.super')
+            , P('Default parent content')
             )
-          );
+          )
+        );
 
-          context = Context({message: 'Hello template inheriting world!'});
-        }
-      });
+        child = $template({name: 'child', extend: 'base'}
+        , $block('content'
+          , H3($text('{{ message }}'))
+          , $var('block.super')
+          )
+        );
+
+        context = Context({message: 'Hello template inheriting world!'});
+      }
 
       DOMBuilder.withMode("HTML", function() {
         document.getElementById("htmlTemplate").innerHTML = ""+child.render(context);

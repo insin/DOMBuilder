@@ -4,7 +4,7 @@ HTML mode
 .. versionadded:: 1.2
 
 The DOMBuilder API can also be used to generate HTML. The type of output it
-generates is controlled by the :js:attr:`DOMBuilder.mode` attribute.
+generates is controlled by :js:attr:`DOMBuilder.mode`.
 
 .. js:attribute:: DOMBuilder.mode
 
@@ -18,13 +18,24 @@ generates is controlled by the :js:attr:`DOMBuilder.mode` attribute.
    +=============+==========================================================================+
    | ``"DOM"``   | DOM Elements (default value)                                             |
    +-------------+--------------------------------------------------------------------------+
-   | ``"HTML"``  | :js:class:`DOMBuilder.HTMLElement` objects which ``toString()`` to HTML4 |
+   | ``"HTML"``  | :js:class:`HTMLElement` objects which ``toString()`` to HTML4            |
    +-------------+--------------------------------------------------------------------------+
-   | ``"XHTML"`` | :js:class:`DOMBuilder.HTMLElement` objects which ``toString()`` to XHTML |
+   | ``"XHTML"`` | :js:class:`HTMLElement` objects which ``toString()`` to XHTML            |
    +-------------+--------------------------------------------------------------------------+
 
 To change to HTML mode, set :js:attr:`DOMBuilder.mode` to the appropriate
 type of HTML output you want and use DOMBuilder as normal.
+
+The HTML mode API is exposed via :js:attr:`DOMBuilder.html`.
+
+.. js:attribute:: DOMBuilder.html
+
+   Exposes functions and constructors used by HTML mode.
+
+   Also contains element creation functions which will use HTML mode
+   regardless of what :js:attr:`DOMBuilder.mode`. is set to.
+
+   .. versionadded:: 2.0
 
 .. _mock-dom-objects:
 
@@ -49,9 +60,9 @@ Mock Elements
 #############
 
 In HTML mode, element creation functions and :js:func:`DOMBuilder.createElement`
-will create :js:class:`DOMBuilder.HTMLElement` objects.
+will create :js:class:`HTMLElement` objects.
 
-.. js:class:: DOMBuilder.HTMLElement(tagName[, attributes[, childNodes]])
+.. js:class:: HTMLElement(tagName[, attributes[, childNodes]])
 
    A representation of a DOM Element, its attributes and child nodes.
 
@@ -60,24 +71,24 @@ will create :js:class:`DOMBuilder.HTMLElement` objects.
    .. versionchanged:: 1.3
       Renamed from "Tag" to "HTMLElement"
 
-.. js:function:: DOMBuilder.HTMLElement.appendChild(node)
+.. js:function:: HTMLElement.appendChild(node)
 
    Adds to the list of child nodes, for cases where the desired structure
    cannot be built up at creation time.
 
    .. versionchanged:: 1.3
-      Appending a :js:class:`DOMBuilder.HTMLFragment` will append its
+      Appending a :js:class:`HTMLFragment` will append its
       child nodes instead and clear them from the fragment.
 
-.. js:function:: DOMBuilder.HTMLElement.cloneNode(deep)
+.. js:function:: HTMLElement.cloneNode(deep)
 
    Clones the element and its attributes - if deep is ``true``, its child
    nodes will also be cloned.
 
    .. versionadded:: 1.3
-      Added to support cloning by an :js:class:`DOMBuilder.HTMLFragment`.
+      Added to support cloning by an :js:class:`HTMLFragment`.
 
-.. js:function:: DOMBuilder.HTMLElement.toString([trackEvents])
+.. js:function:: HTMLElement.toString([trackEvents])
 
    Creates a ``String`` containing the HTML representation of the element
    and its children. By default, any ``String`` children will be escaped to
@@ -96,7 +107,7 @@ will create :js:class:`DOMBuilder.HTMLElement` objects.
       Added the optional ``trackEvents`` argument to support registration
       of event handlers post-insertion.
 
-.. js:function:: DOMBuilder.HTMLElement.addEvents()
+.. js:function:: HTMLElement.addEvents()
 
    If event attributes were found when ``toString(true)`` was called, this
    method will attempt to retrieve a DOM Element with this element's ``id``
@@ -105,7 +116,7 @@ will create :js:class:`DOMBuilder.HTMLElement` objects.
 
    .. versionadded:: 1.4
 
-.. js:function:: DOMBuilder.HTMLElement.insertWithEvents(element)
+.. js:function:: HTMLElement.insertWithEvents(element)
 
    Convenience method for generating and inserting HTML into the given
    DOM Element and registering event handlers.
@@ -118,44 +129,44 @@ Mock Fragments
 .. versionadded:: 1.3
 
 In HTML mode, :js:func:`DOMBuilder.fragment` will create
-:js:class:`DOMBuilder.HTMLFragment` objects which mimic the behaviour of
+:js:class:`HTMLFragment` objects which mimic the behaviour of
 DOM DocumentFragments when appended to another fragment or a
-:js:class:`DOMBuilder.HTMLElement`.
+:js:class:`HTMLElement`.
 
-.. js:class:: DOMBuilder.HTMLFragment([childNodes])
+.. js:class:: HTMLFragment([childNodes])
 
    A representation of a DOM DocumentFragment and its child nodes.
 
    :param Array childNodes: initial child nodes
 
-.. js:function:: DOMBuilder.HTMLFragment.appendChild(node)
+.. js:function:: HTMLFragment.appendChild(node)
 
    Adds to the list of child nodes - appending another fragment will
    append its child nodes and clear them from the fragment.
 
-.. js:function:: DOMBuilder.HTMLFragment.cloneNode(deep)
+.. js:function:: HTMLFragment.cloneNode(deep)
 
    Clones the fragment - there's no point calling this *without* passing in
    ``true``, as you'll just get an empty fragment back, but that's the API.
 
-.. js:function:: DOMBuilder.HTMLFragment.toString([trackEvents])
+.. js:function:: HTMLFragment.toString([trackEvents])
 
    Creates a ``String`` containing the HTML representation of the
    fragment's children.
 
    .. versionchanged:: 1.4
       If the ``trackEvents`` argument is provided, it will be passed on
-      to any child HTMLElements when their :js:func:`DOMBuilder.HTMLElement.toString`
+      to any child HTMLElements when their :js:func:`HTMLElement.toString`
       method is called.
 
-.. js:function:: DOMBuilder.HTMLFragment.addEvents()
+.. js:function:: HTMLFragment.addEvents()
 
-   Calls :js:func:`DOMBuilder.HTMLElement.addEvents` on any
+   Calls :js:func:`HTMLElement.addEvents` on any
    HTMLElement children.
 
    .. versionadded:: 1.4
 
-.. js:function:: DOMBuilder.HTMLFragment.insertWithEvents(element)
+.. js:function:: HTMLFragment.insertWithEvents(element)
 
    Convenience method for generating and inserting HTML into the given
    DOM Element and registering event handlers.
@@ -207,14 +218,14 @@ see the generated ``id`` attribute in place:
 Since we know which elements have event handlers and what their ids are,
 we can use that information to fetch the corresponding DOM Elements and
 reister the event handlers - you can do just that using
-:js:func:`DOMBuilder.HTMLElement.addEvents()`::
+:js:func:`HTMLElement.addEvents()`::
 
    article.addEvents();
 
 Now, clicking on either paragraph will result in its id being alerted.
 
 DOMBuilder also provides a bit of sugar for performing these two steps in
-a single call, :js:func:`DOMBuilder.HTMLElement.insertWithEvents()`::
+a single call, :js:func:`HTMLElement.insertWithEvents()`::
 
     article.insertWithEvents(document.getElementById("articles"));
 
@@ -255,7 +266,7 @@ Escaping
 HTML mode was initially introduced with backend use in mind - specifically,
 for generating forms and working with user input. As such, autoescaping was
 implemented to protect the developer from malicious user input. The same can
-still apply on the frontend, so :js:func:`DOMBuilder.HTMLElement.toString`
+still apply on the frontend, so :js:func:`HTMLElement.toString`
 automatically escapes the following characters in any ``String`` contents it
 finds, replacing them with their equivalent HTML entities::
 
@@ -263,7 +274,7 @@ finds, replacing them with their equivalent HTML entities::
 
 If you have a ``String`` which is known to be safe for inclusion without
 escaping, pass it through :js:func:`DOMBuilder.markSafe` before adding it
-to a :js:class:`DOMBuilder.HTMLElement`.
+to a :js:class:`HTMLElement`.
 
 .. js:function:: DOMBuilder.markSafe(value)
 
@@ -289,11 +300,11 @@ But say you have a ``String`` containing HTML which you trust and do want to
 render, like a status message you've just created, or an ``XMLHTTPRequest``
 response::
 
-   >>> var response = "You have <strong>won the internet!</strong>";
-   >>> P("According to our experts: ", response).toString()
-   "<p>According to our experts: You have &lt;strong&gt;won the internet!&lt;/strong&gt;</p>"
-   >>> P("According to our experts: ", DOMBuilder.markSafe(response)).toString()
-   "<p>According to our experts: You have <strong>won the internet!</strong></p>"
+   >>> var response = 'You have <strong>won the internet!</strong>';
+   >>> P('According to our experts: ', response).toString()
+   '<p>According to our experts: You have &lt;strong&gt;won the internet!&lt;/strong&gt;</p>'
+   >>> P('According to our experts: ', DOMBuilder.markSafe(response)).toString()
+   '<p>According to our experts: You have <strong>won the internet!</strong></p>'
 
 .. warning::
 
@@ -303,10 +314,10 @@ response::
 To avoid accidentally removing safe status from a ``String``, try not to mark it
 safe until it's ready for use::
 
-   >>> var response = "<span style=\"font-family: Comic Sans MS\">Your money is safe with us!</span>";
-   >>> function tasteFilter(s) { return s.replace(/Comic Sans MS/gi, "Verdana"); }
+   >>> var response = '<span style="font-family: Comic Sans MS">Your money is safe with us!</span>';
+   >>> function tasteFilter(s) { return s.replace(/Comic Sans MS/gi, 'Verdana'); }
    >>> var safeResponse = DOMBuilder.markSafe(response);
-   >>> P("Valued customer: ", safeResponse).toString()
-   "<p>Valued customer: <span style="font-family: Comic Sans MS">Your money is safe with us!</span></p>"
-   >>> P("Valued customer: ", tasteFilter(safeResponse)).toString()
-   "<p>Valued customer: &lt;span style=&quot;font-family: Verdana&quot;&gt;Your money is safe with us!&lt;/span&gt;</p>"
+   >>> P('Valued customer: ', safeResponse).toString()
+   '<p>Valued customer: <span style="font-family: Comic Sans MS">Your money is safe with us!</span></p>'
+   >>> P('Valued customer: ', tasteFilter(safeResponse)).toString()
+   '<p>Valued customer: &lt;span style=&quot;font-family: Verdana&quot;&gt;Your money is safe with us!&lt;/span&gt;</p>'

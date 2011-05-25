@@ -8,18 +8,18 @@ var modules = (typeof module !== 'undefined' && module.exports)
   , slice = Array.prototype.slice
   , splice = Array.prototype.splice
     // Functioms and objects involved in implementing cross-crowser workarounds
-  , eventAttrs, createElement, addEvent, setInnerHTML
+  , EVENT_ATTRS, createElement, addEvent, setInnerHTML
     /** Tag names defined in the HTML 4.01 Strict and Frameset DTDs. */
-  , tagNames = ('a abbr acronym address area b bdo big blockquote body br ' +
+  , TAG_NAMES = ('a abbr acronym address area b bdo big blockquote body br ' +
     'button caption cite code col colgroup dd del dfn div dl dt em fieldset ' +
     'form frame frameset h1 h2 h3 h4 h5 h6 hr head html i iframe img input ' +
     'ins kbd label legend li link map meta noscript ' /* :) */ + 'object ol ' +
     'optgroup option p param pre q samp script select small span strong style ' +
     'sub sup table tbody td textarea tfoot th thead title tr tt ul var').split(' ')
     /** Lookup for known tag names. */
-  , tagNameLookup = lookup(tagNames)
+  , TAG_NAME_LOOKUP = lookup(TAG_NAMES)
     /** Lookup for tags defined as EMPTY in the HTML 4.01 Strict and Frameset DTDs. */
-  , emptyTags = lookup('area base br col frame hr input img link meta param'.split(' '))
+  , EMPTY_TAGS = lookup('area base br col frame hr input img link meta param'.split(' '))
   ;
 
 // === Utility functions =======================================================
@@ -113,7 +113,7 @@ function escapeHTML(s) {
 
 // Detect and use jQuery to implement cross-browser workarounds when available
 if (typeof jQuery != 'undefined') {
-  eventAttrs = jQuery.attrFn;
+  EVENT_ATTRS = jQuery.attrFn;
   if (!modules) {
     createElement = function(tagName, attributes) {
       if (hasOwn.call(attributes, 'innerHTML')) {
@@ -132,7 +132,7 @@ if (typeof jQuery != 'undefined') {
     };
   }
 } else {
-  eventAttrs = lookup(
+  EVENT_ATTRS = lookup(
       ('blur focus focusin focusout load resize scroll unload click dblclick ' +
        'mousedown mouseup mousemove mouseover mouseout mouseenter mouseleave ' +
        'change select submit keydown keypress keyup error').split(' '));
@@ -170,7 +170,7 @@ if (typeof jQuery != 'undefined') {
       for (name in attributes) {
         value = attributes[name];
         name = attributeTranslations[name] || name;
-        if (eventAttrs[name]) {
+        if (EVENT_ATTRS[name]) {
           el['on' + name] = value;
           continue;
         }
@@ -254,8 +254,8 @@ HTMLNode.prototype._inlineFragments = function() {
   for (; i < l; i++) {
     child = this.childNodes[i];
     if (child instanceof HTMLFragment) {
-      this.childNodes.splice.apply(this.childNodes,
-                                   [i, 1].concat(child.childNodes));
+      // Replace the fragment with its contents
+      splice.apply(this.childNodes, [i, 1].concat(child.childNodes));
       // Clear the fragment on append, as per DocumentFragment
       child.childNodes = [];
     }
@@ -340,7 +340,7 @@ HTMLElement.prototype._clone = function() {
  */
 HTMLElement.prototype.toString = function() {
   var trackEvents = arguments[0] || false
-    , tagName = (tagNameLookup[this.tagName]
+    , tagName = (TAG_NAME_LOOKUP[this.tagName]
                  ? this.tagName
                  : conditionalEscape(this.tagName))
       // Opening tag
@@ -355,7 +355,7 @@ HTMLElement.prototype.toString = function() {
     }
     // Don't create attributes which wouldn't make sense in HTML mode -
     // they can be dealt with afet insertion using addEvents().
-    if (eventAttrs[attr]) {
+    if (EVENT_ATTRS[attr]) {
       if (trackEvents === true && !this.eventsFound) {
         this.eventsFound = true;
       }
@@ -371,7 +371,7 @@ HTMLElement.prototype.toString = function() {
   }
   parts.push('>');
 
-  if (emptyTags[tagName]) {
+  if (EMPTY_TAGS[tagName]) {
     if (this.xhtml) {
       parts.splice(parts.length - 1, 1, ' />');
     }
@@ -415,7 +415,7 @@ HTMLElement.prototype.addEvents = function() {
       , attr
       ;
     for (attr in this.attributes) {
-      if (eventAttrs[attr]) {
+      if (EVENT_ATTRS[attr]) {
         addEvent(id, attr, this.attributes[attr]);
       }
     }
@@ -1113,47 +1113,58 @@ function $endif() { return new EndIfNode(); }
 
 // === DOMBuilder API ==========================================================
 
-// ------------------------------------------------------- Element Functions ---
+// ---------------------------------- Element Creation Convenience Functions ---
+
+/**
+ * Creates An ``Object`` containing element creation functions with the given
+ * fixed mode, if one is given.
+ */
+function createElementFunctions(mode) {
+  var obj = {};
+  for (var i = 0, tagName; tagName = TAG_NAMES[i]; i++){
+    obj[tagName.toUpperCase()] = createElementFunction(tagName, mode);
+  }
+  return obj;
+}
 
 /**
  * Creates a function which, when called, uses DOMBuilder to create an element
  * with the given ``tagName``.
  *
  * The resulting function will also have a ``map`` function which calls
- * ``DOMBuilder.map`` with the given ``tagName``.
+ * ``DOMBuilder.map`` with the given ``tagName`` and mode, if one is provided.
  */
-function createElementFunction(tagName) {
+function createElementFunction(tagName, fixedMode) {
   var elementFunction = function() {
     if (!arguments.length) {
+      var mode = fixedMode || DOMBuilder.mode;
       // Short circuit if there are no arguments, to avoid further
       // argument inspection.
-      if (DOMBuilder.mode == 'DOM') {
+      if (mode == 'DOM') {
         return document.createElement(tagName);
       }
-      else if (DOMBuilder.mode == 'TEMPLATE') {
+      else if (mode == 'TEMPLATE') {
         return new ElementNode(tagName);
       } else {
         return new HTMLElement(tagName);
       }
     } else {
-      return createElementFromArguments(tagName, slice.call(arguments));
+      return createElementFromArguments(tagName, fixedMode, slice.call(arguments));
     }
   };
 
   // Add a ``map`` function which will call ``DOMBuilder.map`` with the
-  // appropriate ``tagName``.
+  // appropriate ``tagName`` and mode.
   elementFunction.map = function() {
-    var mapArgs = slice.call(arguments);
-    mapArgs.unshift(tagName);
-    return DOMBuilder.map.apply(DOMBuilder, mapArgs);
+    return mapElementFromArguments(tagName, fixedMode, slice.call(arguments));
   };
 
   return elementFunction;
 }
 
 /**
- * Normalises a list of arguments in order to create a new DOM element
- * using ``DOMBuilder.createElement``. Supported argument formats are:
+ * Normalises a list of arguments in order to create a new element using
+ *``DOMBuilder.createElement``. Supported argument formats are:
  *
  * ``(attributes, child1, ...)``
  *    an attributes object followed by an arbitrary number of children.
@@ -1166,7 +1177,7 @@ function createElementFunction(tagName) {
  *
  * At least one argument *must* be provided.
  */
-function createElementFromArguments(tagName, args) {
+function createElementFromArguments(tagName, fixedMode, args) {
     var attributes
       , children
         // The short circuit in ``createElementFunction`` ensures we will
@@ -1193,13 +1204,43 @@ function createElementFromArguments(tagName, args) {
         children = slice.call(args); // (child1, ...)
     }
 
-    return DOMBuilder.createElement(tagName, attributes, children);
+    return DOMBuilder.createElement(tagName, attributes, children, fixedMode);
+}
+
+/**
+ * Normalises a list of arguments in order to create new elements using
+ * ``DOMBuilder.map``.
+ *
+ * Supported argument formats are:
+ *
+ * ``(defaultAttributes, [item1, ...], mappingFunction)``
+ *    a default attributes attributes object, a list of items and a mapping
+ *    Function.
+ * ``([item1, ...], mappingFunction)``
+ *    a list of items and a mapping Function.
+ */
+function mapElementFromArguments(tagName, fixedMode, args) {
+    if (isArray(args[0])) { // (items, func)
+      var defaultAttrs = {}
+        , items = args[0]
+        , func = (isFunction(args[1]) ? args[1] : null)
+        ;
+    } else { // (attrs, items, func)
+      var defaultAttrs = args[0]
+        , items = args[1]
+        , func = (isFunction(args[2]) ? args[2] : null)
+        ;
+    }
+
+    return DOMBuilder.map(tagName, defaultAttrs, items, func, fixedMode);
 }
 
 // -------------------------------------------------------- Public Namespace ---
 
 var DOMBuilder = {
   version: '2.0.0-pre'
+
+// --------------------------------------------------------------- Mixed API ---
 
   /**
    * Determines which mode the ``createElement`` function will operate in.
@@ -1214,19 +1255,16 @@ var DOMBuilder = {
    * ``'TEMPLATE'``
    *    create template ElementNodes.
    *
-   * The value depends on the environment we're running in - if modules are
-   * available, we default to HTML mode, otherwise we assume we'te in a
+   * The default value depends on the environment we're running in - if modules
+   * are available, we default to HTML mode, otherwise we assume we're in a
    * browser and default to DOM mode.
    */
 , mode: (modules ? 'HTML' : 'DOM')
 
   /**
    * Calls a function using DOMBuilder temporarily in the given mode and
-   * returns its output.
-   *
-   * This is primarily intended for using DOMBuilder to generate HTML
-   * strings when running in the browser without having to manage the
-   * mode flag yourself.
+   * returns its output. Any additional arguments provided will be passed to
+   * the function when it is called.
    */
 , withMode: function(mode, func) {
     var originalMode = this.mode;
@@ -1239,14 +1277,10 @@ var DOMBuilder = {
   }
 
   /**
-   * An ``Object`` containing element creation functions.
+   * An ``Object`` containing element creation functions which create contents
+   * according to ``DOMBuilder.mode``.
    */
-, elementFunctions: (function(obj) {
-    for (var i = 0, tagName; tagName = tagNames[i]; i++){
-      obj[tagName.toUpperCase()] = createElementFunction(tagName);
-    }
-    return obj;
-  })({})
+, elementFunctions: createElementFunctions()
 
   /**
    * Adds element creation functions to a given context ``Object``, or to
@@ -1268,14 +1302,15 @@ var DOMBuilder = {
    * Creates a DOM element with the given tag name and, optionally,
    * the given attributes and children.
    */
-, createElement: function(tagName, attributes, children) {
+, createElement: function(tagName, attributes, children, mode) {
     attributes = attributes || {};
     children = children || [];
     flatten(children);
+    mode = mode || this.mode;
 
-    if (this.mode == 'TEMPLATE') {
+    if (mode == 'TEMPLATE') {
       return new ElementNode(tagName, attributes, children);
-    } else if (this.mode != 'DOM') {
+    } else if (mode != 'DOM') {
       return new HTMLElement(tagName, attributes, children);
     }
 
@@ -1301,17 +1336,13 @@ var DOMBuilder = {
   }
 
   /**
-   * Creates an element for (potentially) every item in a list. Supported
-   * argument formats are:
-   *
-   * 1. ``(tagName, defaultAttributes, [item1, ...], mappingFunction)``
-   * 2. ``(tagName, [item1, ...], mappingFunction)``
+   * Creates an element for (potentially) every item in a list.
    *
    * Arguments are as follows:
    *
    * ``tagName``
    *    the name of the element to create.
-   * ``defaultAttributes`` (optional)
+   * ``defaultAttrs``
    *    default attributes for the element.
    * ``items``
    *    the list of items to use as the basis for creating elements.
@@ -1335,21 +1366,10 @@ var DOMBuilder = {
    *
    *    If not provided, each item will result in the creation of a new
    *    element and the item itself will be used as the only contents.
+   * ``mode`` (optional)
+   *    an override for the DOMBuilder mode used for this call.
    */
-, map: function(tagName) {
-    // Determine how the function was called
-    if (isArray(arguments[1])) { // (tagName, items, func)
-      var defaultAttrs = {}
-        , items = arguments[1]
-        , func = (isFunction(arguments[2]) ? arguments[2] : null)
-        ;
-    } else { // (tagName, attrs, items, func)
-      var defaultAttrs = arguments[1]
-        , items = arguments[2]
-        , func = (isFunction(arguments[3]) ? arguments[3] : null)
-        ;
-    }
-
+, map: function(tagName, defaultAttrs, items, func, mode) {
     var results = [];
     for (var i = 0, l = items.length, attrs, children; i < l; i++) {
       attrs = extend({}, defaultAttrs);
@@ -1358,7 +1378,11 @@ var DOMBuilder = {
       // that the item shouldn't generate an element by explicity
       // returning null.
       if (func !== null) {
-        children = func(items[i], attrs, i);
+        if (mode) {
+          children = DOMBuilder.withMode(mode, func, items[i], attrs, i);
+        } else {
+          children = func(items[i], attrs, i);
+        }
         if (children === null) {
           continue;
         }
@@ -1373,7 +1397,7 @@ var DOMBuilder = {
         children = [children];
       }
 
-      results.push(this.createElement(tagName, attrs, children));
+      results.push(this.createElement(tagName, attrs, children, mode));
     }
     return results;
   }
@@ -1408,7 +1432,9 @@ var DOMBuilder = {
     // Inline the contents of any child Arrays
     flatten(children);
 
-    if (this.mode != 'DOM') {
+    if (this.mode == 'TEMPLATE') {
+      return children;
+    } else if (this.mode != 'DOM') {
       return new HTMLFragment(children);
     }
 
@@ -1424,6 +1450,8 @@ var DOMBuilder = {
     return fragment;
   }
 
+// ---------------------------------------------------------------- HTML API ---
+
   /**
    * Marks a string as safe
    */
@@ -1438,12 +1466,53 @@ var DOMBuilder = {
     return (value instanceof SafeString);
   }
 
-, HTMLElement: HTMLElement
-, HTMLFragment: HTMLFragment
-, HTMLNode: HTMLNode
-, SafeString: SafeString
+  /**
+   * Exposes the HTML API - element creation functions which create HTML
+   * content and implementation functions and constructors.
+   */
+, html: extend(createElementFunctions('HTML'), {
+    conditionalEscape: conditionalEscape
+  , SafeString: SafeString
+  , HTMLNode: HTMLNode
+  , HTMLElement: HTMLElement
+  , HTMLFragment: HTMLFragment
+  })
 
+// ----------------------------------------------------------- Templates API ---
+
+  /**
+   * Template lookup - templates are added to this object as they are defined,
+   * for use in inheritance lookups.
+   */
 , _templates: {}
+
+  /**
+   * Exposes the templates API - element creation functions which create
+   * template content, implementation functions and constructors, and
+   * convenience functions for template logic nodes.
+   */
+, templates: extend(createElementFunctions('TEMPLATE'), {
+    ContextPopError: ContextPopError
+  , VariableNotFoundError: VariableNotFoundError
+  , TemplateSyntaxError: TemplateSyntaxError
+  , TemplateNotFoundError: TemplateNotFoundError
+  , Variable: Variable
+  , Context: Context
+  , RenderContext: RenderContext
+  , BlockContext: BlockContext
+  , Template: Template
+  , TemplateNode: TemplateNode
+  , BlockNode: BlockNode
+  , ForNode: ForNode
+  , IfNode: IfNode
+  , TextNode: TextNode
+  , $template: $template
+  , $block: $block
+  , $var: $var
+  , $text: $text
+  , $for: $for
+  , $if: $if
+  })
 };
 
 /**
@@ -1489,31 +1558,6 @@ DOMBuilder.fragment.map = function(items, func) {
   }
   return DOMBuilder.fragment(results);
 };
-
-/** Exposes the templates API. */
-DOMBuilder.templates = extend(
-  extend({}, DOMBuilder.elementFunctions), {
-    ContextPopError: ContextPopError
-  , VariableNotFoundError: VariableNotFoundError
-  , TemplateSyntaxError: TemplateSyntaxError
-  , TemplateNotFoundError: TemplateNotFoundError
-  , Variable: Variable
-  , Context: Context
-  , RenderContext: RenderContext
-  , BlockContext: BlockContext
-  , Template: Template
-  , TemplateNode: TemplateNode
-  , BlockNode: BlockNode
-  , ForNode: ForNode
-  , IfNode: IfNode
-  , TextNode: TextNode
-  , $template: $template
-  , $block: $block
-  , $var: $var
-  , $text: $text
-  , $for: $for
-  , $if: $if
-});
 
 // Export DOMBuilder or expose it to the global object
 if (modules) {
