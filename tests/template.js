@@ -473,4 +473,30 @@ test('IncludeNode', function() {
   strictEqual(c.get('arg'), null, 'Extra context was removed');
 });
 
+test('CycleNode', function() {
+  // With constants and variables
+  var cycle = new templates.CycleNode(['a', templates.$var('b'), 'c']);
+  equal(cycle.id, 'cycle1', ' Expected id generated');
+  strictEqual(cycle.variableName, null, 'Default variable name is null');
+  strictEqual(cycle.silent, false, 'Not silent by default');
+
+  var c = templates.Context({b: 'foo'});
+  equal(cycle.render(c), 'a', 'First render produces first item');
+  strictEqual(c.renderContext.get('cycle1'), 1, 'Next index set in RenderContext');
+  deepEqual(c.stack[0], {b: 'foo'}, 'Nothing added to context');
+  equal(cycle.render(c), 'foo', 'Variables are resolved');
+  strictEqual(c.renderContext.get('cycle1'), 2, 'Next index set in RenderContext');
+  equal(cycle.render(c), 'c', 'Next item');
+  strictEqual(c.renderContext.get('cycle1'), 0, 'Next index moves back to the start');
+
+  // Options
+  cycle = new templates.CycleNode(['a', 'b', 'c'], {as: 'bar', silent: true});
+  equal(cycle.id, 'cycle2', ' Expected id generated');
+  equal(cycle.variableName, 'bar', 'Variable name set');
+  strictEqual(cycle.silent, true, 'silent set');
+  c = templates.Context();
+  deepEqual(cycle.render(c), [], 'Nothing rendered (empty list)');
+  equal(c.get('bar'), 'a', 'Value added to context');
+});
+
 })();

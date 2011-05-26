@@ -1150,6 +1150,38 @@ TextNode.prototype.render = function(context) {
   return (this.dynamic ? this.func(context) : this.text);
 };
 
+/**
+ * Cycles over a list of values, producing the next value on each render.
+ */
+function CycleNode(values, options) {
+  this.values = values;
+  options = extend({as: null, silent: false}, options || {});
+  this.variableName = options.as;
+  this.silent = options.silent;
+  // Generate a unique id for each CycleNode
+  this.id = 'cycle' + CycleNode.cycleId++;
+}
+inheritFrom(CycleNode, TemplateNode);
+
+CycleNode.cycleId = 1;
+
+CycleNode.prototype.render = function(context) {
+  var nextIndex = context.renderContext.get(this.id, 0)
+    , value = this.values[nextIndex]
+    ;
+  context.renderContext.set(this.id, (nextIndex + 1) % this.values.length);
+  if (value instanceof Variable) {
+    value = value.resolve(context);
+  }
+  if (this.variableName) {
+    context.set(this.variableName, value);
+  }
+  if (this.silent) {
+    return [];
+  }
+  return value;
+};
+
 // ------------------------------------------ Template Convenience Functions ---
 
 function $template(props) {
@@ -1186,6 +1218,10 @@ function $if(expr) {
 
 function $else() {
   return new ElseNode(slice.call(arguments));
+}
+
+function $cycle(values, options) {
+  return new CycleNode(values, options);
 }
 
 // === DOMBuilder API ==========================================================
@@ -1584,6 +1620,7 @@ var DOMBuilder = {
   , ForNode: ForNode
   , IfNode: IfNode
   , TextNode: TextNode
+  , CycleNode: CycleNode
   , $template: $template
   , $block: $block
   , $include: $include
@@ -1593,6 +1630,7 @@ var DOMBuilder = {
   , $empty: $empty
   , $if: $if
   , $else: $else
+  , $cycle: $cycle
   })
 };
 
