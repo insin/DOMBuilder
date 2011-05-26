@@ -1,4 +1,9 @@
-module("Template");
+module('Template', {
+  tearDown: function() {
+    // Clear template cache
+    DOMBuilder._templates = {};
+  }
+});
 
 (function() {
 
@@ -439,6 +444,33 @@ test('Template', function() {
     },
     templates.TemplateNotFoundError,
     'Missing parent template throws TemplateNotFoundError');
+});
+
+test('IncludeNode', function() {
+  var includer;
+  with(templates) {
+    $template({name: 'included'}
+    , '{{ arg }}'
+    , $for({item: 'items'}
+      , P('{{ item.name }}')
+      )
+    );
+
+    includer = $template({name: 'includer'}
+    , 'Before >'
+    , $include('included', {arg: 'Extra Context'})
+    , '< After'
+    );
+  }
+
+  var c = templates.Context({items: [{name: 1}, {name: 2}, {name: 3}]});
+  var result = DOMBuilder.withMode('HTML', function() {
+    return includer.render(c);
+  });
+  equal(''+result,
+        'Before &gt;Extra Context<p>1</p><p>2</p><p>3</p>&lt; After',
+        'Context and extra context available in included template');
+  strictEqual(c.get('arg'), null, 'Extra context was removed');
 });
 
 })();

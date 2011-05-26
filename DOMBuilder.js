@@ -785,6 +785,10 @@ function findNodesByType(contents, nodeType) {
   return nodes;
 }
 
+/**
+ * Creates a lookup object from a list of BlockNodes by name, asserting that
+ * their names are unique.
+ */
 function blockLookup(blocks) {
   var lookup = {}
     , block
@@ -804,6 +808,10 @@ function Template(props, contents) {
   this.parent = props.extend || null;
   this.contents = contents;
   this.blocks = blockLookup(findNodesByType(contents, BlockNode));
+
+  // Ensure any top level contents which need to be wrapped are processed
+  TemplateNode.prototype.parseContents.call(this);
+  // Add ourselves to the template lookup
   DOMBuilder._templates[this.name] = this;
 }
 
@@ -912,6 +920,27 @@ BlockNode.prototype['super'] = function(context) {
   }
   return '';
 }
+
+/**
+ * Includes the contents of another template, optionally with some extra
+ * context variables.
+ */
+function IncludeNode(template, extraContext) {
+  this.template = template;
+  this.extraContext = extraContext || {};
+}
+inheritFrom(IncludeNode, TemplateNode);
+
+IncludeNode.prototype.render = function(context) {
+  if (typeof DOMBuilder._templates[this.template] == 'undefined') {
+    throw new TemplateNotFoundError("Could not find template named '" +
+                                    this.template + '"');
+  }
+  context.push(this.extraContext);
+  var results = DOMBuilder._templates[this.template].render(context);
+  context.pop();
+  return results;
+};
 
 /**
  * An HTML element and its contents.
@@ -1129,6 +1158,10 @@ return new Template(props, slice.call(arguments, 1));
 
 function $block(name) {
   return new BlockNode(name, slice.call(arguments, 1));
+}
+
+function $include(template, extraContext) {
+  return new IncludeNode(template, extraContext);
 }
 
 function $var(expr) {
@@ -1547,11 +1580,13 @@ var DOMBuilder = {
   , Template: Template
   , TemplateNode: TemplateNode
   , BlockNode: BlockNode
+  , IncludeNode: IncludeNode
   , ForNode: ForNode
   , IfNode: IfNode
   , TextNode: TextNode
   , $template: $template
   , $block: $block
+  , $include: $include
   , $var: $var
   , $text: $text
   , $for: $for
