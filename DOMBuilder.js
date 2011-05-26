@@ -247,11 +247,7 @@ inheritFrom(HTMLNode, Object);
  * child nodes and empties the fragment.
  */
 HTMLNode.prototype._inlineFragments = function() {
-  var i = 0
-    , l = this.childNodes.length
-    , child
-    ;
-  for (; i < l; i++) {
+  for (var i = 0, l = this.childNodes.length, child; i < l; i++) {
     child = this.childNodes[i];
     if (child instanceof HTMLFragment) {
       // Replace the fragment with its contents
@@ -776,11 +772,8 @@ BlockContext.prototype.getBlock = function(name) {
 //  --------------------------------------------------------------- Template ---
 
 function findNodesByType(contents, nodeType) {
-  var nodes = []
-    , l = contents.length
-    , node
-    ;
-  for (var i = 0; i < l; i++) {
+  var nodes = [];
+  for (var i = 0, l = contents.length, node; i < l; i++) {
     node = contents[i];
     if (node instanceof nodeType) {
       nodes.push(node);
@@ -1035,10 +1028,8 @@ IfNode.prototype._parseExpr = (function() {
   return function(expr) {
     var code = ['return (']
       , bits = splitBits(expr, opsRE)
-      , l = bits.length
-      , bit
       ;
-    for (var i = 0; i < l; i++) {
+    for (var i = 0, l = bits.length, bit; i < l; i++) {
       bit = bits[i];
       if (typeof ops[bit] != 'undefined') {
         code.push(bit);
@@ -1108,15 +1099,15 @@ inheritFrom(TextNode, TemplateNode);
 TextNode.prototype._parseExpr = function(expr) {
   var code = ['var a = []']
     , bits = splitBits(expr, VARIABLE_RE)
-    , l = bits.length
     ;
-  for (var i = 0; i < l; i++) {
+  for (var i = 0, l = bits.length, bit; i < l; i++) {
+    bit = bits[i];
     if (i % 2) {
       code.push('a.push(new Variable("' +
-                escapeString(bits[i].replace(TRIM_RE, '')) +
+                escapeString(bit.replace(TRIM_RE, '')) +
                 '").resolve(c))');
-    } else if (bits[i]) {
-      code.push('a.push("' + escapeString(bits[i]) + '")');
+    } else if (bit) {
+      code.push('a.push("' + escapeString(bit) + '")');
     }
   }
   code.push('return a');
