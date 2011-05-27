@@ -4,46 +4,44 @@ module('Mixed mode');
 
 (function() {
 
-var dom = DOMBuilder.apply();
+var mixed = DOMBuilder.elements;
 
 function testBothModes(testFunc) {
-  DOMBuilder.withMode('DOM', testFunc)
-  DOMBuilder.withMode('HTML', testFunc);
+  DOMBuilder.withMode('dom', testFunc)
+  DOMBuilder.withMode('dom', testFunc);
 }
 
 test('DOMBuilder.withMode', function() {
-  expect(7);
+  expect(6);
 
-  DOMBuilder.mode = 'DOM';
+  DOMBuilder.mode = 'dom';
   raises(function() {
-    DOMBuilder.withMode('HTML', function() {
-      equal(DOMBuilder.mode, 'HTML', 'mode set correctly within function');
-      equal(DOMBuilder.withMode('XHTML', function() {
-        equal(DOMBuilder.mode, 'XHTML', 'mode set correctly within nested function');
-        return 'great success';
-      }), 'great success', 'functon return value passed back');
-      equal(DOMBuilder.mode, 'HTML', 'mode set back correctly after nested function');
-
-      DOMBuilder.withMode('XHTML', function() {
-        equal(DOMBuilder.mode, 'XHTML', 'mode set correctly within nested function');
+    DOMBuilder.withMode('html', function() {
+      equal(DOMBuilder.mode, 'html', 'mode set correctly within function');
+      DOMBuilder.withMode('template', function() {
+        equal(DOMBuilder.mode, 'template', 'mode set correctly within nested function');
+      });
+      equal(DOMBuilder.mode, 'html', 'mode set back correctly after nested function');
+      DOMBuilder.withMode('template', function() {
+        equal(DOMBuilder.mode, 'template', 'mode set correctly within nested function');
         x // ReferenceError
       });
       fail('exception should be bubbling right about now');
     });
   }, 'Exception from within nested withMode bubbled up');
-  equal(DOMBuilder.mode, 'DOM', 'withMode set mode back when exception was thrown');
+  equal(DOMBuilder.mode, 'dom', 'withMode set mode back when exception was thrown');
 });
 
 test('Fragment contents are moved when a fragment is appended', function() {
   expect(8);
 
   testBothModes(function() {
-    var fragment = DOMBuilder.fragment(dom.P(), dom.P(), dom.P());
-    var el = dom.P(fragment);
+    var fragment = DOMBuilder.fragment(mixed.P(), mixed.P(), mixed.P());
+    var el = mixed.P(fragment);
     equal(3, el.childNodes.length, 'fragment contents were appended');
     equal(0, fragment.childNodes.length, 'fragment was cleared');
 
-    var fragment = DOMBuilder.fragment(dom.P(), dom.P(), dom.P());
+    var fragment = DOMBuilder.fragment(mixed.P(), mixed.P(), mixed.P());
     var f = DOMBuilder.fragment(fragment);
     equal(3, f.childNodes.length, 'fragment contents were appended');
     equal(0, fragment.childNodes.length, 'fragment was cleared');
@@ -57,38 +55,38 @@ test('Regression: Issue 2', function() {
 
   // Basic scenario
   testBothModes(function() {
-    var el = dom.DIV(dom.P(), dom.P.map(['One', 'Two']));
+    var el = mixed.DIV(mixed.P(), mixed.P.map(['One', 'Two']));
     equal(el.childNodes.length, 3, "element: Array siblings don't throw exceptions");
 
-    el = DOMBuilder.fragment(dom.P(), dom.P.map(['One', 'Two']));
+    el = DOMBuilder.fragment(mixed.P(), mixed.P.map(['One', 'Two']));
     equal(el.childNodes.length, 3, "fragment: Array siblings don't throw exceptions");
   });
 
   // Empty lists are removed by flattening
   testBothModes(function() {
-    var el = dom.DIV(dom.P(), []);
+    var el = mixed.DIV(mixed.P(), []);
     equal(el.childNodes.length, 1, 'element: empty lists are removed');
 
-    el = DOMBuilder.fragment(dom.P(), []);
+    el = DOMBuilder.fragment(mixed.P(), []);
     equal(el.childNodes.length, 1, 'fragment: empty lists are removed');
   });
 
   // Multiple levels of nesting
   testBothModes(function() {
-    var el = dom.DIV(dom.P(),
-                     [dom.P(), dom.P(),
+    var el = mixed.DIV(mixed.P(),
+                     [mixed.P(), mixed.P(),
                        [],
-                       [dom.P(), dom.P(), dom.P(),
-                         [dom.P()]
+                       [mixed.P(), mixed.P(), mixed.P(),
+                         [mixed.P()]
                        ]
                      ]);
     equal(el.childNodes.length, 7, 'element: multiply nested content flattened');
 
-    var el = DOMBuilder.fragment(dom.P(),
-                                 [dom.P(), dom.P(),
+    var el = DOMBuilder.fragment(mixed.P(),
+                                 [mixed.P(), mixed.P(),
                                    [],
-                                   [dom.P(), dom.P(), dom.P(),
-                                     [dom.P()]
+                                   [mixed.P(), mixed.P(), mixed.P(),
+                                     [mixed.P()]
                                    ]
                                  ]);
     equal(el.childNodes.length, 7, 'fragment: multiply nested content flattened');
@@ -96,13 +94,13 @@ test('Regression: Issue 2', function() {
 
   // Nested fragment contents shoould still be appended
   testBothModes(function() {
-    var fragment = DOMBuilder.fragment(dom.P(), [dom.P(), dom.P()]);
-    var el = dom.P(dom.P(), [dom.P(), fragment]);
+    var fragment = DOMBuilder.fragment(mixed.P(), [mixed.P(), mixed.P()]);
+    var el = mixed.P(mixed.P(), [mixed.P(), fragment]);
     equal(5, el.childNodes.length, 'element: nested fragment contents were appended');
     equal(0, fragment.childNodes.length, 'fragment was cleared');
 
-    var fragment = DOMBuilder.fragment(dom.P(), [dom.P(), dom.P()]);
-    var f = DOMBuilder.fragment(dom.P(), [dom.P(), fragment]);
+    var fragment = DOMBuilder.fragment(mixed.P(), [mixed.P(), mixed.P()]);
+    var f = DOMBuilder.fragment(mixed.P(), [mixed.P(), fragment]);
     equal(5, f.childNodes.length, 'fragment: nested fragment contents were appended');
     equal(0, fragment.childNodes.length, 'nested fragment was cleared');
   });
@@ -110,15 +108,15 @@ test('Regression: Issue 2', function() {
 
 function testEventHandlers() {
   return DOMBuilder.fragment(
-    dom.DIV({id: 'testElement', click: function() { $('#testOutput').text('PASS'); }}),
-    dom.DIV({id: 'testOutput'}, 'FAIL')
+    mixed.DIV({id: 'testElement', click: function() { $('#testOutput').text('PASS'); }}),
+    mixed.DIV({id: 'testOutput'}, 'FAIL')
   );
 }
 
 test('DOM Event Handlers', function() {
   expect(1);
 
-  var fragment = DOMBuilder.withMode('DOM', testEventHandlers);
+  var fragment = DOMBuilder.withMode('dom', testEventHandlers);
   $('#qunit-fixture').append(fragment);
   $('#testElement').trigger('click');
   equal('PASS',  $('#testOutput').text(), 'click handler executed');
@@ -127,7 +125,7 @@ test('DOM Event Handlers', function() {
 test('HTML Event Handlers', function() {
   expect(1);
 
-  var fragment = DOMBuilder.withMode('HTML', testEventHandlers);
+  var fragment = DOMBuilder.withMode('html', testEventHandlers);
   fragment.insertWithEvents($('#qunit-fixture').get(0));
   $('#testElement').trigger('click');
   equal('PASS',  $('#testOutput').text(), 'click handler executed');
@@ -136,10 +134,10 @@ test('HTML Event Handlers', function() {
 test('HTML Event Handlers on nested elements', function() {
   expect(1);
 
-  var fragment = DOMBuilder.withMode('HTML', function() {
-    return dom.DIV(
-      dom.DIV({id: 'testElement', click: function() { $('#testOutput').text('PASS'); }}),
-      dom.DIV({id: 'testOutput'}, 'FAIL')
+  var fragment = DOMBuilder.withMode('html', function() {
+    return mixed.DIV(
+      mixed.DIV({id: 'testElement', click: function() { $('#testOutput').text('PASS'); }}),
+      mixed.DIV({id: 'testOutput'}, 'FAIL')
     );
   });
   fragment.insertWithEvents($('#qunit-fixture').get(0));
@@ -150,11 +148,11 @@ test('HTML Event Handlers on nested elements', function() {
 test('insertWithEvents on elements with readonly innerHTML (IE)', function() {
   expect(2);
 
-  DOMBuilder.mode = 'DOM';
+  DOMBuilder.mode = 'dom';
   var fixture = $('#qunit-fixture'),
-      table = dom.TABLE(dom.TBODY());
+      table = mixed.TABLE(mixed.TBODY());
   fixture.append(table);
-  var fragment = DOMBuilder.withMode('HTML', testEventHandlers);
+  var fragment = DOMBuilder.withMode('html', testEventHandlers);
   fragment.insertWithEvents(fixture.get(0));
   ok("An exception wasn't thrown");
   $('#testElement').trigger('click');
@@ -162,13 +160,13 @@ test('insertWithEvents on elements with readonly innerHTML (IE)', function() {
 });
 
 function testInnerHTML() {
-  return dom.DIV({innerHTML: 'test1<span>test2</span>'}, dom.P(), dom.P(), dom.P());
+  return mixed.DIV({innerHTML: 'test1<span>test2</span>'}, mixed.P(), mixed.P(), mixed.P());
 }
 
 test('DOM innerHTML', function() {
   expect(3);
 
-  var div = DOMBuilder.withMode('DOM', testInnerHTML);
+  var div = DOMBuilder.withMode('dom', testInnerHTML);
   equal(div.childNodes.length, 2, 'correct number of child nodes');
   equal(div.childNodes[0].nodeValue, 'test1');
   equal(div.childNodes[1].nodeName.toLowerCase(), 'span');
@@ -177,18 +175,18 @@ test('DOM innerHTML', function() {
 test('HTML innerHTML', function() {
   expect(1);
 
-  var div = DOMBuilder.withMode('HTML', testInnerHTML);
+  var div = DOMBuilder.withMode('html', testInnerHTML);
   equal(''+div, '<div>test1<span>test2</span></div>');
 });
 
 function testNodeChecks() {
-  return dom.DIV(null, undefined, true, false, 1, 0);
+  return mixed.DIV(null, undefined, true, false, 1, 0);
 }
 
 test('DOM child checks', function() {
   expect(2);
 
-  var div = DOMBuilder.withMode('DOM', testNodeChecks);
+  var div = DOMBuilder.withMode('dom', testNodeChecks);
   equal(div.childNodes.length, 6, 'correct number of child nodes');
   equal(div.innerHTML, 'nullundefinedtruefalse10', 'Children coerced to String');
 });
@@ -196,17 +194,17 @@ test('DOM child checks', function() {
 test('HTML child checks', function() {
   expect(1);
 
-  var div = DOMBuilder.withMode('HTML', testNodeChecks);
+  var div = DOMBuilder.withMode('html', testNodeChecks);
   equal('' + div, '<div>nullundefinedtruefalse10</div>');
 });
 
 test('Arguments supplied to withMode', function() {
   expect(1);
 
-  var div = DOMBuilder.withMode('HTML', function(a,b,c) { return dom.DIV(a, b, c); }, 1, 2, 3);
+  var div = DOMBuilder.withMode('html', function(a,b,c) { return mixed.DIV(a, b, c); }, 1, 2, 3);
   equal('' + div, '<div>123</div>');
 });
 
-// TODO HTML and Template-specific creation functions ignore DOMBuilder.mode
+// TODO Mode-specific creation functions should ignore DOMBuilder.mode
 
 })();

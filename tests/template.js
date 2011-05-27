@@ -1,13 +1,8 @@
-module('Template', {
-  tearDown: function() {
-    // Clear template cache
-    DOMBuilder._templates = {};
-  }
-});
+module('Template');
 
 (function() {
 
-var templates = DOMBuilder.templates;
+var templates = DOMBuilder.template;
 
 function shallowCopy(a) {
   var b = {};
@@ -398,7 +393,7 @@ test('Template', function() {
   var t2 = templates.$template({name: 'baz', extend: 'bar'}, b2);
   var c = templates.Context();
 
-  var result = DOMBuilder.withMode('HTML', function() { return t2.render(c) });
+  var result = DOMBuilder.withMode('html', function() { return t2.render(c) });
   deepEqual(''+result, 'parent then child',
             'Template sets up block inheritance correctly');
 
@@ -430,7 +425,7 @@ test('Template', function() {
   }
 
   c = templates.Context({message: 'Child Content'});
-  result = DOMBuilder.withMode('HTML', function() {
+  result = DOMBuilder.withMode('html', function() {
     return child.render(c);
   });
   equal(''+result,
@@ -464,7 +459,7 @@ test('IncludeNode', function() {
   }
 
   var c = templates.Context({items: [{name: 1}, {name: 2}, {name: 3}]});
-  var result = DOMBuilder.withMode('HTML', function() {
+  var result = DOMBuilder.withMode('html', function() {
     return includer.render(c);
   });
   equal(''+result,
