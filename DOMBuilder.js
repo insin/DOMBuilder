@@ -64,12 +64,13 @@ function isFunction(o) {
 }
 
 /**
- * We primarily want to distinguish between Objects and Nodes.
+ * We primarily want to distinguish between plain Objects and content nodes.
+ * Ruling out content nodes differs depending on the mode we're rendering in.
  */
-function isObject(o) {
-  // TODO Apply other nodes
-  return (!!o && toString.call(o) === '[object Object]' &&
-          !o.nodeType);
+function isObject(o, mode) {
+  return (!!o &&
+          toString.call(o) === '[object Object]' &&
+          mode ? DOMBuilder.modes[mode].isObject(o) : !o.nodeType);
 }
 
 /**
@@ -507,7 +508,7 @@ var DOMBuilder = {
     flatten(children);
 
     if (this.mode != 'dom') {
-      return this.modes[mode].fragment(tagName, attributes, children);
+      return this.modes[mode].fragment(children);
     }
 
     var fragment = document.createDocumentFragment();
