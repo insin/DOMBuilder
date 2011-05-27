@@ -1,6 +1,6 @@
-var DOMBuilder = require('./DOMBuilder')
-  , htmlMode = require('./DOMBuilder.html')
-  , templateMode = require('./DOMBuilder.template')
+var DOMBuilder = require('./lib/DOMBuilder')
+  , htmlMode = require('./lib/DOMBuilder.html')
+  , templateMode = require('./lib/DOMBuilder.template')
   ;
 
 DOMBuilder.addMode(htmlMode);

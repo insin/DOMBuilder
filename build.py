@@ -1,49 +1,44 @@
-import argparse
-import os
-import shutil
-import subprocess
-import sys
+import re
 
-from jsmin import jsmin
+VERSION_RE = re.compile(r"version: '(.+)'")
 
-DIRNAME = os.path.dirname(__file__)
+TEMPLATE = """/**
+ * DOMBuilder {version} (modes: {modes}) - https://github.com/insin/DOMBuilder
+ * MIT licensed
+ */
+{code}"""
 
-def main(version):
-    if not os.path.isdir('build'):
-        os.mkdir('build')
+def main():
+    dom = open('lib/DOMBuilder.js').read()
+    html = open('lib/DOMBuilder.html.js').read()
+    template = open('lib/DOMBuilder.template.js').read()
 
-    # Prepare DOMBuilder
-    shutil.copyfile('DOMBuilder.js', 'build/dombuilder-%s.js' % version)
-    with open('build/dombuilder-%s.min.js' % version, 'w') as minfile, \
-         open('build/dombuilder-%s.js' % version, 'r') as maxfile:
-        minfile.write(jsmin(maxfile.read()))
-    
-    # Prepare the demo document
-    with open('build/demo.html', 'w') as outfile, \
-         open('demo.html', 'r') as infile:
-        outfile.write(infile.read().replace('DOMBuilder.js',
-                                            'dombuilder-%s.js' % version))
+    version = VERSION_RE.search(dom).group(1)
 
-    # Generate docs
-    if not os.path.isdir('build/docs'):
-        os.mkdir('build/docs')
-    subprocess.call([os.path.abspath('docs/make.bat'), 'html'], cwd=os.path.abspath('docs'))
-    if os.path.isdir('build/docs'):
-        shutil.rmtree('build/docs')
-    shutil.copytree('docs/_build/html', 'build/docs',
-                    ignore=shutil.ignore_patterns('.buildinfo', 'objects.inv'))
+    open('DOMBuilder.min.js', 'w').write(TEMPLATE.format(
+        version=version, modes='dom', code=compress(dom)
+    ))
+    open('DOMBuilder.html.min.js', 'w').write(TEMPLATE.format(
+        version=version, modes='dom, html', code=compress(dom + html)
+    ))
+    open('DOMBuilder.template.min.js', 'w').write(TEMPLATE.format(
+        version=version, modes='dom, html, template', code=compress(dom + html + template)
+    ))
 
-    # Copy files to be distributed as-is
-    for filename in ['CHANGELOG']:
-        shutil.copy(filename, 'build')
-
-    # Zip everything up
-    if not os.path.isdir('dist'):
-        os.mkdir('dist')
-    shutil.make_archive('dist/DOMBuilder-%s' % version, 'zip', 'build')
-
-    # Clean up
-    shutil.rmtree('build')
+def compress(js):
+    """Optimises and compresses with the Google Closure Compiler."""
+    import httplib, urllib, sys
+    params = urllib.urlencode([
+        ('js_code', js),
+        ('compilation_level', 'SIMPLE_OPTIMIZATIONS'),
+        ('output_format', 'text'),
+        ('output_info', 'compiled_code'),
+      ])
+    headers = { "Content-type": "application/x-www-form-urlencoded" }
+    conn = httplib.HTTPConnection('closure-compiler.appspot.com')
+    conn.request('POST', '/compile', params, headers)
+    response = conn.getresponse()
+    return response.read()
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    main()
