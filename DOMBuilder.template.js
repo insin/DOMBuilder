@@ -1,5 +1,7 @@
 (function() {
 
+// --------------------------------------------------------------- Utilities ---
+
   // Native functions
 var hasOwn = Object.prototype.hasOwnProperty
   , slice = Array.prototype.slice
@@ -750,7 +752,7 @@ function $cycle(values, options) {
 DOMBuilder.addMode({
   name: 'template',
 , createElement: function(tagName, attributes, children) {
-    return new TemplateElement(tagName, attributes, children);
+    return new ElementNode(tagName, attributes, children);
   }
 , fragment: function(children) {
     return children;
@@ -771,6 +773,7 @@ DOMBuilder.addMode({
   , TemplateNode: TemplateNode
   , BlockNode: BlockNode
   , IncludeNode: IncludeNode
+  , ElementNode: ElementNode
   , ForNode: ForNode
   , IfNode: IfNode
   , TextNode: TextNode

@@ -1,6 +1,8 @@
 (function(__global__, undefined)
 {
 
+// --------------------------------------------------------------- Utilities ---
+
 var modules = (typeof module !== 'undefined' && module.exports)
   , document = __global__.document
   , toString = Object.prototype.toString
@@ -17,8 +19,6 @@ var modules = (typeof module !== 'undefined' && module.exports)
     'optgroup option p param pre q samp script select small span strong style ' +
     'sub sup table tbody td textarea tfoot th thead title tr tt ul var').split(' ')
   ;
-
-// === Utility functions =======================================================
 
 /**
  * Naively copies from ``source`` to ``dest``, returning ``dest``.
@@ -183,8 +183,6 @@ if (typeof jQuery != 'undefined') {
   }
 }
 
-// === DOMBuilder API ==========================================================
-
 // ---------------------------------- Element Creation Convenience Functions ---
 
 /**
@@ -307,15 +305,15 @@ function mapElementFromArguments(tagName, fixedMode, args) {
     return DOMBuilder.map(tagName, defaultAttrs, items, func, fixedMode);
 }
 
-// -------------------------------------------------------- Public Namespace ---
+// === DOMBuilder API ==========================================================
 
 var DOMBuilder = {
   version: '2.0.0-pre'
 
-// --------------------------------------------------------------- Mixed API ---
+// ------------------------------------------------------------------- Modes ---
 
   /**
-   * Determines which mode the ``createElement`` function will operate in.
+   * Determines which mode content creation functions will operate in.
    */
 , mode: 'dom'
 
@@ -370,10 +368,12 @@ var DOMBuilder = {
    */
 , apply: function(context) {
     context = context || {};
-    extend(context, this.elementFunctions);
+    extend(context, this.elements);
     context.NBSP = '\u00A0'; // Add NBSP for backwards-compatibility
     return context;
   }
+
+// -------------------------------------------------------- Content Creation ---
 
   /**
    * Creates a DOM element with the given tag name and, optionally,
@@ -495,77 +495,98 @@ var DOMBuilder = {
    * See http://ejohn.org/blog/dom-documentfragments/ for more information
    * about ``DocumentFragment`` objects.
    */
-, fragment: function() {
-    var children;
-    if (arguments.length === 1 &&
-        isArray(arguments[0])) {
-      children = arguments[0]; // ([child1, ...])
-    } else {
-      children = slice.call(arguments) // (child1, ...)
-    }
-
-    // Inline the contents of any child Arrays
-    flatten(children);
-
-    if (this.mode != 'dom') {
-      return this.modes[mode].fragment(children);
-    }
-
-    var fragment = document.createDocumentFragment();
-    for (var i = 0, l = children.length, child; i < l; i++) {
-      child = children[i];
-      if (child.nodeType) {
-        fragment.appendChild(child);
+, fragment: (function() {
+    var fragment = function() {
+      var children;
+      if (arguments.length === 1 &&
+          isArray(arguments[0])) {
+        children = arguments[0]; // ([child1, ...])
       } else {
-        fragment.appendChild(document.createTextNode(''+child));
+        children = slice.call(arguments) // (child1, ...)
       }
-    }
+
+      // Inline the contents of any child Arrays
+      flatten(children);
+
+      if (this.mode != 'dom') {
+        return this.modes[mode].fragment(children);
+      }
+
+      var fragment = document.createDocumentFragment();
+      for (var i = 0, l = children.length, child; i < l; i++) {
+        child = children[i];
+        if (child.nodeType) {
+          fragment.appendChild(child);
+        } else {
+          fragment.appendChild(document.createTextNode(''+child));
+        }
+      }
+      return fragment;
+    };
+
+    /**
+     * Creates a fragment wrapping content created for every item in a
+     * list.
+     *
+     * Arguments are as follows:
+     *
+     * ``items``
+     *    the list of items to use as the basis for creating fragment
+     *    contents.
+     * ``mappingFunction``
+     *    a function to be called with each item in the list, to provide
+     *    contents for the fragment.
+     *
+     *    Contents can consist of a single value or a mixed ``Array``.
+     *
+     *    The function will be called with the following arguments::
+     *
+     *       func(item, itemIndex)
+     *
+     *    The function can indicate that the given item shouldn't generate
+     *    any content for the fragment by returning ``null``.
+     */
+    fragment.map = function(items, func) {
+      // If we weren't given a mapping function, the user may as well just
+      // have created a fragment directly, as we're just wrapping content
+      // here, not creating it.
+      if (!isFunction(func)) {
+        return DOMBuilder.fragment(items);
+      }
+
+      var results = [];
+      for (var i = 0, l = items.length, children; i < l; i++) {
+        // Call the mapping function and add the return value to the
+        // fragment contents, unless the function specifies that the item
+        // shouldn't generate content by explicity returning null.
+        children = func(items[i], i);
+        if (children === null) {
+          continue;
+        }
+        results = results.concat(children);
+      }
+      return DOMBuilder.fragment(results);
+    };
+
     return fragment;
-  }
-};
+  })()
 
-/**
- * Creates a fragment wrapping content created for every item in a
- * list.
- *
- * Arguments are as follows:
- *
- * ``items``
- *    the list of items to use as the basis for creating fragment
- *    contents.
- * ``mappingFunction``
- *    a function to be called with each item in the list, to provide
- *    contents for the fragment.
- *
- *    Contents can consist of a single value or a mixed ``Array``.
- *
- *    The function will be called with the following arguments::
- *
- *       func(item, itemIndex)
- *
- *    The function can indicate that the given item shouldn't generate
- *    any content for the fragment by returning ``null``.
- */
-DOMBuilder.fragment.map = function(items, func) {
-  // If we weren't given a mapping function, the user may as well just
-  // have created a fragment directly, as we're just wrapping content
-  // here, not creating it.
-  if (!isFunction(func)) {
-    return DOMBuilder.fragment(items);
+  /* Exposes utilities for use in mode plugins. */
+, util: {
+    modules: modules
+  , TAG_NAMES: TAG_NAMES
+  , EVENT_ATTRS: EVENT_ATTRS
+  , createElement: createElement
+  , addEvent: addEvent
+  , setInnerHTML: setInnerHTML
+  , extend: extend
+  , lookup: lookup
+  , inheritFrom: inheritFrom
+  , isArray: isArray
+  , isFunction: isFunction
+  , isObject: isObject
+  , flatten: flatten
   }
-
-  var results = [];
-  for (var i = 0, l = items.length, children; i < l; i++) {
-    // Call the mapping function and add the return value to the
-    // fragment contents, unless the function specifies that the item
-    // shouldn't generate content by explicity returning null.
-    children = func(items[i], i);
-    if (children === null) {
-      continue;
-    }
-    results = results.concat(children);
-  }
-  return DOMBuilder.fragment(results);
 };
 
 // Export DOMBuilder or expose it to the global object

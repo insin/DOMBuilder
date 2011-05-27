@@ -1,5 +1,7 @@
 (function() {
 
+// --------------------------------------------------------------- Utilities ---
+
 var addEvent = DOMBuilder.util.addEvent
   , extend = DOMBuilder.util.extend
   , inheritFrom = DOMBuilder.util.inheritFrom
@@ -14,7 +16,7 @@ var addEvent = DOMBuilder.util.addEvent
   , EMPTY_TAGS = lookup('area base br col frame hr input img link meta param'.split(' '))
   ;
 
-// === HTML Escaping ===========================================================
+// ----------------------------------------------------------- HTML Escaping ---
 
 /**
  * ``String`` subclass which marks the given string as safe for inclusion
@@ -65,7 +67,7 @@ function conditionalEscape(html) {
   return escapeHTML(''+html);
 }
 
-// === Mock DOM Elements =======================================================
+// ------------------------------------------------------- Mock DOM Elements ---
 
 /**
  * Partially emulates a DOM ``Node`` for HTML generation.
