@@ -1,18 +1,23 @@
-(function() {
+(function(__global__) {
 
 // --------------------------------------------------------------- Utilities ---
 
-var addEvent = DOMBuilder.util.addEvent
+var modules = (typeof module !== 'undefined' && module.exports)
+  , DOMBuilder = (modules ? require('./DOMBuilder') : __global__.DOMBuilder)
+  // Native functions
+  , hasOwn = Object.prototype.hasOwnProperty
+  , splice = Array.prototype.splice
+  // DOMBuilder utilities
+  , addEvent = DOMBuilder.util.addEvent
   , extend = DOMBuilder.util.extend
   , inheritFrom = DOMBuilder.util.inheritFrom
   , lookup = DOMBuilder.util.lookup
-  , setInnerHTML = DOMBuilder.dom.setInnerHTML
-  , splice = Array.prototype.splice
+  , setInnerHTML = DOMBuilder.util.setInnerHTML
   , EVENT_ATTRS = DOMBuilder.util.EVENT_ATTRS
   , TAG_NAMES = DOMBuilder.util.TAG_NAMES
-  , /** Lookup for known tag names. */
+  /** Lookup for known tag names. */
   , TAG_NAME_LOOKUP = lookup(TAG_NAMES)
-    /** Lookup for tags defined as EMPTY in the HTML 4.01 Strict and Frameset DTDs. */
+  /** Lookup for tags defined as EMPTY in the HTML 4.01 Strict and Frameset DTDs. */
   , EMPTY_TAGS = lookup('area base br col frame hr input img link meta param'.split(' '))
   ;
 
@@ -180,9 +185,10 @@ HTMLElement.prototype.toString = function() {
                  : conditionalEscape(this.tagName))
       // Opening tag
     , parts = ['<' + tagName]
+    , attr
     ;
   // Tag attributes
-  for (var attr in this.attributes) {
+  for (attr in this.attributes) {
     // innerHTML is a special case, as we can use it to (perhaps
     // inadvisedly) specify entire contents as a string.
     if (attr === 'innerHTML') {
@@ -199,7 +205,7 @@ HTMLElement.prototype.toString = function() {
     parts.push(' ' + conditionalEscape(attr.toLowerCase()) + '="' +
                conditionalEscape(this.attributes[attr]) + '"');
   }
-  if (this.eventsFound && !('id' in this.attributes)) {
+  if (this.eventsFound && !hasOwn.call(this.attributes, 'id')) {
     // Ensure an id is present so we can grab this element later
     this.id  = '__DB' + HTMLElement.eventTrackerId++ + '__';
     parts.push(' id="' + this.id + '"');
@@ -214,17 +220,13 @@ HTMLElement.prototype.toString = function() {
   }
 
   // If innerHTML was given, use it exclusively for the contents
-  if ('innerHTML' in this.attributes) {
+  if (hasOwn.call(this.attributes, 'innerHTML')) {
     parts.push(this.attributes.innerHTML);
   } else {
     for (var i = 0, l = this.childNodes.length, node; i < l; i++) {
       node = this.childNodes[i];
       if (node instanceof HTMLElement || node instanceof SafeString) {
         parts.push(node.toString(trackEvents));
-      }
-      else if (node === '\u00A0') {
-        // Special case to convert these back to entities,
-        parts.push('&nbsp;');
       } else {
         // Coerce to string and escape
         parts.push(escapeHTML(''+node));
@@ -244,7 +246,7 @@ HTMLElement.prototype.toString = function() {
  */
 HTMLElement.prototype.addEvents = function() {
   if (this.eventsFound) {
-    var id = ('id' in this.attributes
+    var id = (hasOwn.call(this.attributes, 'id')
               ? conditionalEscape(this.attributes.id)
               : this.id)
       , attr
@@ -301,9 +303,6 @@ HTMLFragment.prototype.toString = function() {
     node = this.childNodes[i];
     if (node instanceof HTMLElement || node instanceof SafeString) {
       parts.push(node.toString(trackEvents));
-    } else if (node === '\u00A0') {
-      // Special case to convert these back to entities,
-      parts.push('&nbsp;');
     } else {
       // Coerce to string and escape
       parts.push(escapeHTML(''+node));
@@ -330,9 +329,9 @@ HTMLFragment.prototype.insertWithEvents = function(el) {
   this.addEvents();
 };
 
-// === Add mode to DOMBuilder ==================================================
+// === Define mode plugin ======================================================
 
-DOMBuilder.addMode({
+var modePlugin = {
   name: 'html'
 , createElement: function(tagName, attributes, children) {
     return new HTMLElement(tagName, attributes, children);
@@ -353,7 +352,13 @@ DOMBuilder.addMode({
   , HTMLElement: HTMLElement
   , HTMLFragment: HTMLFragment
   }
-, addElementCreationFunctions: true
-});
+};
 
-})();
+// Export the HTML mode definition or add it to DOMBuilder
+if (modules) {
+  extend(module.exports, modePlugin);
+} else {
+  DOMBuilder.addMode(modePlugin);
+}
+
+})(this);

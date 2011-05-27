@@ -5,13 +5,20 @@
 
 var modules = (typeof module !== 'undefined' && module.exports)
   , document = __global__.document
+  // Native functions
   , toString = Object.prototype.toString
   , hasOwn = Object.prototype.hasOwnProperty
   , slice = Array.prototype.slice
   , splice = Array.prototype.splice
-    // Functioms and objects involved in implementing cross-crowser workarounds
-  , EVENT_ATTRS, createElement, addEvent, setInnerHTML
-    /** Tag names defined in the HTML 4.01 Strict and Frameset DTDs. */
+  /** Attribute names corresponding to event handlers. */
+  , EVENT_ATTRS
+  /** Cross-browser means creation of elements with attributes. */
+  , createElement
+  /** Cross-browser event registration. */
+  , addEvent
+  /** Cross-browser setting of innerHTML on a DOM Element. */
+  , setInnerHTML
+  /** Tag names defined in the HTML 4.01 Strict and Frameset DTDs. */
   , TAG_NAMES = ('a abbr acronym address area b bdo big blockquote body br ' +
     'button caption cite code col colgroup dd del dfn div dl dt em fieldset ' +
     'form frame frameset h1 h2 h3 h4 h5 h6 hr head html i iframe img input ' +
@@ -70,7 +77,7 @@ function isFunction(o) {
 function isObject(o, mode) {
   return (!!o &&
           toString.call(o) === '[object Object]' &&
-          mode ? DOMBuilder.modes[mode].isObject(o) : !o.nodeType);
+          (mode == 'dom' ? !o.nodeType : DOMBuilder.modes[mode].isObject(o)));
 }
 
 /**
@@ -210,13 +217,10 @@ function createElementFunction(tagName, fixedMode) {
       var mode = fixedMode || DOMBuilder.mode;
       // Short circuit if there are no arguments, to avoid further
       // argument inspection.
-      if (mode == 'DOM') {
+      if (mode == 'dom') {
         return document.createElement(tagName);
-      }
-      else if (mode == 'TEMPLATE') {
-        return new ElementNode(tagName);
       } else {
-        return new HTMLElement(tagName);
+        return DOMBuilder.modes[mode].createElement(tagName, {}, []);
       }
     } else {
       return createElementFromArguments(tagName, fixedMode, slice.call(arguments));
@@ -248,33 +252,28 @@ function createElementFunction(tagName, fixedMode) {
  * At least one argument *must* be provided.
  */
 function createElementFromArguments(tagName, fixedMode, args) {
-    var attributes
-      , children
-        // The short circuit in ``createElementFunction`` ensures we will
-        // always have at least one argument when called via element creation
-        // functions.
-      , argsLength = args.length
-      , firstArg = args[0]
-      ;
+  var attributes
+    , children
+      // The short circuit in ``createElementFunction`` ensures we will
+      // always have at least one argument when called via element creation
+      // functions.
+    , argsLength = args.length
+    , firstArg = args[0]
+    ;
 
-    if (argsLength === 1 &&
-        isArray(firstArg))
-    {
-        children = firstArg; // ([child1, ...])
-    }
-    else if (isObject(firstArg))
-    {
-        attributes = firstArg;
-        children = (argsLength == 2 && isArray(args[1])
-                    ? args[1]               // (attributes, [child1, ...])
-                    : slice.call(args, 1)); // (attributes, child1, ...)
-    }
-    else
-    {
-        children = slice.call(args); // (child1, ...)
-    }
+  if (argsLength === 1 &&
+      isArray(firstArg)) {
+    children = firstArg; // ([child1, ...])
+  } else if (isObject(firstArg, fixedMode || DOMBuilder.mode)) {
+    attributes = firstArg;
+    children = (argsLength == 2 && isArray(args[1])
+                ? args[1]               // (attributes, [child1, ...])
+                : slice.call(args, 1)); // (attributes, child1, ...)
+  } else {
+    children = slice.call(args); // (child1, ...)
+  }
 
-    return DOMBuilder.createElement(tagName, attributes, children, fixedMode);
+  return DOMBuilder.createElement(tagName, attributes, children, fixedMode);
 }
 
 /**
@@ -290,19 +289,19 @@ function createElementFromArguments(tagName, fixedMode, args) {
  *    a list of items and a mapping Function.
  */
 function mapElementFromArguments(tagName, fixedMode, args) {
-    if (isArray(args[0])) { // (items, func)
-      var defaultAttrs = {}
-        , items = args[0]
-        , func = (isFunction(args[1]) ? args[1] : null)
-        ;
-    } else { // (attrs, items, func)
-      var defaultAttrs = args[0]
-        , items = args[1]
-        , func = (isFunction(args[2]) ? args[2] : null)
-        ;
-    }
+  if (isArray(args[0])) { // (items, func)
+    var defaultAttrs = {}
+      , items = args[0]
+      , func = (isFunction(args[1]) ? args[1] : null)
+      ;
+  } else { // (attrs, items, func)
+    var defaultAttrs = args[0]
+      , items = args[1]
+      , func = (isFunction(args[2]) ? args[2] : null)
+      ;
+  }
 
-    return DOMBuilder.map(tagName, defaultAttrs, items, func, fixedMode);
+  return DOMBuilder.map(tagName, defaultAttrs, items, func, fixedMode);
 }
 
 // === DOMBuilder API ==========================================================
@@ -315,24 +314,20 @@ var DOMBuilder = {
   /**
    * Determines which mode content creation functions will operate in.
    */
-, mode: 'dom'
+, mode: (modules ? 'html' : 'dom')
 
   /**
    * Additional modes registered using ``addMode``.
    */
-, modes = {}
+, modes: {}
 
   /**
-   * Adds a new mode and optionally exposes an API for it on the DOMBuilder
-   * object with the mode's name.
+   * Adds a new mode and exposes an API for it on the DOMBuilder object with the
+   * mode's name.
    */
 , addMode: function(mode) {
     this.modes[mode.name] = mode;
-    if (mode.api) {
-      this[mode.name] = (mode.extendElementCreationFunctions
-                         ? extend(createElementFunctions(mode.name), mode.api)
-                         : mode.api);
-    }
+    this[mode.name] = extend(createElementFunctions(mode.name), mode.api);
   }
 
   /**
@@ -351,27 +346,27 @@ var DOMBuilder = {
   }
 
   /**
-   * An ``Object`` containing element creation functions which create contents
-   * according to ``DOMBuilder.mode``.
+   * Element creation functions which create contents according to
+   * ``DOMBuilder.mode``.
    */
+
 , elements: createElementFunctions()
-, dom: createElementFunctions('dom')
 
   /**
    * Adds element creation functions to a given context ``Object``, or to
    * a new object if none was given. Returns the object the functions were
-   * added to, either way.
-   *
-   * An ``NBSP`` property corresponding to the Unicode character for a
-   * non-breaking space is also added to the context object, for
-   * convenience.
+   * added to.
    */
 , apply: function(context) {
     context = context || {};
     extend(context, this.elements);
-    context.NBSP = '\u00A0'; // Add NBSP for backwards-compatibility
     return context;
   }
+
+  /**
+   * Element creation functions which always create contents using the DOM.
+   */
+, dom: createElementFunctions('dom')
 
 // -------------------------------------------------------- Content Creation ---
 
@@ -389,16 +384,15 @@ var DOMBuilder = {
       return this.modes[mode].createElement(tagName, attributes, children);
     }
 
-    var innerHTML = ('innerHTML' in attributes)
-        // Create the element and set its attributes and event listeners
+    var hasInnerHTML = hasOwn.call(attributes, 'innerHTML')
+      // Create the element and set its attributes and event listeners
       , el = createElement(tagName, attributes)
       ;
 
     // If content was set via innerHTML, we're done...
-    if (!innerHTML) {
+    if (!hasInnerHTML) {
       // ...otherwise, append children
-      for (var i = 0, l = children.length, child; i < l; i++)
-      {
+      for (var i = 0, l = children.length, child; i < l; i++) {
         child = children[i];
         if (child && child.nodeType) {
           el.appendChild(child);
@@ -509,7 +503,7 @@ var DOMBuilder = {
       flatten(children);
 
       if (this.mode != 'dom') {
-        return this.modes[mode].fragment(children);
+        return this.modes[this.mode].fragment(children);
       }
 
       var fragment = document.createDocumentFragment();
@@ -573,8 +567,7 @@ var DOMBuilder = {
 
   /* Exposes utilities for use in mode plugins. */
 , util: {
-    modules: modules
-  , TAG_NAMES: TAG_NAMES
+    TAG_NAMES: TAG_NAMES
   , EVENT_ATTRS: EVENT_ATTRS
   , createElement: createElement
   , addEvent: addEvent

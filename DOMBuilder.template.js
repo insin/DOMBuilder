@@ -1,9 +1,11 @@
-(function() {
+(function(__global__) {
 
 // --------------------------------------------------------------- Utilities ---
 
+var modules = (typeof module !== 'undefined' && module.exports)
+  , DOMBuilder = (modules ? require('./DOMBuilder') : __global__.DOMBuilder)
   // Native functions
-var hasOwn = Object.prototype.hasOwnProperty
+  , hasOwn = Object.prototype.hasOwnProperty
   , slice = Array.prototype.slice
   , toString = Object.prototype.toString
   // DOMBuilder utilities
@@ -11,7 +13,6 @@ var hasOwn = Object.prototype.hasOwnProperty
   , inheritFrom = DOMBuilder.util.inheritFrom
   , isFunction = DOMBuilder.util.isFunction
   , lookup = DOMBuilder.util.lookup
-  // Template variables
   /** Separator used for object lookups. */
   , VAR_LOOKUP_SEPARATOR = '.'
   /** Separator for specifying multiple variable names to be unpacked. */
@@ -22,6 +23,8 @@ var hasOwn = Object.prototype.hasOwnProperty
   , TRIM_RE = /^\s+|\s+$/g
   /** Context key for block inheritance context. */
   , BLOCK_CONTEXT_KEY = 'blockContext'
+  /** Template lookup. */
+  , templates = {}
   ;
 
 function isString(o) {
@@ -335,7 +338,7 @@ function Template(props, contents) {
   // Ensure any top level contents which need to be wrapped are processed
   TemplateNode.prototype.parseContents.call(this);
   // Add ourselves to the template lookup
-  DOMBuilder._templates[this.name] = this;
+  templates[this.name] = this;
 }
 
 /**
@@ -363,12 +366,12 @@ Template.prototype._render = function(context) {
   var blockContext = context.renderContext.get(BLOCK_CONTEXT_KEY);
   blockContext.addBlocks(this.blocks);
   if (this.parent) {
-    if (typeof DOMBuilder._templates[this.parent] == 'undefined') {
+    if (typeof templates[this.parent] == 'undefined') {
       throw new TemplateNotFoundError("Could not find template named '" +
                                       this.parent + '"');
     }
     // Call _render directly to add to the current render context
-    return DOMBuilder._templates[this.parent]._render(context);
+    return templates[this.parent]._render(context);
   } else {
     // Top-level template - render contents
     return DOMBuilder.fragment(context.render(this.contents));
@@ -455,12 +458,12 @@ function IncludeNode(template, extraContext) {
 inheritFrom(IncludeNode, TemplateNode);
 
 IncludeNode.prototype.render = function(context) {
-  if (typeof DOMBuilder._templates[this.template] == 'undefined') {
+  if (typeof templates[this.template] == 'undefined') {
     throw new TemplateNotFoundError("Could not find template named '" +
                                     this.template + '"');
   }
   context.push(this.extraContext);
-  var results = DOMBuilder._templates[this.template].render(context);
+  var results = templates[this.template].render(context);
   context.pop();
   return results;
 };
@@ -747,10 +750,10 @@ function $cycle(values, options) {
   return new CycleNode(values, options);
 }
 
-// === Add mode to DOMBuilder ==================================================
+// === Define mode plugin ======================================================
 
-DOMBuilder.addMode({
-  name: 'template',
+var modePlugin = {
+  name: 'template'
 , createElement: function(tagName, attributes, children) {
     return new ElementNode(tagName, attributes, children);
   }
@@ -789,6 +792,13 @@ DOMBuilder.addMode({
   , $else: $else
   , $cycle: $cycle
   }
-});
+};
 
-})();
+// Export the template mode definition or add it to DOMBuilder
+if (modules) {
+  extend(module.exports, modePlugin);
+} else {
+  DOMBuilder.addMode(modePlugin);
+}
+
+})(this);
