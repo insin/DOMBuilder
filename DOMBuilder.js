@@ -1617,6 +1617,7 @@ var DOMBuilder = {
   , TemplateNode: TemplateNode
   , BlockNode: BlockNode
   , IncludeNode: IncludeNode
+  , ElementNode: ElementNode
   , ForNode: ForNode
   , IfNode: IfNode
   , TextNode: TextNode
