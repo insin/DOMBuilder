@@ -494,4 +494,36 @@ test('CycleNode', function() {
   equal(c.get('bar'), 'a', 'Value added to context');
 });
 
+test('ElementNode', function() {
+  var el = new templates.ElementNode('p', {id: 'item{{ foo }}'}, ['Content']);
+  strictEqual(el.dynamicAttrs, true, 'Dynamic attributes detected');
+  var c = templates.Context({foo: 42});
+  var result = DOMBuilder.withMode('html', function() {
+    return el.render(c);
+  });
+  equal(''+result, '<p id="item42">Content</p>', 'Variable in attribute replaced');
+
+  var cycleAttr;
+  with(templates) {
+    cycleAttr = $template({name: 'cycleAttr'}
+    , $for({item: 'items'}
+      , P({id: 'item{{ forloop.counter }}'
+        , 'class': $cycle(['foo', 'bar', 'baz'])}
+        , '{{ item }}'
+        )
+      )
+    );
+  }
+  c = templates.Context({items: [1,2,3,4]});
+  result = DOMBuilder.withMode('html', function() {
+    return cycleAttr.render(c);
+  });
+  equal(''+result,
+        '<p id="item1" class="foo">1</p>' +
+        '<p id="item2" class="bar">2</p>' +
+        '<p id="item3" class="baz">3</p>' +
+        '<p id="item4" class="foo">4</p>',
+        'TemplateNodes are rendered as attributes');
+});
+
 })();
