@@ -21,7 +21,7 @@ def main():
         version=version, modes='dom [default], html', code=compress(base + dom + html)
     ))
     # DOM-only
-    open('DOMBuilder.dom.js', 'w').write(TEMPLATE.format(
+    open('DOMBuilder.dom.min.js', 'w').write(TEMPLATE.format(
         version=version, modes='dom', code=compress(base + dom)
     ))
     # New for 2.0 - templates, with DOM as default output for client side
