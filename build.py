@@ -9,20 +9,24 @@ TEMPLATE = """/**
 {code}"""
 
 def main():
-    dom = open('lib/DOMBuilder.js').read()
+    base = open('lib/DOMBuilder.js').read()
+    dom = open('lib/DOMBuilder.dom.js').read()
     html = open('lib/DOMBuilder.html.js').read()
     template = open('lib/DOMBuilder.template.js').read()
 
-    version = VERSION_RE.search(dom).group(1)
+    version = VERSION_RE.search(base).group(1)
 
+    # Equivalent to 1.4.*
     open('DOMBuilder.min.js', 'w').write(TEMPLATE.format(
-        version=version, modes='dom', code=compress(dom)
+        version=version, modes='dom [default], html', code=compress(base + dom + html)
     ))
-    open('DOMBuilder.html.min.js', 'w').write(TEMPLATE.format(
-        version=version, modes='dom, html', code=compress(dom + html)
+    # DOM-only
+    open('DOMBuilder.dom.js', 'w').write(TEMPLATE.format(
+        version=version, modes='dom', code=compress(base + dom)
     ))
+    # New for 2.0 - templates, with DOM as default output for client side
     open('DOMBuilder.template.min.js', 'w').write(TEMPLATE.format(
-        version=version, modes='dom, html, template', code=compress(dom + html + template)
+        version=version, modes='dom [default], html, template', code=compress(base + dom + html + template)
     ))
 
 def compress(js):

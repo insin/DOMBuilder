@@ -1,6 +1,6 @@
 var DOMBuilder = require('./lib/DOMBuilder')
 
-// Add plugins
+// Modes: html [default], template
 require('./lib/DOMBuilder.html');
 require('./lib/DOMBuilder.template');
 
