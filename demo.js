@@ -1,7 +1,7 @@
 var http = require("http"),
-    DOMBuilder = require("./DOMBuilder");
+    DOMBuilder = require("./index");
 
-with (DOMBuilder.elementFunctions) {
+with (DOMBuilder.elements) {
   var fragment = DOMBuilder.fragment(STRONG("Hello from an ",
                                      CODE("HTMLFragment")),
                                      " with sibling nodes");
@@ -65,21 +65,20 @@ with (DOMBuilder.elementFunctions) {
       DIV({"class": "article"},
        H3("This section was generated using ", CODE("DOMBuilder.withNode"), " and ", CODE("innerHTML")),
        P("Special characters should be escaped by default: < > \" ' &"),
-       P(DOMBuilder.markSafe("But you can <strong>prevent Strings being escaped</strong> using <code>DOMBuilder.markSafe</code>")),
+       P(DOMBuilder.html.markSafe("But you can <strong>prevent Strings being escaped</strong> using <code>DOMBuilder.html.markSafe</code>")),
        H3(CODE("HTMLFragment"), " section"),
        P("Cloned fragment: ", fragment.cloneNode(true)),
        P("Original fragment has a length of: ", STRONG(fragment.childNodes.length)),
        P("Original fragment: ", fragment),
        P("Original fragment now has a length of: ", STRONG(fragment.childNodes.length)),
-       EM(DOMBuilder.markSafe(DOMBuilder.fragment("toString() from an ", CODE("HTMLFragment"), " with sibling nodes").toString()))
+       EM(DOMBuilder.html.markSafe(DOMBuilder.fragment("toString() from an ", CODE("HTMLFragment"), " with sibling nodes").toString()))
       ))
     );
 }
 
-http.createServer(function (req, res)
-{
-    res.writeHead(200, {"Content-Type": "text/html"});
-    res.end(html);
+http.createServer(function (req, res) {
+  res.writeHead(200, {"Content-Type": "text/html"});
+  res.end(html);
 }).listen(8000);
 
 console.log("Using DOMBuilder " + DOMBuilder.version);

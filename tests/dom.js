@@ -1,17 +1,16 @@
-module("DOM", {
-    setup: function() {
-        DOMBuilder.mode = "DOM";
-    },
-    tearDown: function() {
-        if (DOMBuilder.mode != "DOM") {
-            fail("DOMBuilder.mode was not \"DOM\" after test completed: " + DOMBuilder.mode);
-        }
+module('DOM', {
+  setup: function() {
+    DOMBuilder.mode = 'dom';
+  },
+  tearDown: function() {
+    if (DOMBuilder.mode != 'dom') {
+      fail('DOMBuilder.mode was not "dom" after test completed: ' + DOMBuilder.mode);
     }
+  }
 });
 
-(function()
-{
+(function() {
 
-var dom = DOMBuilder.apply();
+var dom = DOMBuilder.dom;
 
 })();

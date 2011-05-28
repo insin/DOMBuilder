@@ -13,7 +13,10 @@
   .testClass { background-color: #ddd; }
   </style>
   <!--script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script-->
-  <!--script type="text/javascript" src="DOMBuilder.js"></script-->
+  <script type="text/javascript" src="lib/DOMBuilder.js"></script>
+  <script type="text/javascript" src="lib/DOMBuilder.dom.js"></script>
+  <script type="text/javascript" src="lib/DOMBuilder.html.js"></script>
+  <script type="text/javascript" src="lib/DOMBuilder.template.js"></script>
   <script type="text/javascript">
   function createTable(headers, objects, properties)
   {
@@ -30,7 +33,7 @@
                 }
                 if (typeof value == "undefined" || value === null)
                 {
-                  value = NBSP
+                  value = " "
                 }
                 return value;
             })
@@ -41,14 +44,14 @@
 
   function demo()
   {
-      with (DOMBuilder.elementFunctions)
+      with (DOMBuilder.elements)
       {
           document.body.appendChild(
             DIV(
               "Testing",
               P(
                 "Adding elements using ",
-                CODE("with (DOMBuilder.elementFunctions)")
+                CODE("with (DOMBuilder.elements)")
               )
             )
           );
@@ -107,21 +110,20 @@
       ));
 
       // Generate some HTML to demonstrate withMode
-      document.getElementById("htmlGeneration").innerHTML = DOMBuilder.withMode("XHTML", function()
+      document.getElementById("htmlGeneration").innerHTML = DOMBuilder.withMode("html", function()
       {
           var fragment = DOMBuilder.fragment(STRONG("Hello from an ", CODE("HTMLFragment")), " with sibling nodes");
           return DIV({"class": "article"},
             H3("This section was generated using ", CODE("DOMBuilder.withNode"), " and ", CODE("innerHTML")),
             P("Special characters should be escaped by default: < > \" ' &"),
-            P(DOMBuilder.markSafe("But you can <strong>prevent Strings being escaped</strong> using <code>DOMBuilder.markSafe</code>")),
-            P("This should have an XHTML-style slash: ", BR().toString(), BR()),
-            DOMBuilder.withMode("HTML", function() { return P("This one shouldn't: ", BR().toString(), BR()); }),
+            P(DOMBuilder.html.markSafe("But you can <strong>prevent Strings being escaped</strong> using <code>DOMBuilder.html.markSafe</code>")),
+            DOMBuilder.withMode("html", function() { return P("This one shouldn't: ", BR().toString(), BR()); }),
             H3(CODE("HTMLFragment"), " section"),
             P("Cloned fragment: ", fragment.cloneNode(true)),
             P("Original fragment has a length of: ", STRONG(fragment.childNodes.length)),
             P("Original fragment: ", fragment),
             P("Original fragment now has a length of: ", STRONG(fragment.childNodes.length)),
-            EM(DOMBuilder.markSafe(DOMBuilder.fragment("toString() from an ", CODE("HTMLFragment"), " with sibling nodes").toString()))
+            EM(DOMBuilder.html.markSafe(DOMBuilder.fragment("toString() from an ", CODE("HTMLFragment"), " with sibling nodes").toString()))
           );
       }).toString();
 
@@ -242,10 +244,38 @@
           );
       }
       document.getElementById("domEvents").appendChild(testEvents());
-      DOMBuilder.withMode("HTML", function()
+      DOMBuilder.withMode("html", function()
       {
           var html = testEvents();
           html.insertWithEvents(document.getElementById("htmlEvents"));
+      });
+
+      var base, child, context;
+      with (DOMBuilder.template) {
+        base = $template({name: 'base'}
+        , DIV({id: 'content'}
+          , $block('content'
+            , P('Default parent content')
+            )
+          )
+        );
+
+        child = $template({name: 'child', extend: 'base'}
+        , $block('content'
+          , H3('{{ message }}')
+          , 'Before {{ block.super }} After'
+          )
+        );
+
+        context = Context({message: 'Hello template inheriting world!'});
+      }
+
+      DOMBuilder.withMode("html", function() {
+        document.getElementById("htmlTemplate").innerHTML = ""+child.render(context);
+      });
+
+      DOMBuilder.withMode("dom", function() {
+        document.getElementById("domTemplate").appendChild(child.render(context));
       });
   };
 
@@ -269,7 +299,9 @@
       then();
   }
 
-  window.onload = function()
+  window.onload = demo;
+  /*
+  function()
   {
       if (location.hash == "#jQuery")
       {
@@ -284,6 +316,7 @@
           });
       }
   };
+  */
   </script>
 </head>
 <body>
@@ -308,7 +341,13 @@
 <h2>Same code in HTML mode, using <code>innerHTML</code> and <code>addEvents</code></h2>
 <div id="htmlEvents"></div>
 
-<h2>Added using <code>with (DOMBuilder.elementFunctions)</code></h2>
+<h2>HTML via Template Inheritance</h2>
+<div id="htmlTemplate"></div>
+
+<h2>DOM via Template Inheritance</h2>
+<div id="domTemplate"></div>
+
+<h2>Added using <code>with (DOMBuilder.elements)</code></h2>
 
 </body>
 </html>

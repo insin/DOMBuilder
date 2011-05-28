@@ -8,6 +8,7 @@ Elements and HTML in JavaScript.
    :maxdepth: 1
 
    htmlmode
+   templates
    news
    license
 
@@ -114,17 +115,17 @@ For a simple example, the following code...
 
    var html = DOMBuilder.apply();
    var article =
-     html.DIV({"class": "article"},
-       html.H2("Article title"),
-       html.P("Paragraph one"),
-       html.P("Paragraph two")
+     html.DIV({'class': 'article'},
+       html.H2('Article title'),
+       html.P('Paragraph one'),
+       html.P('Paragraph two')
      );
 
 ...would produce a DOM Element corresponding to the following HTML:
 
 .. code-block:: html
 
-   <div class="article">
+   <div class='article'>
      <h2>Article title</h2>
      <p>Paragraph one</p>
      <p>Paragraph two</p>
@@ -137,17 +138,16 @@ For a simple example, the following code...
 
       DOMBuilder.apply(window);
       var article =
-        DIV({"class": "article"},
-          H2("Article title"),
-          P("Paragraph one"),
-          P("Paragraph two")
+        DIV({'class': 'article'},
+          H2('Article title'),
+          P('Paragraph one'),
+          P('Paragraph two')
         );
 
    Alternatively, you could use JavaScript's much-derided `with statement`_ to
    temporarily add :js:attr:`DOMBuilder.elementFunctions` to the scope chain::
 
-      with (DOMBuilder.elementFunctions)
-      {
+      with (DOMBuilder.elementFunctions) {
          // Code as above
       }
 
@@ -171,21 +171,19 @@ arguments accepted by element creation functions::
     * @param properties names of object properties which map to the
     *                   corresponding columns.
     */
-   function createTable(headers, objects, properties)
-   {
-       return TABLE({cellSpacing: 1, "class": "data sortable"},
-           THEAD(TR(headers.map(function(header) { return TH(header); }))),
-           TBODY(objects.map(function(obj) {
-              return TR(properties.map(function(prop) {
-                  var value = obj[prop];
-                  if (typeof value == "boolean")
-                  {
-                      value = value ? "Yes" : "No";
-                  }
-                  return TD(obj[prop]);
-              }))
-           }))
-       );
+   function createTable(headers, objects, properties) {
+     return TABLE({cellSpacing: 1, 'class': 'data sortable'},
+       THEAD(TR(headers.map(function(header) { return TH(header); }))),
+       TBODY(objects.map(function(obj) {
+         return TR(properties.map(function(prop) {
+           var value = obj[prop];
+           if (typeof value == 'boolean') {
+             value = value ? 'Yes' : 'No';
+           }
+           return TD(obj[prop]);
+         }))
+       }))
+     );
    }
 
 Given this function, the following code...
@@ -193,11 +191,11 @@ Given this function, the following code...
 ::
 
    createTable(
-       ["Name", "Table #", "Vegetarian"],
-       [{name: "Steve McMeat",   table: 3, veggie: false},
-        {name: "Omar Omni",      table: 5, veggie: false},
-        {name: "Ivana Huggacow", table: 1, veggie: True}],
-       ["name", "table", "veggie"]
+     ['Name', 'Table #', 'Vegetarian'],
+     [{name: 'Steve McMeat',   table: 3, veggie: false},
+      {name: 'Omar Omni',      table: 5, veggie: false},
+      {name: 'Ivana Huggacow', table: 1, veggie: True}],
+     ['name', 'table', 'veggie']
    );
 
 ...would produce a DOM Element corresponding to the following HTML:
@@ -262,24 +260,38 @@ value, clearing it when the input is focused and restoring the default if
 the input is left blank::
 
    var defaultInput =
-     INPUT({type: "text", name: "email",
-            value: "email@host.com", defaultValue: "email@host.com",
-            focus: function()
-            {
-               if (this.value == this.defaultValue)
-               {
-                   this.value = "";
-               }
+     INPUT({type: 'text', name: 'email',
+            value: 'email@host.com', defaultValue: 'email@host.com',
+            focus: function() {
+              if (this.value == this.defaultValue)
+              {
+                this.value = '';
+              }
             },
-            blur: function()
-            {
-               if (this.value == "")
-               {
-                   this.value = this.defaultValue;
-               }
+            blur: function() {
+              if (this.value == '') {
+                this.value = this.defaultValue;
+              }
             }});
 
 .. _`events which have jQuery shortcut methods`: http://api.jquery.com/category/events/
+
+Other "Special" Attributes
+##########################
+
+Other attributes which trigger special handling or explicit compatibility
+handling between DOM and HTML modes.
+
+``innerHTML``
+   If you specify an ``innerHTML`` attribute, the given String will be the
+   sole used to provide the element's contents.
+
+   * In DOM mode, the element's ``innerHTML`` property will be set and no
+     further children will be appended, even if given.
+   * In HTML mode, the given HTML will be used, unescaped, as the
+     element's contents.
+
+   .. versionadded:: 1.4.2
 
 Manual Element Creation
 -----------------------
@@ -302,7 +314,7 @@ creating and populating elements manually using DOM methods.
    and appended as Text Nodes.
 
    .. versionchanged:: 1.2
-      Now generates :js:class:`DOMBuilder.HTMLElement` objects if
+      Now generates :js:class:`HTMLElement` objects if
       :js:attr:`DOMBuilder.mode` is set to anything but ``"DOM"``.
 
 Document Fragments
@@ -337,11 +349,11 @@ output against strings, rather than against DOM trees.
 
    +--------------------------------------------------------+
    | Fragment Creation Arguments                            |
-   +=================================+======================+
+   +=====================+==================================+
    | ``(child1, ...)``   | an arbitrary number of children. |
-   +---------------------------------+----------------------+
+   +---------------------+----------------------------------+
    + ``([child1, ...])`` | an ``Array`` of children.        |
-   +---------------------------------+----------------------+
+   +---------------------+----------------------------------+
 
 See http://ejohn.org/blog/dom-documentfragments/ for more information about
 DocumentFragment objects.
@@ -362,7 +374,7 @@ Map functions provide a shorthand for:
 Mapping Elements
 ~~~~~~~~~~~~~~~~
 
-.. js:function:: DOMBuilder.map(tagName[, defaultAttributes], items[, mappingFunction])
+.. js:function:: DOMBuilder.map(tagName, defaultAttributes, items[, mappingFunction[, mode]])
 
    Creates an element for (potentially) every item in a list.
 
@@ -374,6 +386,8 @@ Mapping Elements
    :param Function mappingFunction:
       a function to be called with each item in the list, to provide
       contents for the element which will be created for that item.
+   :param String mode:
+      the DOMBuilder mode to be used when creating elements.
 
    If provided, the mapping function will be called with the following
    arguments::
@@ -394,31 +408,45 @@ Mapping Elements
    for each item in the list and the item itself will be used as the
    contents.
 
+   .. versionchanged:: 2.0
+      ``defaultAttributes`` is now required - flexible arguments are now
+      handled by the ``map`` functions exposed on element creation
+      functions; ``mode`` argument was added.
+
 This function is also exposed via element creation functions. Each
-element creation function has its own ``map`` function, which takes the
-same arguments as :js:func:`DOMBuilder.map` minus the ``tagName``
-argument, which is taken from the element creation function itself.
+element creation function has its own ``map`` function, which allows more
+flexible arguments to be passed in.
+
++--------------------------------------------------------------------------------------------------+
+| Element Creation Function ``.map()`` Arguments                                                   |
++========================================================+=========================================+
+| ``(defaultAttributes, [item1, ...], mappingFunction)`` | a default attributes attributes object, |
+|                                                        | a list of items and a mapping Function. |
++--------------------------------------------------------+-----------------------------------------+
+| ``([item1, ...], mappingFunction)``                    | a list of items and a mapping Function. |
++--------------------------------------------------------+-----------------------------------------+
+| ``([item1, ...])``                                     | a list of items, to be used as element  |
+|                                                        | content as-is.                          |
++--------------------------------------------------------+-----------------------------------------+
 
 For example, the table code we looked at earlier could also be written
 like so, making use of ``map`` on element creation functions::
 
-   function createTable(headers, objects, properties)
-   {
-       return TABLE({cellSpacing: 1, border: 1, "class": "data sortable"},
-         THEAD(TR(TH.map(headers))),
-         TBODY(
-           TR.map(objects, function(obj) {
-             return TD.map(properties, function(prop) {
-                 var value = obj[prop];
-                 if (typeof value == "boolean")
-                 {
-                   value = value ? "Yes" : "No";
-                 }
-                 return value;
-             })
-           })
-         )
-       );
+   function createTable(headers, objects, properties) {
+     return TABLE({cellSpacing: 1, border: 1, "class": "data sortable"},
+       THEAD(TR(TH.map(headers))),
+       TBODY(
+         TR.map(objects, function(obj) {
+           return TD.map(properties, function(prop) {
+             var value = obj[prop];
+             if (typeof value == "boolean") {
+               value = value ? "Yes" : "No";
+             }
+             return value;
+           });
+         })
+       )
+     );
    }
 
 This isn't essentially any less complex than the previous method, but
@@ -430,10 +458,9 @@ This example shows how you could make use of the ``attributes`` and
 ``itemIndex`` arguments to the mapping function to implement table
 striping::
 
-   TR.map(rows, function(row, attributes, itemIndex)
-   {
-       attributes['class'] = (itemIndex % 2 == 0 ? "stripe1" : "stripe2");
-       return TD.map(row);
+   TR.map(rows, function(row, attributes, itemIndex) {
+     attributes['class'] = (itemIndex % 2 == 0 ? 'stripe1' : 'stripe2');
+     return TD.map(row);
    });
 
 Mapping Fragments
@@ -467,17 +494,15 @@ For example, with a `newforms`_ ``FormSet`` object, which contains multiple
 ``Form`` objects. If you wanted to generate a heading and a table for each
 form object and have the whole lot sitting side-by-side in the document::
 
-   var formFragment = DOMBuilder.fragment.map(formset.forms, function(form, index)
-   {
-       return [
-         H2("Widget " + (index + 1)),
-         TABLE(TBODY(
-           TR.map(form.boundFields(), function(field)
-           {
-             return [TH(field.labelTag()), TD(field.asWidget())];
-           })
-         ))
-       ];
+   var formFragment = DOMBuilder.fragment.map(formset.forms, function(form, index) {
+     return [
+       H2('Widget ' + (index + 1)),
+       TABLE(TBODY(
+         TR.map(form.boundFields(), function(field) {
+           return [TH(field.labelTag()), TD(field.asWidget())];
+         })
+       ))
+     ];
    });
 
 Appending ``formFragment`` would result in the equivalent of the following
