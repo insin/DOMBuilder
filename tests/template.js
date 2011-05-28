@@ -1,13 +1,8 @@
-module('Template', {
-  tearDown: function() {
-    // Clear template cache
-    DOMBuilder._templates = {};
-  }
-});
+module('Template');
 
 (function() {
 
-var templates = DOMBuilder.templates;
+var templates = DOMBuilder.template;
 
 function shallowCopy(a) {
   var b = {};
@@ -398,7 +393,7 @@ test('Template', function() {
   var t2 = templates.$template({name: 'baz', extend: 'bar'}, b2);
   var c = templates.Context();
 
-  var result = DOMBuilder.withMode('HTML', function() { return t2.render(c) });
+  var result = DOMBuilder.withMode('html', function() { return t2.render(c) });
   deepEqual(''+result, 'parent then child',
             'Template sets up block inheritance correctly');
 
@@ -430,7 +425,7 @@ test('Template', function() {
   }
 
   c = templates.Context({message: 'Child Content'});
-  result = DOMBuilder.withMode('HTML', function() {
+  result = DOMBuilder.withMode('html', function() {
     return child.render(c);
   });
   equal(''+result,
@@ -464,7 +459,7 @@ test('IncludeNode', function() {
   }
 
   var c = templates.Context({items: [{name: 1}, {name: 2}, {name: 3}]});
-  var result = DOMBuilder.withMode('HTML', function() {
+  var result = DOMBuilder.withMode('html', function() {
     return includer.render(c);
   });
   equal(''+result,
@@ -497,6 +492,38 @@ test('CycleNode', function() {
   c = templates.Context();
   deepEqual(cycle.render(c), [], 'Nothing rendered (empty list)');
   equal(c.get('bar'), 'a', 'Value added to context');
+});
+
+test('ElementNode', function() {
+  var el = new templates.ElementNode('p', {id: 'item{{ foo }}'}, ['Content']);
+  strictEqual(el.dynamicAttrs, true, 'Dynamic attributes detected');
+  var c = templates.Context({foo: 42});
+  var result = DOMBuilder.withMode('html', function() {
+    return el.render(c);
+  });
+  equal(''+result, '<p id="item42">Content</p>', 'Variable in attribute replaced');
+
+  var cycleAttr;
+  with(templates) {
+    cycleAttr = $template({name: 'cycleAttr'}
+    , $for({item: 'items'}
+      , P({id: 'item{{ forloop.counter }}'
+        , 'class': $cycle(['foo', 'bar', 'baz'])}
+        , '{{ item }}'
+        )
+      )
+    );
+  }
+  c = templates.Context({items: [1,2,3,4]});
+  result = DOMBuilder.withMode('html', function() {
+    return cycleAttr.render(c);
+  });
+  equal(''+result,
+        '<p id="item1" class="foo">1</p>' +
+        '<p id="item2" class="bar">2</p>' +
+        '<p id="item3" class="baz">3</p>' +
+        '<p id="item4" class="foo">4</p>',
+        'TemplateNodes are rendered as attributes');
 });
 
 })();
