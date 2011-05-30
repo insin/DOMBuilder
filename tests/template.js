@@ -178,7 +178,7 @@ test('Template', function() {
 
   var base, child;
   with (templates) {
-    base = $template({name: 'base'}
+    base = $template('base'
     , $doctype()
     , HTML(
         HEAD(TITLE(
