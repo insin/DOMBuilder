@@ -163,6 +163,65 @@ test('Variable', function() {
   })), 42, 'Nested lookup functions called with appropriate context object');
 });
 
+test('Template', function() {
+  var c1 = {render: function(context) { return 'parent'; }}
+  var c2 = {render: function(context) { return 'child'; }}
+  var b1 = templates.$block('foo', c1);
+  var b2 = templates.$block({name: 'foo'}, templates.$text('{{ block.super }} then '), c2);
+  var t1 = templates.$template({name: 'bar'}, b1);
+  var t2 = templates.$template({name: 'baz', extend: 'bar'}, b2);
+  var c = templates.Context();
+
+  var result = DOMBuilder.withMode('html', function() { return t2.render(c) });
+  deepEqual(''+result, 'parent then child',
+            'Template sets up block inheritance correctly');
+
+  var base, child;
+  with (templates) {
+    base = $template({name: 'base'}
+    , $doctype()
+    , HTML(
+        HEAD(TITLE(
+          $block('fulltitle'
+          , 'Test Template | ', $block('subtitle', 'Default Subtitle')
+          )
+        ))
+      , BODY(
+          DIV({id: 'main'}
+          , $block('content', 'Default Content')
+          )
+        )
+      )
+    );
+
+    child = $template({name: 'child', extend: 'base'}
+    , $block('subtitle'
+      , 'Child Subtitle'
+      )
+    , $block('content'
+      , '{{ message }}'
+      )
+    );
+  }
+
+  c = templates.Context({message: 'Child Content'});
+  result = DOMBuilder.withMode('html', function() {
+    return child.render(c);
+  });
+  equal(''+result,
+'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">' +
+'<html>' +
+'<head><title>Test Template | Child Subtitle</title></head>' +
+'<body><div id="main">Child Content</div></body>' +
+'</html>');
+
+  raises(function() {
+      templates.$template({name: 'test', extend: 'missing'}).render(templates.Context());
+    },
+    templates.TemplateNotFoundError,
+    'Missing parent template throws TemplateNotFoundError');
+});
+
 test('ForNode', function() {
   var items, forloops = [];
   var f = templates.$for('item in items', {render: function(context) {
@@ -410,65 +469,6 @@ test('BlockNode', function() {
   bc.addBlocks({'foo': b2});
   bc.addBlocks({'foo': b1});
   deepEqual(b2.render(c), [['parent'], 'child'], 'block.super renders parent contents');
-});
-
-test('Template', function() {
-  var c1 = {render: function(context) { return 'parent'; }}
-  var c2 = {render: function(context) { return 'child'; }}
-  var b1 = templates.$block('foo', c1);
-  var b2 = templates.$block({name: 'foo'}, templates.$text('{{ block.super }} then '), c2);
-  var t1 = templates.$template({name: 'bar'}, b1);
-  var t2 = templates.$template({name: 'baz', extend: 'bar'}, b2);
-  var c = templates.Context();
-
-  var result = DOMBuilder.withMode('html', function() { return t2.render(c) });
-  deepEqual(''+result, 'parent then child',
-            'Template sets up block inheritance correctly');
-
-  var base, child;
-  with (templates) {
-    base = $template({name: 'base'}
-    , $doctype()
-    , HTML(
-        HEAD(TITLE(
-          $block('fulltitle'
-          , 'Test Template | ', $block('subtitle', 'Default Subtitle')
-          )
-        ))
-      , BODY(
-          DIV({id: 'main'}
-          , $block('content', 'Default Content')
-          )
-        )
-      )
-    );
-
-    child = $template({name: 'child', extend: 'base'}
-    , $block('subtitle'
-      , 'Child Subtitle'
-      )
-    , $block('content'
-      , '{{ message }}'
-      )
-    );
-  }
-
-  c = templates.Context({message: 'Child Content'});
-  result = DOMBuilder.withMode('html', function() {
-    return child.render(c);
-  });
-  equal(''+result,
-'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">' +
-'<html>' +
-'<head><title>Test Template | Child Subtitle</title></head>' +
-'<body><div id="main">Child Content</div></body>' +
-'</html>');
-
-  raises(function() {
-      templates.$template({name: 'test', extend: 'missing'}).render(templates.Context());
-    },
-    templates.TemplateNotFoundError,
-    'Missing parent template throws TemplateNotFoundError');
 });
 
 test('IncludeNode', function() {
