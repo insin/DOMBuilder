@@ -1,4 +1,8 @@
-module('Template');
+module('Template', {
+  setup: function() {
+    DOMBuilder.mode = 'html';
+  }
+});
 
 (function() {
 
@@ -172,7 +176,7 @@ test('Template', function() {
   var t2 = templates.$template({name: 'baz', extend: 'bar'}, b2);
   var c = templates.Context();
 
-  var result = DOMBuilder.withMode('html', function() { return t2.render(c) });
+  var result = t2.render(c);
   deepEqual(''+result, 'parent then child',
             'Template sets up block inheritance correctly');
 
@@ -204,9 +208,7 @@ test('Template', function() {
     );
   }
 
-  result = DOMBuilder.withMode('html', function() {
-    return child.render({message: 'Child Content'});
-  });
+  result = child.render({message: 'Child Content'});
   equal(''+result,
 '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">' +
 '<html>' +
@@ -347,7 +349,7 @@ test('ForNode', function() {
         )
       , 'After'
       );
-  c = templates.Context({lists: [[1, 2], [3, 4], [5, 6]]});
+  var c = templates.Context({lists: [[1, 2], [3, 4], [5, 6]]});
   deepEqual(f.render(c), ['Before', [[1], [2]], 'After'
                         , 'Before', [[3], [4]], 'After'
                         , 'Before', [[5], [6]], 'After'], 'Nested loops');
@@ -472,7 +474,7 @@ test('BlockNode', function() {
 
 test('IncludeNode', function() {
   var includer;
-  with(templates) {
+  with (templates) {
     $template({name: 'included'}
     , '{{ arg }}'
     , $for('item in items'
@@ -487,14 +489,27 @@ test('IncludeNode', function() {
     );
   }
 
+  // Extra context attributes can be specified
   var c = templates.Context({items: [{name: 1}, {name: 2}, {name: 3}]});
-  var result = DOMBuilder.withMode('html', function() {
-    return includer.render(c);
-  });
+  var result = includer.render(c);
   equal(''+result,
         'Before &gt;Extra Context<p>1</p><p>2</p><p>3</p>&lt; After',
         'Context and extra context available in included template');
   strictEqual(c.get('arg'), null, 'Extra context was removed');
+
+  // Extra context attributes can be specified as variables. If you pass a third,
+  // truthy argument, the included template's context will consist of only the
+  // given context variables. Convention is to use 'only'.
+  var includeContext;
+  var t = new templates.Template('extracontexttest', [{
+    render: function(context) { includeContext = context; }
+  }]);
+  c = templates.Context({foo: 'bar'});
+  var inc = templates.$include('extracontexttest', {baz: templates.$var('foo')}, 'only');
+  inc.render(c);
+  deepEqual(includeContext.stack,
+            [{baz: 'bar'}],
+            'Context for templated included using "only" contains only given variables');
 });
 
 test('CycleNode', function() {
@@ -527,9 +542,7 @@ test('ElementNode', function() {
   var el = new templates.ElementNode('p', {id: 'item{{ foo }}'}, ['Content']);
   strictEqual(el.dynamicAttrs, true, 'Dynamic attributes detected');
   var c = templates.Context({foo: 42});
-  var result = DOMBuilder.withMode('html', function() {
-    return el.render(c);
-  });
+  var result = el.render(c);
   equal(''+result, '<p id="item42">Content</p>', 'Variable in attribute replaced');
 
   var cycleAttr;
@@ -544,9 +557,7 @@ test('ElementNode', function() {
     );
   }
   c = templates.Context({items: [1,2,3,4]});
-  result = DOMBuilder.withMode('html', function() {
-    return cycleAttr.render(c);
-  });
+  result = cycleAttr.render(c);
   equal(''+result,
         '<p id="item1" class="foo">1</p>' +
         '<p id="item2" class="bar">2</p>' +
