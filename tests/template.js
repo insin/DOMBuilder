@@ -165,7 +165,7 @@ test('Variable', function() {
 
 test('ForNode', function() {
   var items, forloops = [];
-  var f = templates.$for({'item': 'items'}, {render: function(context) {
+  var f = templates.$for('item in items', {render: function(context) {
     forloops.push(shallowCopy(new templates.Variable('forloop').resolve(context)));
     return new templates.Variable('item').resolve(context)
   }})
@@ -242,7 +242,7 @@ test('ForNode', function() {
 
   // Multiple loop context variables
   forloops = [];
-  f = templates.$for({'a, b': 'items'}, {render: function(context) {
+  f = templates.$for('a, b in items', {render: function(context) {
     forloops.push(shallowCopy(new templates.Variable('forloop').resolve(context)));
     return [new templates.Variable('a').resolve(context),
             new templates.Variable('a').resolve(context)];
@@ -276,10 +276,38 @@ test('ForNode', function() {
       last: true
     }], 'Multiple loop context variables - forloop context as expected');
 
-  f = templates.$for({'item': 'items'}, templates.$empty('No items.'));
+  f = templates.$for('item in items', templates.$empty('No items.'));
   deepEqual(f.render(templates.Context({items: []})),
             ['No items.'],
             '$empty contents rendered when list is empty');
+
+  // Nested loops
+  f = templates.$for('list in lists'
+      , 'Before'
+      , templates.$for('item in list'
+        , '{{ item }}'
+        )
+      , 'After'
+      );
+  c = templates.Context({lists: [[1, 2], [3, 4], [5, 6]]});
+  deepEqual(f.render(c), ['Before', [[1], [2]], 'After'
+                        , 'Before', [[3], [4]], 'After'
+                        , 'Before', [[5], [6]], 'After'], 'Nested loops');
+
+  // Invalid expressions
+  var invalidExprs = [
+    'blah'
+   ,'blah blah'
+  ];
+  for (var i = 0, l = invalidExprs.length; i < l; i++) {
+     raises(function() { templates.$for(invalidExprs[i]); },
+            templates.TemplateSnytaxError,
+            'Invalid: "' + invalidExprs[i] + '"');
+  }
+
+  // 'in' is a valid loop variable name
+  templates.$for('person, in in things');
+  ok(true, 'Valid: "person, in in things"');
 });
 
 test('IfNode', function() {
@@ -448,7 +476,7 @@ test('IncludeNode', function() {
   with(templates) {
     $template({name: 'included'}
     , '{{ arg }}'
-    , $for({item: 'items'}
+    , $for('item in items'
       , P('{{ item.name }}')
       )
     );
@@ -508,7 +536,7 @@ test('ElementNode', function() {
   var cycleAttr;
   with(templates) {
     cycleAttr = $template({name: 'cycleAttr'}
-    , $for({item: 'items'}
+    , $for('item in items'
       , P({id: 'item{{ forloop.counter }}'
         , 'class': $cycle(['foo', 'bar', 'baz'])}
         , '{{ item }}'
