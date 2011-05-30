@@ -50,8 +50,9 @@
     var start = new Date().getTime();
     stage.appendChild(postList(data.data.children));
     var end = new Date().getTime();
-    stage.appendChild(
-      DOMBuilder.dom.DIV('Template rendered in ' + (end-start) + ' ms')
+    stage.parentNode.insertBefore(
+      DOMBuilder.dom.P('Template rendered in ' + (end-start) + ' ms'),
+      stage
     );
   }
   </script>
