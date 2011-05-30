@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-  <title>DOMBuilder.template Reddit Posts</title>
+  <title>DOMBuilder.dom Reddit Posts</title>
   <style>
   .clearleft { clear: left; }
   .post { margin-bottom: 10px; }
@@ -13,44 +13,42 @@
   </style>
   <script src="https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.js"></script>
   <script src="https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.dom.js"></script>
-  <script src="https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.template.js"></script>
   <script>
-  var postList;
-  with (DOMBuilder.template) {
-    $template('post'
-    , DIV({'class': 'post'}
-      , $if('post.thumbnail'
-        , IMG({src: '{{post.thumbnail}}'})
-        )
-      , A({href: '{{post.url}}'}, '{{post.title}}')
-      , DIV({'class': 'date-line'}
-        , 'submitted by '
-        , A({'href': 'http://www.reddit.com/user/{{post.author}}'}
-          , '{{post.author}}'
-          )
-        )
-      , DIV({'class': 'comment-line'}
-        , A({'href': 'http://www.reddit.com/{{post.permalink}}'}
-          , '{{post.num_comments}} comments'
-          )
-        )
-      )
-    , DIV({'class': 'clearleft'})
-    );
+  DOMBuilder.apply(window);
 
-    postList = $template('postList'
-    , DIV({'class': 'hfeed'}
-      , $for('postData in postList'
-        , $include('post', {post: $var('postData.data')})
+  function postTmpl(post) {
+    return DIV({'class': 'post'}
+    , post.thumbnail ? IMG({src: post.thumbnail}) : []
+    , A({href: post.url}, post.title)
+    , DIV({'class': 'date-line'}
+      , 'submitted by '
+      , A({'href': 'http://www.reddit.com/user/' + post.author}
+        , post.author
+        )
+      )
+    , DIV({'class': 'comment-line'}
+      , A({'href': 'http://www.reddit.com/' + post.permalink}
+        , post.num_comments + ' comments'
         )
       )
     );
-  };
+  }
+
+  function postList(posts) {
+    return DIV({'class': 'hfeed'}
+    , DOMBuilder.fragment.map(posts, function(postData) {
+        return [
+          postTmpl(postData.data)
+        , DIV({'class': 'clearleft'})
+        ];
+      })
+    );
+  }
 
   function displayPosts(data) {
     var stage = document.getElementById('stage');
     var start = new Date().getTime();
-    stage.appendChild(postList.render({postList: data.data.children}));
+    stage.appendChild(postList(data.data.children));
     var end = new Date().getTime();
     stage.appendChild(
       DOMBuilder.dom.DIV('Template rendered in ' + (end-start) + ' ms')
@@ -60,7 +58,7 @@
 </head>
 
 <body>
-  <p>DOMBuilder.template version of a <a href="https://gist.github.com/969788">sample crazy_template document</a>.</p>
+  <p>DOMBuilder.dom version of a <a href="https://gist.github.com/969788">sample crazy_template document</a>.</p>
   <div id="stage"></div>
   <script src="http://www.reddit.com/.json?jsonp=displayPosts"></script>
 </body>
