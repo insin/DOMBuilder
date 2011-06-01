@@ -8,8 +8,33 @@ var mixed = DOMBuilder.elements;
 
 function testBothModes(testFunc) {
   DOMBuilder.withMode('dom', testFunc)
-  DOMBuilder.withMode('dom', testFunc);
+  DOMBuilder.withMode('html', testFunc);
 }
+
+test('DOMBuilder.apply', function() {
+  var context = {};
+  DOMBuilder.apply(context, 'badmode');
+  var allElementFunctionsPresent = true;
+  for (var i = 0, tagName; tagName =  DOMBuilder.util.TAG_NAMES[i]; i++) {
+    if (typeof context[tagName.toUpperCase()] != 'function') {
+      allElementFunctionsPresent = false;
+      break;
+    }
+  }
+  ok(allElementFunctionsPresent, 'All expected element functions were added to context object');
+  ok(true, 'An exception was not raised when an invalid mode was passed');
+
+  context = {};
+  DOMBuilder.apply(context, 'template');
+  var allTemplateFunctionsPresent = true;
+  for (var prop in DOMBuilder.modes.template.apply) {
+    if(typeof context[prop] != 'function') {
+      allTemplateFunctionsPresent = false;
+      break;
+    }
+  }
+  ok(allTemplateFunctionsPresent, 'All expected template functions were added to context object');
+});
 
 test('DOMBuilder.withMode', function() {
   expect(6);
