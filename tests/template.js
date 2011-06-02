@@ -16,6 +16,25 @@ function shallowCopy(a) {
   return b;
 }
 
+test('getTemplate/selectTemplate', function() {
+  // Simulates templates allowing overriding and specialisation per content type
+  // via the use of selectTemplate.
+  templates.$template('override/widget/test_detail_page');
+  templates.$template('override/test_detail_page');
+  templates.$template('test_detail_page');
+
+  raises(function() { templates.getTemplate('missing'); },
+         templates.TemplateNotFoundError,
+         'getTemplate - missing template throws error');
+  equal(templates.getTemplate('test_detail_page').name, 'test_detail_page', 'getTemplate gets correct template');
+  raises(function() { templates.selectTemplate(['missing1', 'missing2', 'missing3']); },
+         templates.TemplateNotFoundError,
+         'selectTemplate - missing template throws error if none could be found');
+  equal(templates.selectTemplate([
+          'override/test_detail_page_thing', 'override/test_detail_page', 'test_detail_page'
+        ]).name, 'override/test_detail_page', 'selectTemplate gets first matching template');
+});
+
 test('Context', function() {
   // Instantiation with context
   var content = {test1: 1, test2: 2};
@@ -180,9 +199,8 @@ test('Template', function() {
   deepEqual(''+result, 'parent then child',
             'Template sets up block inheritance correctly');
 
-  var base, child;
   with (templates) {
-    base = $template('base'
+    $template('base'
     , $doctype()
     , HTML(
         HEAD(TITLE(
@@ -198,7 +216,7 @@ test('Template', function() {
       )
     );
 
-    child = $template({name: 'child', extend: 'base'}
+    $template({name: 'child', extend: 'base'}
     , $block('subtitle'
       , 'Child Subtitle'
       )
@@ -208,7 +226,7 @@ test('Template', function() {
     );
   }
 
-  result = child.render({message: 'Child Content'});
+  result = templates.renderTemplate('child', {message: 'Child Content'});
   equal(''+result,
 '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">' +
 '<html>' +
@@ -473,16 +491,15 @@ test('BlockNode', function() {
 });
 
 test('IncludeNode', function() {
-  var includer;
   with (templates) {
-    $template({name: 'included'}
+    $template('included'
     , '{{ arg }}'
     , $for('item in items'
       , P('{{ item.name }}')
       )
     );
 
-    includer = $template({name: 'includer'}
+    $template('includer'
     , 'Before >'
     , $include('included', {arg: 'Extra Context'})
     , '< After'
@@ -491,7 +508,7 @@ test('IncludeNode', function() {
 
   // Extra context attributes can be specified
   var c = templates.Context({items: [{name: 1}, {name: 2}, {name: 3}]});
-  var result = includer.render(c);
+  var result = templates.renderTemplate('includer', c);
   equal(''+result,
         'Before &gt;Extra Context<p>1</p><p>2</p><p>3</p>&lt; After',
         'Context and extra context available in included template');
