@@ -250,9 +250,10 @@
           html.insertWithEvents(document.getElementById("htmlEvents"));
       });
 
-      var base, child, context;
-      with (DOMBuilder.template) {
-        base = $template({name: 'base'}
+      var template = DOMBuilder.template;
+
+      with (template) {
+        $template('base'
         , DIV({id: 'content'}
           , $block('content'
             , P('Default parent content')
@@ -260,22 +261,23 @@
           )
         );
 
-        child = $template({name: 'child', extend: 'base'}
+        $template({name: 'child', extend: 'base'}
         , $block('content'
           , H3('{{ message }}')
           , 'Before {{ block.super }} After'
           )
         );
-
-        context = Context({message: 'Hello template inheriting world!'});
       }
 
+      var context = template.Context({message: 'Hello template inheriting world!'});
       DOMBuilder.withMode("html", function() {
-        document.getElementById("htmlTemplate").innerHTML = ""+child.render(context);
+        document.getElementById("htmlTemplate").innerHTML =
+            ""+template.renderTemplate('child', context);
       });
 
       DOMBuilder.withMode("dom", function() {
-        document.getElementById("domTemplate").appendChild(child.render(context));
+        document.getElementById("domTemplate").appendChild(
+            template.renderTemplate('child', context));
       });
   };
 
