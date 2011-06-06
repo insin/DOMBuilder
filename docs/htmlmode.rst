@@ -3,29 +3,6 @@ HTML mode
 
 .. versionadded:: 1.2
 
-The DOMBuilder API can also be used to generate HTML. The type of output it
-generates is controlled by :js:attr:`DOMBuilder.mode`.
-
-.. js:attribute:: DOMBuilder.mode
-
-   Determines which kind of objects :js:func:`DOMBuilder.createElement`
-   will create.
-
-   The allowable values are:
-
-   +-------------+--------------------------------------------------------------------------+
-   | Value       | Output                                                                   |
-   +=============+==========================================================================+
-   | ``"DOM"``   | DOM Elements (default value)                                             |
-   +-------------+--------------------------------------------------------------------------+
-   | ``"HTML"``  | :js:class:`HTMLElement` objects which ``toString()`` to HTML4            |
-   +-------------+--------------------------------------------------------------------------+
-   | ``"XHTML"`` | :js:class:`HTMLElement` objects which ``toString()`` to XHTML            |
-   +-------------+--------------------------------------------------------------------------+
-
-To change to HTML mode, set :js:attr:`DOMBuilder.mode` to the appropriate
-type of HTML output you want and use DOMBuilder as normal.
-
 The HTML mode API is exposed via :js:attr:`DOMBuilder.html`.
 
 .. js:attribute:: DOMBuilder.html
