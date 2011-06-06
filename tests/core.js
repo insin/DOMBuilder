@@ -2,7 +2,7 @@ module('Core');
 
 (function() {
 
-var el = DOMBuilder.elements;
+var el = DOMBuilder.array;
 
 var testMode = {
   name: 'test'
@@ -24,9 +24,6 @@ var testMode = {
 DOMBuilder.addMode(testMode);
 
 test('Array output', function() {
-  // Test with no active mode
-  DOMBuilder.withMode(null, function() {
-
   deepEqual(el.DIV(), ['div']);
   deepEqual(el.DIV('1'), ['div', {}, '1']);
   deepEqual(el.DIV({'1': '2'}), ['div', {'1': '2'}]);
@@ -62,8 +59,6 @@ test('Array output', function() {
                , ['br']
                , 'after'
                ]);
-
-  }); // DOMBuilder.withMode
 });
 
 test('Building from Array', function() {
