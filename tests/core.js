@@ -25,7 +25,50 @@ var testMode = {
 
 DOMBuilder.addMode(testMode);
 
-test('Building from Arrays', function() {
+test('Array output', function() {
+  // Test with no active mode
+  DOMBuilder.withMode(null, function() {
+
+  deepEqual(el.DIV(), ['div']);
+  deepEqual(el.DIV('1'), ['div', {}, '1']);
+  deepEqual(el.DIV({'1': '2'}), ['div', {'1': '2'}]);
+  deepEqual(el.DIV({'1': '2'}, '3'), ['div', {'1': '2'}, '3']);
+  deepEqual(el.DIV({'1': '2'}, ['3']), ['div', {'1': '2'}, '3']);
+  deepEqual(el.DIV({'1': '2'}, el.SPAN()), ['div', {'1': '2'}, ['span']]);
+  deepEqual(el.DIV({'1': '2'}, el.SPAN({'3': '4'})), ['div', {'1': '2'}, ['span', {'3': '4'}]]);
+  deepEqual(el.DIV({'1': '2'}, el.SPAN({'3': '4'}, '5')), ['div', {'1': '2'}, ['span', {'3': '4'}, '5']]);
+
+  var a = el.DIV({'class': 'test'}
+          , 'before'
+          , el.SPAN(
+              'stuff'
+            , DOMBuilder.fragment(
+                el.STRONG({'class': 'very'}, 'things')
+              , 'here'
+              )
+            )
+          , 'between'
+          , el.BR()
+          , 'after'
+          );
+  deepEqual(a, ['div', {'class': 'test'}
+               , 'before'
+               , ['span', {}
+                 , 'stuff'
+                 , ['#document-fragment'
+                   , ['strong', {'class': 'very'}, 'things']
+                   , 'here'
+                   ]
+                 ]
+               , 'between'
+               , ['br']
+               , 'after'
+               ]);
+
+  }); // DOMBuilder.withMode
+});
+
+test('Building from Array', function() {
   var a = ['div', {'class': 'test'}
           , 'before'
           , ['span'
