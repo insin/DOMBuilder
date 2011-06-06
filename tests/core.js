@@ -23,7 +23,7 @@ var testMode = {
 
 DOMBuilder.addMode(testMode);
 
-test('Array output', function() {
+test('Element & fragment Array output', function() {
   deepEqual(el.DIV(), ['div']);
   deepEqual(el.DIV('1'), ['div', {}, '1']);
   deepEqual(el.DIV({'1': '2'}), ['div', {'1': '2'}]);
@@ -59,6 +59,43 @@ test('Array output', function() {
                , ['br']
                , 'after'
                ]);
+});
+
+test('Map Array output', function() {
+  var items = [1, 2, 3];
+  var loopStatus = [];
+  var expectedLoopStatus = [{
+      index: 0
+    , first: true
+    , last: false
+    }, {
+      index: 1
+    , first: false
+    , last: false
+    }, {
+      index: 2
+    , first: false
+    , last: true
+    }];
+
+  var result = DOMBuilder.map('li', {}, items, function(item, attrs, loop) {
+    loopStatus.push(loop);
+    return item;
+  });
+  deepEqual(result, [
+      ['li', {}, 1]
+    , ['li', {}, 2]
+    , ['li', {}, 3]
+    ]);
+  deepEqual(loopStatus, expectedLoopStatus);
+
+  loopStatus = [];
+  result = DOMBuilder.fragment.map(items, function(item, loop) {
+    loopStatus.push(loop);
+    return item;
+  })
+  deepEqual(result, ['#document-fragment', 1, 2, 3]);
+  deepEqual(loopStatus, expectedLoopStatus);
 });
 
 test('Building from Array', function() {
