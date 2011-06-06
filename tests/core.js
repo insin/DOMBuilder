@@ -83,9 +83,13 @@ test('Building from Array', function() {
           , 'after'
           ];
   equal(DOMBuilder.build(a, 'test'),
-'<div class=test before<span stuff<#fragment <strong class=very things>here>>between<br>after>');
-  equal(''+DOMBuilder.build(a, 'html'),
-'<div class="test">before<span>stuff<strong class="very">things</strong>here</span>between<br>after</div>');
+'<div class=test before<span stuff<#fragment <strong class=very things>here>>between<br>after>',
+        'Builds using the specified mode');
+  DOMBuilder.withMode('html', function() {
+    equal(''+DOMBuilder.build(a),
+'<div class="test">before<span>stuff<strong class="very">things</strong>here</span>between<br>after</div>',
+          'Falls back to DOMBuilder.mode if a mode is not specified');
+  });
 });
 
 })();
