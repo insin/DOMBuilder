@@ -1,8 +1,10 @@
+==========
 DOMBuilder
 ==========
 
-DOMBuilder takes some of the pain out of programatically creating content
-in JavaScript.
+DOMBuilder takes some of the pain out of dynamically creating HTML
+elements in JavaScript and supports generating multiple types of output
+from the same inputs.
 
 .. toctree::
    :maxdepth: 1
@@ -13,6 +15,116 @@ in JavaScript.
    templates
    news
    license
+
+DOMBuilder supports two main patterns of usage:
+
+1. Using Output Modes to Create Content from Nested Arrays
+==========================================================
+
+To make use of DOMBuilder's output modes without using the rest of its API,
+you can define elements as nested Arrays, where each array represents an
+element and each element can consist of a tag name, an optional Object
+defining element attributes and an arbitrary number of content items.
+
+For example:
+
++--------------------------------------+-------------------------------------+
+| Input                                | Sample HTML Output                  |
++======================================+=====================================+
+| ``['div']``                          | ``<div></div>``                     |
++--------------------------------------+-------------------------------------+
+| ``['div', {id: 'test'}]``            | ``<div id="test"></div>``           |
++--------------------------------------+-------------------------------------+
+| ``['div', 'content']``               | ``<div>content</div>``              |
++--------------------------------------+-------------------------------------+
+| ``['div', {id: 'test'}, 'content']`` | ``<div id="test">content</div>``    |
++--------------------------------------+-------------------------------------+
+| ``['div', 'oh, ', ['span', 'hi!']]`` | ``<div>oh, <span>hi!</span></div>`` |
++--------------------------------------+-------------------------------------+
+
+To create content from a nested Array in this format, use:
+
+.. js:function:: DOMBuilder.build(contents[, mode])
+
+   Builds the specified type of output from a nested Array representation
+   of HTML elements.
+
+   :param Array contents:
+      Content defined as a nested Array
+   :param String mode:
+      Name of the output mode to use. If not given, defaults to
+      :js:attr:`DOMBuilder.mode`
+
+::
+
+   var article =
+     ['div', {'class': 'article'}
+     , ['h2', 'Article title']
+     , ['p', 'Paragraph one']
+     , ['p', 'Paragraph two']
+     ];
+
+   >>> DOMBuilder.build(article, 'html').toString()
+   <div class="article"><h2>Article title</h2><p>Paragraph one</p><p>Paragraph two</p></div>
+
+2. Using the DOMBuilder API
+===========================
+
+The :ref:`core-api` consists of the :js:func:`DOMBuilder.createElement` and
+:js:func:`DOMBuilder.fragment` functions, which allow definition of an
+element or content fragment, and assignment of its attributes and
+children, in a single call. Additonally, all non-element children are
+coerced to Strings and appended as text nodes::
+
+   // Vanilla DOM API
+   var div = document.createElement('div');
+   div.id = 'test';
+   div.appendChild(document.createTextNode('content1'));
+   var strong = document.createElement('strong');
+   strong.appendChild(document.createTextNode('content2'));
+   div.appendChild(strong);
+
+   // Equivalent with core DOMBuilder API
+   var div = DOMBuilder.createElement('div', {id: 'test'}, [
+     'content1',
+     DOMBuilder.createElement('strong', {}, ['content2'])
+   ]);
+
+To allow creation of HTML elements more succinctly and declaratively,
+DOMBuilder provides :ref:`element-functions`, which accept a variety of more
+flexible argument combinations and normalise then for use with the core
+functions::
+
+   // Equivalent with DOMBuilder element functions
+   var el = DOMBuilder.dom;
+   var div = el.DIV({id: 'test'}, 'content1', el.STRONG('content2'));
+
+For convenience creating content based on an lists of data, DOMBuilder
+provides :js:func:`DOMBuilder.map`, which is also made accessible via
+each element function with more flexible arguments, and
+:js:func:`DOMBuilder.fragment.map`::
+
+   var items = [1, 2, 3, 4];
+
+   // Without assuming existence of Array.prototype.map
+   var lis = [];
+   for (var i = 0, l = items.length; i < l; i++) {
+     lis.push(el.LI({'class': 'item'}, items[i]));
+   }
+   var ul = el.UL(lis);
+
+   // Assuming Array.prototype.map
+   var ul = UL(items.map(function(item) {
+       return el.LI({'class': 'item'}, item);
+     })
+   );
+
+   // With DOMBuilder.map
+   var ul = el.UL(DOMBuilder.map('li', items, {'class': 'item'}));
+   );
+
+   // With element function .map
+   var ul = el.UL(el.LI.map(items, {'class': 'item'}));
 
 Installation
 ============
@@ -89,7 +201,7 @@ Node.js
 .. versionadded:: 1.4.1
 
 DOMBuilder can be installed as a `Node.js`_ module using Node Package
-Manager. The Node.js build includes :doc:`htmlmode` and :doc:`template`,
+Manager. The Node.js build includes :doc:`htmlmode` and :doc:`templates`,
 with HTML as the default output format.
 
 Install::

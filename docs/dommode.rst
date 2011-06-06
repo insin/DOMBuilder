@@ -1,20 +1,94 @@
+========
 DOM Mode
 ========
 
+DOM mode provides an output mode which generates DOM Elements from
+:js:func:`DOMBuilder.createElement` calls and DOM DocumentFragments from
+:js:func:`DOMBuilder.fragment` calls.
+
+The DOM mode API and element functions which always create DOM Elements
+are exposed as ``DOMBuuilder.dom``.
+
+Element Creation
+================
+
+Mode-specific notes related to element creation.
+
+.. _event-handlers:
+
+Event Handlers
+--------------
+
+Event handlers can be specified by supplying an event name as one of the
+element's attributes and an event handling function as the corresponding
+value. Any of the following events can be registered in this manner:
+
++----------------------------------------------------------------------+
+| Event names                                                          |
++===========+===========+==========+============+============+=========+
+| blur      | focus     | focusin  | focusout   | load       | resize  |
++-----------+-----------+----------+------------+------------+---------+
+| scroll    | unload    | click    | dblclick   | mousedown  | mouseup |
++-----------+-----------+----------+------------+------------+---------+
+| mousemove | mouseover | mouseout | mouseenter | mouseleave | change  |
++-----------+-----------+----------+------------+------------+---------+
+| select    | submit    | keydown  | keypress   | keyup      | error   |
++-----------+-----------+----------+------------+------------+---------+
+
+These correspond to `events which have jQuery shortcut methods`_, which will
+be used for event handler registration if jQuery is available, otherwise
+legacy event registration will be used.
+
+For example, the following will create a text input which displays a default
+value, clearing it when the input is focused and restoring the default if
+the input is left blank::
+
+   var defaultInput =
+       el.INPUT({
+           type: 'text', name: 'email'
+         , value: 'email@host.com', defaultValue: 'email@host.com'
+         , focus: function() {
+             if (this.value == this.defaultValue) {
+               this.value = '';
+             }
+           }
+         , blur: function() {
+             if (this.value == '') {
+               this.value = this.defaultValue;
+             }
+           }
+         }
+       );
+
+.. _`events which have jQuery shortcut methods`: http://api.jquery.com/category/events/
+
+Other 'Special' Attributes
+--------------------------
+
+Other attributes which trigger special handling or explicit compatibility
+handling between DOM and HTML modes.
+
+``innerHTML``
+   If you specify an ``innerHTML`` attribute, the given String will be the
+   sole used to provide the element's contents.
+
+   * In DOM mode, the element's ``innerHTML`` property will be set and no
+     further children will be appended, even if given.
+   * In HTML mode, the given HTML will be used, unescaped, as the
+     element's contents.
+
 Document Fragments
-------------------
+==================
 
-.. versionadded:: 1.3
-
-A `DOM DocumentFragment`_ is a lightweight container for elements which,
-conveniently, allows you to append its entire contents with a single call
-to the destination element's ``appendChild()`` method.
+A `DOM DocumentFragment`_ is a lightweight container for elements which
+allows you to append its entire contents with a single call to the
+destination element's ``appendChild()`` method.
 
 If you're thinking of adding a wrapper ``<div>`` solely to be able to
 insert a number of sibling elements at the same time, a
 DocumentFragment will do the same job without the need for the redundant
-wrapper element. This single append functionality also makes it a handy
-container for content which needs to be inserted repeatedly, calling
+element. This single append functionality also makes it a handy container
+for content which needs to be inserted repeatedly, calling
 ``cloneNode(true)`` for each insertion.
 
 DOMBuilder provides a :js:func:`DOMBuilder.fragment` wrapper function,
@@ -23,21 +97,7 @@ in one call, and also allows you make use of this functionality in HTML
 mode by creating equivalent :ref:`mock-dom-objects` as appropriate. This
 will allow you to, for example, unit test functionality you've written
 which makes use of DocumentFragment objects by using HTML mode to verify
-output against strings, rather than against DOM trees.
-
-.. js:function:: DOMBuilder.fragment()
-
-   Creates a DOM DocumentFragment with the given children.
-
-   Supported argument formats are:
-
-   +--------------------------------------------------------+
-   | Fragment Creation Arguments                            |
-   +=====================+==================================+
-   | ``(child1, ...)``   | an arbitrary number of children. |
-   +---------------------+----------------------------------+
-   + ``([child1, ...])`` | an ``Array`` of children.        |
-   +---------------------+----------------------------------+
+output against HTML strings, rather than against DOM trees.
 
 See http://ejohn.org/blog/dom-documentfragments/ for more information about
 DocumentFragment objects.
@@ -45,7 +105,7 @@ DocumentFragment objects.
 .. _`DOM DocumentFragment`: http://www.w3.org/TR/REC-DOM-Level-1/level-one-core.html#ID-B63ED1A3
 
 Mapping Fragments
-~~~~~~~~~~~~~~~~~
+-----------------
 
 .. js:function:: DOMBuilder.fragment.map(items, mappingFunction)
 
@@ -100,65 +160,3 @@ HTML:
     ...
 
 .. _`newforms`: https://github.com/insin/newforms
-
-.. _event-handlers:
-
-Event Handlers
-##############
-
-Event handlers can be specified by supplying an event name as one of the
-element's attributes and an event handling function as the corresponding
-value.  Any of the following events can be registered in this manner:
-
-+----------------------------------------------------------------------+
-| Event names                                                          |
-+===========+===========+==========+============+============+=========+
-| blur      | focus     | focusin  | focusout   | load       | resize  |
-+-----------+-----------+----------+------------+------------+---------+
-| scroll    | unload    | click    | dblclick   | mousedown  | mouseup |
-+-----------+-----------+----------+------------+------------+---------+
-| mousemove | mouseover | mouseout | mouseenter | mouseleave | change  |
-+-----------+-----------+----------+------------+------------+---------+
-| select    | submit    | keydown  | keypress   | keyup      | error   |
-+-----------+-----------+----------+------------+------------+---------+
-
-These correspond to `events which have jQuery shortcut methods`_, which will
-be used for event handler registration if jQuery is available.
-
-For example, the following will create a text input which displays a default
-value, clearing it when the input is focused and restoring the default if
-the input is left blank::
-
-   var defaultInput =
-     INPUT({type: 'text', name: 'email',
-            value: 'email@host.com', defaultValue: 'email@host.com',
-            focus: function() {
-              if (this.value == this.defaultValue)
-              {
-                this.value = '';
-              }
-            },
-            blur: function() {
-              if (this.value == '') {
-                this.value = this.defaultValue;
-              }
-            }});
-
-.. _`events which have jQuery shortcut methods`: http://api.jquery.com/category/events/
-
-Other "Special" Attributes
-##########################
-
-Other attributes which trigger special handling or explicit compatibility
-handling between DOM and HTML modes.
-
-``innerHTML``
-   If you specify an ``innerHTML`` attribute, the given String will be the
-   sole used to provide the element's contents.
-
-   * In DOM mode, the element's ``innerHTML`` property will be set and no
-     further children will be appended, even if given.
-   * In HTML mode, the given HTML will be used, unescaped, as the
-     element's contents.
-
-   .. versionadded:: 1.4.2
