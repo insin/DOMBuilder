@@ -19,8 +19,6 @@ var testMode = {
 , fragment: function(c) {
     return '<#fragment' + (c.length ? ' ' + c.join('') : '') + '>';
   }
-, isObject: function(o) { return true; }
-, api: {}
 };
 
 DOMBuilder.addMode(testMode);
