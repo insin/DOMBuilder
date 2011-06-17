@@ -18,6 +18,8 @@
   <script type="text/javascript" src="lib/DOMBuilder.html.js"></script>
   <script type="text/javascript" src="lib/DOMBuilder.template.js"></script>
   <script type="text/javascript">
+  DOMBuilder.mode = 'dom';
+
   function createTable(headers, objects, properties)
   {
       return TABLE({cellSpacing: 1, border: 1, "class": "data sortable"},
