@@ -152,7 +152,7 @@ test('Variable', function() {
   // Variables resolve against contexts
   var v = new templates.Variable('test');
   strictEqual(v.resolve(templates.Context({test: 42})), 42, 'Variable resolved');
-  raises(function() { v.resolve(templates.Context()) }, templates.VariableNotFoundError,
+  raises(function() { v.resolve(templates.Context()); }, templates.VariableNotFoundError,
          'Exception thrown if context variable missing');
 
   // Nested lookups are supported with the . operator
@@ -175,7 +175,7 @@ test('Variable', function() {
         foo: function() {
           return {bar: 42};
         }
-      }
+      };
     }
   })), 42, 'Functions are called if part of lookup path');
   strictEqual(new templates.Variable('test.bar').resolve(templates.Context({
@@ -187,8 +187,8 @@ test('Variable', function() {
 });
 
 test('Template', function() {
-  var c1 = {render: function(context) { return 'parent'; }}
-  var c2 = {render: function(context) { return 'child'; }}
+  var c1 = {render: function(context) { return 'parent'; }};
+  var c2 = {render: function(context) { return 'child'; }};
   var b1 = templates.$block('foo', c1);
   var b2 = templates.$block({name: 'foo'}, templates.$text('{{ block.super }} then '), c2);
   var t1 = templates.$template({name: 'bar'}, b1);
@@ -245,8 +245,8 @@ test('ForNode', function() {
   var items, forloops = [];
   var f = templates.$for('item in items', {render: function(context) {
     forloops.push(shallowCopy(new templates.Variable('forloop').resolve(context)));
-    return new templates.Variable('item').resolve(context)
-  }})
+    return new templates.Variable('item').resolve(context);
+  }});
 
   // Zero items
   items = f.render(templates.Context({'items': []}));
@@ -424,7 +424,7 @@ test('IfNode', function() {
   , '""" > b'
   ];
   for (var i = 0, expr; expr = invalidExprs[i]; i++) {
-    raises(function() { templates.$if(expr) },
+    raises(function() { templates.$if(expr); },
            templates.TemplateSyntaxError,
            'Invalid: ' + expr);
   }
@@ -476,8 +476,8 @@ test('TextNode', function() {
 });
 
 test('BlockNode', function() {
-  var c1 = {render: function(context) { return 'parent'; }}
-  var c2 = {render: function(context) { return 'child'; }}
+  var c1 = {render: function(context) { return 'parent'; }};
+  var c2 = {render: function(context) { return 'child'; }};
   var b1 = templates.$block('foo', c1);
   var b2 = templates.$block({name: 'foo'}, templates.$var('block.super'), c2);
   equal(b1.name, 'foo', 'Block name as String argument');

@@ -7,7 +7,7 @@ module('Mixed mode');
 var mixed = DOMBuilder.elements;
 
 function testBothModes(testFunc) {
-  DOMBuilder.withMode('dom', testFunc)
+  DOMBuilder.withMode('dom', testFunc);
   DOMBuilder.withMode('html', testFunc);
 }
 
@@ -49,7 +49,7 @@ test('DOMBuilder.withMode', function() {
       equal(DOMBuilder.mode, 'html', 'mode set back correctly after nested function');
       DOMBuilder.withMode('template', function() {
         equal(DOMBuilder.mode, 'template', 'mode set correctly within nested function');
-        x // ReferenceError
+        x; // ReferenceError
       });
       fail('exception should be bubbling right about now');
     });

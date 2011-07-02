@@ -107,7 +107,7 @@ test('HTMLFragment', function() {
   equal(f2.toString(), '<h2>One</h2>Two<p>Three</p>', 'Rendering with children');
 
   // Initialise with a fragment
-  var f1 = new html.HTMLFragment([elements.B('Zero'), f2, elements.B('Four')])
+  var f1 = new html.HTMLFragment([elements.B('Zero'), f2, elements.B('Four')]);
   equal(f1.childNodes.length, 5,  'Fragment contents inlined on creation');
   equals(f2.childNodes.length, 0, 'Fragment which was inlined was emptied');
   equal(f1.toString(),

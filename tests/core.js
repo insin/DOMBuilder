@@ -9,7 +9,7 @@ var testMode = {
 , createElement: function(t, a, c) {
     var r = [];
     for (var p in a) {
-      r.push(p + '=' + a[p])
+      r.push(p + '=' + a[p]);
     }
     if (c.length) {
       r.push(c.join(''));
@@ -93,7 +93,7 @@ test('Map Array output', function() {
   result = DOMBuilder.fragment.map(items, function(item, loop) {
     loopStatus.push(loop);
     return item;
-  })
+  });
   deepEqual(result, ['#document-fragment', 1, 2, 3]);
   deepEqual(loopStatus, expectedLoopStatus);
 });
