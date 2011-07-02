@@ -14,6 +14,11 @@ Version 1.4.4 released on 19th May 2011
 
 .. _`v1.4.4 documentation at readthedocs.org`: http://readthedocs.org/docs/dombuilder/en/1.4.4/
 
+Download v1.4.4 for browsers:
+
+* `DOMBuilder.js`_
+* `DOMBuilder.min.js`_
+
 Install for `Node.js`_ using Node Package Manager (npm)::
 
    npm install DOMBuilder
@@ -22,6 +27,8 @@ Use in `Akshell`_ by adding the following to your app's ``manifest.json``::
 
    "insin/DOMBuilder:1.4.1"
 
+.. _`DOMBuilder.js`: https://github.com/insin/DOMBuilder/raw/1.4.4/DOMBuilder.js
+.. _`DOMBuilder.min.js`: https://github.com/insin/DOMBuilder/raw/1.4.4/DOMBuilder.min.js
 .. _`Node.js`: http://nodejs.org
 .. _`Akshell`: http://akshell.com
 
