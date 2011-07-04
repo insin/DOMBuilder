@@ -2,9 +2,9 @@
 HTML Mode
 =========
 
-HTML mode provides an output mode which generates :js:class:`HTMLElement`
+HTML mode provides an output mode which generates :js:class:`MockElement`
 objects from :js:func:`DOMBuilder.createElement` calls and
-:js:class:`HTMLFragment` objects from :js:func:`DOMBuilder.fragment` calls.
+:js:class:`MockFragment` objects from :js:func:`DOMBuilder.fragment` calls.
 
 The HTML mode API and element functions which always create DOM Elements
 are exposed as ``DOMBuuilder.dom``.
@@ -31,7 +31,7 @@ modes.
 Mock Elements
 -------------
 
-.. js:class:: HTMLElement(tagName[, attributes[, childNodes]])
+.. js:class:: MockElement(tagName[, attributes[, childNodes]])
 
    A representation of a DOM Element, its attributes and child nodes.
 
@@ -40,24 +40,27 @@ Mock Elements
    .. versionchanged:: 1.3
       Renamed from "Tag" to "HTMLElement"
 
-   .. js:function:: HTMLElement.appendChild(node)
+   .. versionchanged:: 2.0
+      Renamed from "HTMLElement" to "MockElement"
+
+   .. js:function:: MockElement.appendChild(node)
 
       Adds to the list of child nodes, for cases where the desired structure
       cannot be built up at creation time.
 
       .. versionchanged:: 1.3
-         Appending a :js:class:`HTMLFragment` will append its
+         Appending a :js:class:`MockFragment` will append its
          child nodes instead and clear them from the fragment.
 
-   .. js:function:: HTMLElement.cloneNode(deep)
+   .. js:function:: MockElement.cloneNode(deep)
 
       Clones the element and its attributes - if deep is ``true``, its child
       nodes will also be cloned.
 
       .. versionadded:: 1.3
-         Added to support cloning by an :js:class:`HTMLFragment`.
+         Added to support cloning by an :js:class:`MockFragment`.
 
-   .. js:function:: HTMLElement.toString([trackEvents])
+   .. js:function:: MockElement.toString([trackEvents])
 
       Creates a ``String`` containing the HTML representation of the element
       and its children. By default, any ``String`` children will be escaped to
@@ -76,16 +79,16 @@ Mock Elements
          Added the optional ``trackEvents`` argument to support registration
          of event handlers post-insertion.
 
-   .. js:function:: HTMLElement.addEvents()
+   .. js:function:: MockElement.addEvents()
 
       If event attributes were found when ``toString(true)`` was called, this
       method will attempt to retrieve a DOM Element with this element's ``id``
       attribute, attach event handlers to it and call
-      ``addEvents()`` on any HTMLElement children.
+      ``addEvents()`` on any MockElement children.
 
       .. versionadded:: 1.4
 
-   .. js:function:: HTMLElement.insertWithEvents(element)
+   .. js:function:: MockElement.insertWithEvents(element)
 
       Convenience method for generating and inserting HTML into the given
       DOM Element and registering event handlers.
@@ -98,44 +101,47 @@ Mock Fragments
 .. versionadded:: 1.3
 
 In HTML mode, :js:func:`DOMBuilder.fragment` will create
-:js:class:`HTMLFragment` objects which mimic the behaviour of
+:js:class:`MockFragment` objects which mimic the behaviour of
 DOM DocumentFragments when appended to another fragment or a
-:js:class:`HTMLElement`.
+:js:class:`MockElement`.
 
-.. js:class:: HTMLFragment([childNodes])
+.. js:class:: MockFragment([childNodes])
 
    A representation of a DOM DocumentFragment and its child nodes.
 
+   .. versionchanged:: 2.0
+      Renamed from "HTMLFragment" to "MockFragment"
+
    :param Array childNodes: initial child nodes
 
-   .. js:function:: HTMLFragment.appendChild(node)
+   .. js:function:: MockFragment.appendChild(node)
 
       Adds to the list of child nodes - appending another fragment will
       append its child nodes and clear them from the fragment.
 
-   .. js:function:: HTMLFragment.cloneNode(deep)
+   .. js:function:: MockFragment.cloneNode(deep)
 
       Clones the fragment - there's no point calling this *without* passing in
       ``true``, as you'll just get an empty fragment back, but that's the API.
 
-   .. js:function:: HTMLFragment.toString([trackEvents])
+   .. js:function:: MockFragment.toString([trackEvents])
 
       Creates a ``String`` containing the HTML representation of the
       fragment's children.
 
       .. versionchanged:: 1.4
          If the ``trackEvents`` argument is provided, it will be passed on
-         to any child HTMLElements when their :js:func:`HTMLElement.toString`
+         to any child MockElements when their :js:func:`MockElement.toString`
          method is called.
 
-   .. js:function:: HTMLFragment.addEvents()
+   .. js:function:: MockFragment.addEvents()
 
-      Calls :js:func:`HTMLElement.addEvents` on any
-      HTMLElement children.
+      Calls :js:func:`MockElement.addEvents` on any
+      MockElement children.
 
       .. versionadded:: 1.4
 
-   .. js:function:: HTMLFragment.insertWithEvents(element)
+   .. js:function:: MockFragment.insertWithEvents(element)
 
       Convenience method for generating and inserting HTML into the given
       DOM Element and registering event handlers.
@@ -187,14 +193,14 @@ see the generated ``id`` attribute in place:
 Since we know which elements have event handlers and what their ids are,
 we can use that information to fetch the corresponding DOM Elements and
 reister the event handlers - you can do just that using
-:js:func:`HTMLElement.addEvents()`::
+:js:func:`MockElement.addEvents()`::
 
    article.addEvents();
 
 Now, clicking on either paragraph will result in its id being alerted.
 
 DOMBuilder also provides a bit of sugar for performing these two steps in
-a single call, :js:func:`HTMLElement.insertWithEvents()`::
+a single call, :js:func:`MockElement.insertWithEvents()`::
 
     article.insertWithEvents(document.getElementById("articles"));
 
@@ -204,7 +210,7 @@ HTML Escaping
 HTML mode was initially introduced with backend use in mind - specifically,
 for generating forms and working with user input. As such, autoescaping was
 implemented to protect the developer from malicious user input. The same can
-still apply on the frontend, so :js:func:`HTMLElement.toString`
+still apply on the frontend, so :js:func:`MockElement.toString`
 automatically escapes the following characters in any ``String`` contents it
 finds, replacing them with their equivalent HTML entities::
 
@@ -212,7 +218,7 @@ finds, replacing them with their equivalent HTML entities::
 
 If you have a ``String`` which is known to be safe for inclusion without
 escaping, pass it through :js:func:`DOMBuilder.html.markSafe` before adding it
-to a :js:class:`HTMLElement`.
+to a :js:class:`MockElement`.
 
 .. js:function:: DOMBuilder.html.markSafe(value)
 
