@@ -1,6 +1,12 @@
 News for DOMBuilder
 ===================
 
+Version 1.4.4
+-------------
+
+- Additional arguments can now be passed in to ``withMode`` to be passed
+  into the function which will be called.
+
 Version 1.4.3
 -------------
 
