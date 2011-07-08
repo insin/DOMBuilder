@@ -152,6 +152,8 @@ DOM DocumentFragments when appended to another fragment or a
 
       .. versionadded:: 1.4
 
+.. _event-handlers-innerhtml:
+
 Event Handlers and ``innerHTML``
 ================================
 
@@ -207,6 +209,8 @@ DOMBuilder also provides a bit of sugar for performing these two steps in
 a single call, :js:func:`MockElement.insertWithEvents()`::
 
     article.insertWithEvents(document.getElementById("articles"));
+
+.. _html-escaping:
 
 HTML Escaping
 =============

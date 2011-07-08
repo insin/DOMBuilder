@@ -19,31 +19,10 @@ from the same inputs.
 Quick Guide
 ===========
 
-You may have seen HTML represented as a series of nested Arrays and Objects,
-like so:
+DOMBuilder provides a convenient, declarative API for generating HTML elements,
+via objects which contain functions named for the HTML element they create::
 
-   var article =
-     ['div', {'class': 'article'}
-     , ['h2', 'Article title']
-     , ['p', 'Paragraph one']
-     , ['p', 'Paragraph two']
-     ]
-
-Using one of its output modes, DOMBuilder can take one of these structures and
-turn it into an HTML String, or generate a DOM Element from it using
-:js:func:`DOMBuilder.build`::
-
-   >>> DOMBuilder.build(article, 'html').toString()
-   <div class="article"><h2>Article title</h2><p>Paragraph one</p><p>Paragraph two</p></div>
-
-   >>> DOMBuilder.build(article, 'dom').toString()
-   [object HTMLDivElement]
-
-DOMBuilder also provides a convenient, declarative API for generating HTML
-content - it provides a number of objects which contain functions named for the
-type of content they create::
-
-   with(DOMBuilder.array) {
+   with(DOMBuilder.dom) {
      var article =
        DIV({'class': 'article'}
        , H2('Article title')
@@ -52,31 +31,10 @@ type of content they create::
        )
    }
 
-If you just want to use this API to go straight to a particular type of output,
-you can do that using the functions defined in :js:attr:`DOMBuilder.dom` and
-:js:attr:`DOMBuilder.html` instead.
+Every element function also has a ``map`` function attached to it which allows
+you to generate content from an list of items::
 
-If you want to be able to switch freely between output modes, or you won't know
-until runtime, you can use the API through :js:attr:`DOMBuilder.elements`,
-controlling what it outputs by setting the :js:attr:`DOMBuilder.mode` flag to
-``'dom'`` or ``'html'``, or calling a function which it with
-:js:func:`DOMBuilder.withMode`::
-
-   var el = DOMBuilder.elements
-   function shoutThing(thing) {
-     return el.STRONG(thing)
-   }
-
-   >>> DOMBuilder.mode = 'html'
-   >>> shoutThing('Hello!').toString()
-   <strong>Hello!</strong>
-   >>> DOMBuilder.withMode('dom', shoutThing, 'Hey there!')
-   [object HTMLStrongElement]
-
-Every element function has a ``map`` function attached to it which allows you
-to generate content from an Array of things::
-
-   var el = DOMBuilder.elements
+   var el = DOMBuilder.html
    function shoppingList(items) {
      return el.OL(el.LI.map(items))
    }
@@ -94,6 +52,63 @@ to generate content from an Array of things::
 
    >>> opinionatedShoppingList(['Cheese', 'Bread', 'Butter'])
    <ol><li class="eww">Cheese</li><li>Bread</li><li><em>Butter</em></li></ol>
+
+If you want to use this API to go straight to a particular type of output, you
+can do so using the functions defined in :js:attr:`DOMBuilder.dom` and
+:js:attr:`DOMBuilder.html`, as demonstrated above.
+
+If you want to be able to switch freely between output modes, or you won't know
+which kind of output you need until runtime, you can use the same API via
+:js:attr:`DOMBuilder.elements`, controlling what it outputs by setting the
+:js:attr:`DOMBuilder.mode` flag to ``'dom'`` or ``'html'``, or calling a
+function which generates content using :js:func:`DOMBuilder.withMode`::
+
+   var el = DOMBuilder.elements
+   function shoutThing(thing) {
+     return el.STRONG(thing)
+   }
+
+   >>> DOMBuilder.mode = 'html'
+   >>> shoutThing('Hello!').toString()
+   <strong>Hello!</strong>
+   >>> DOMBuilder.withMode('dom', shoutThing, 'Hey there!')
+   [object HTMLStrongElement]
+
+This is useful for writing libraries which need to support outputting both DOM
+Elements and HTML Strings, or for unit-testing code which normally generates DOM
+Elements by flipping the mode in your tests to switch to HTML String output.
+
+DOMBuilder also supports using its output modes with another common menas of
+defining HTML in JavaScript code, using nested lists (representing elements and
+their contents) and objects (representing attributes), like so::
+
+   var article =
+     ['div', {'class': 'article'}
+     , ['h2', 'Article title']
+     , ['p', 'Paragraph one']
+     , ['p', 'Paragraph two']
+     ]
+
+You can generate output from one of these structures using
+:js:func:`DOMBuilder.build`, specifying the output mode::
+
+   >>> DOMBuilder.build(article, 'html').toString()
+   <div class="article"><h2>Article title</h2><p>Paragraph one</p><p>Paragraph two</p></div>
+
+   >>> DOMBuilder.build(article, 'dom').toString()
+   [object HTMLDivElement]
+
+You can also generate these kinds of structures using the same element functions
+defined in :js:attr:`DOMBuilder.array`.
+
+This is just a quick guide to what DOMBuilder can do - dive into the rest of the
+documentation to find out about the rest of its features, such as:
+
+* Registering :ref:`event-handlers`.
+* Making it more convenient to work with :ref:`event-handlers-innerhtml`.
+* Populating :ref:`document-fragments` with content in a single call.
+* Being able to use fragments in HTML mode via :ref:`mock-dom-objects`.
+* :ref:`html-escaping` in HTML mode.
 
 Installation
 ============
