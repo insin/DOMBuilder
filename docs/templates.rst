@@ -2,4 +2,4 @@
 Templates
 =========
 
-.. versionadded:: 2.1
+*Coming in version 2.1.*

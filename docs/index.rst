@@ -32,15 +32,19 @@ via objects which contain functions named for the HTML element they create::
    }
 
 Every element function also has a ``map`` function attached to it which allows
-you to generate content from an list of items::
+you to easily generate content from a list of items::
 
    var el = DOMBuilder.html
    function shoppingList(items) {
      return el.OL(el.LI.map(items))
    }
 
+::
+
    >>> shoppingList(['Cheese', 'Bread', 'Butter'])
    <ol><li>Cheese</li><li>Bread</li><li>Butter</li></ol>
+
+You can control ``map`` output by passing in a callback function::
 
    function opinionatedShoppingList(items) {
      return el.OL(el.LI.map(function(item, attrs, loop) {
@@ -49,6 +53,8 @@ you to generate content from an list of items::
        return item
      })
    }
+
+::
 
    >>> opinionatedShoppingList(['Cheese', 'Bread', 'Butter'])
    <ol><li class="eww">Cheese</li><li>Bread</li><li><em>Butter</em></li></ol>
@@ -67,6 +73,8 @@ function which generates content using :js:func:`DOMBuilder.withMode`::
    function shoutThing(thing) {
      return el.STRONG(thing)
    }
+   
+::
 
    >>> DOMBuilder.mode = 'html'
    >>> shoutThing('Hello!').toString()

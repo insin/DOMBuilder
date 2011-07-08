@@ -15,10 +15,10 @@ are exposed as :js:attr:`DOMBuilder.dom`.
 
    .. versionadded:: 2.0
 
-Element Creation
-================
+Attributes
+==========
 
-Mode-specific notes related to element creation.
+Some attributes are given special treatment based on their name.
 
 .. _event-handlers:
 
@@ -76,7 +76,8 @@ handling between DOM and HTML modes.
 
 ``innerHTML``
    If you specify an ``innerHTML`` attribute, the given String will be the
-   sole used to provide the element's contents.
+   sole source used to provide the element's contents, even if you pass more
+   contents in as arguments.
 
    * In DOM mode, the element's ``innerHTML`` property will be set and no
      further children will be appended, even if given.

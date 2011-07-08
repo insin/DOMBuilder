@@ -4,153 +4,6 @@ DOMBuilder Core
 
 .. _core-api:
 
-Core API
-========
-
-.. js:function:: DOMBuilder.createElement(tagName[, attributes], children], mode])
-
-   Creates an HTML element with the given tag name, attributes and
-   children, optionally with a forced output mode.
-
-   :param String tagName: the name of the element to be created.
-   :param Object attributes: attributes to be applied to the new element.
-   :param Array children: childen to be appended to the new element.
-   :param String mode: the mode to be used to create the element.
-
-   If children are provided, they will be appended to the new element.
-   Any children which are not elements or fragments will be coerced to
-   ``String`` and appended as text nodes.
-
-   .. versionchanged:: 2.0
-      Now delegates to the configured mode to do all the real work.
-
-.. js:function:: DOMBuilder.fragment()
-
-   Creates a container grouping any given elements together without the
-   need to wrap them in a redundant element. This functionality was for
-   :doc:`dommode` - see :ref:`document-fragments` - but is supported by all
-   output modes for the same grouping purposes.
-
-   Supported argument formats are:
-
-   +--------------------------------------------------------+
-   | Fragment Creation Arguments                            |
-   +=====================+==================================+
-   | ``(child1, ...)``   | an arbitrary number of children. |
-   +---------------------+----------------------------------+
-   + ``([child1, ...])`` | an ``Array`` of children.        |
-   +---------------------+----------------------------------+
-
-Output Modes
-============
-
-.. versionadded:: 2.0
-
-By itself, the core API isn't capable of doing anything but producing
-nested Array representations of elements and fragments. DOMBuilder
-provides the ability to register new modes, which make use of the
-arguments given when elements and fragments are created.
-
-.. js:function:: DOMBuilder.addMode(mode)
-
-   Adds a new mode and exposes an API for it in the DOMBuilder object
-   under a property corresponding to the mode's name.
-
-   :param Object mode:
-      Modes are defined as an ``Object`` with the following properties.
-
-      ``name``
-         the mode's name.
-      ``createElement(tagName, attributes, children)``
-         a Function which takes a tag name, attributes object and list of
-         children and returns a content item.
-      ``fragment(children)``
-         a Function which takes a list of children and returns a content
-         fragment.
-      ``isPlainObject(object)`` (optional)
-         a Function which can be used to eliminate false positives when
-         DOMBuilder is trying to determine whether or not an attributes
-         object was given - it should return ``false`` if given a
-         mode-specific content object.
-      ``api`` (optional)
-         an object defining additional public API for the mode and
-         exposing the variables, functions and constructors used in its
-         implementation, if appropriate.
-
-   When a mode is added, a ``DOMBuilder.<name>`` Object  is also created,
-   containing element  functions which will always create content using
-   the given mode and any additional properties which were defined via an
-   ``api`` Object.
-
-Example: a mode which prints out the arguments it was given::
-
-   DOMBuilder.addMode({
-     name: 'log'
-   , createElement: function(tagName, attributes, children) {
-       console.log(tagName, attributes, children);
-       return tagName;
-     }
-   });
-
-   >>> DOMBuilder.build(article, 'log');
-   h2 Object {} ["Article title"]
-   p Object {} ["Paragraph one"]
-   p Object {} ["Paragraph two"]
-   div Object { class="article"} ["h2", "p", "p"]
-
-Setting a mode's name as :js:attr:`DOMBuilder.mode` makes it the default
-output format.
-
-.. js:attribute:: DOMBuilder.mode
-
-   Determines which mode :js:func:`DOMBuilder.createElement` and
-   :js:func:`DOMBuilder.fragment` will use by default.
-
-Provided Modes
---------------
-
-Implementations of the following default modes are provided for use:
-
-Output modes:
-
-+----------------+----------------------------------------------------------------+-----------------+
-| Name           | Output                                                         | Documentation   |
-+================+================================================================+=================+
-| ``'dom'``      | DOM Elements                                                   | :doc:`dommode`  |
-+----------------+----------------------------------------------------------------+-----------------+
-| ``'html'``     | :js:class:`MockElement` objects which ``toString()`` to HTML4  | :doc:`htmlmode` |
-+----------------+----------------------------------------------------------------+-----------------+
-
-Feature modes:
-
-+----------------+----------------------------------------------------------------+------------------+
-| Name           | Output                                                         | Documentation    |
-+================+================================================================+==================+
-| ``'template'`` | :js:class:`TemplateNode` objects which render an output format | :doc:`templates` |
-+----------------+----------------------------------------------------------------+------------------+
-
-Temporarily Switching Mode
---------------------------
-
-If you're going to be working with mixed output types, forgetting to reset
-:js:attr:`DOMBuilder.mode` would be catastrophic, so DOMBuilder provides
-:js:func:`DOMBuilder.withMode` to manage it for you.
-
-.. js:function:: DOMBuilder.withMode(mode, func[, args...])
-
-   Calls a function, with :js:attr:`DOMBuilder.mode` set to the given value
-   for the duration of the function call, and returns its output.
-
-   Any additional arguments passed after the ``func`` argument will be passed
-   to the function when it is called.
-
-   >>> function createParagraph() { return P('Bed and', BR(), 'BReakfast'); }
-   >>> DOMBuilder.mode = 'dom'
-   >>> createParagraph().toString() // DOM mode by default
-   "[object HTMLParagraphElement]"
-   >>> DOMBuilder.withMode('HTML', createParagraph).toString();
-   "<p>Bed and<br>BReakfast</p>"
-
 .. _element-functions:
 
 Element Functions
@@ -174,15 +27,12 @@ DOMBuilder core provides two objects which contain element functions:
    ``null``, effectively making it a ``null`` mode.
 
 Each of these is an ``Object`` containing a function for each valid tag
-name declared in the HTML 4.01 `Strict DTD`_ and `Frameset DTD`_.
-
-Functions are referenced by the corresponding tag name in upper-case,
-e.g. ``DOMBuilder.elements.DIV``, ``DOMBuilder.elements.A``,
-``DOMBuilder.elements.TD``...
+name declared in the HTML 4.01 `Strict DTD`_ and `Frameset DTD`_, referenced by
+the corresponding tag name in uppercase.
 
 When called, these functions will create an element with the corresponding
 tag name, giving it any attributes which are specified as properties of an
-optional ``Object`` argument and appending any children passed in.
+optional ``Object`` argument and appending any child content passed in.
 
 Element functions accept the following variations of arguments:
 
@@ -209,6 +59,7 @@ The following function reates a ``<table>`` representation of a list of
 objects, taking advantage of the flexible combinations of arguments
 accepted by element functions::
 
+   var el = DOMBuilder.dom
    /**
     * @param headers a list of column headings.
     * @param objects the objects to be displayed.
@@ -222,13 +73,13 @@ accepted by element functions::
          TR.map(objects, function(obj) {
            return TD.map(properties, function(prop) {
              if (typeof obj[prop] == 'boolean') {
-               return obj[prop] ? 'Yes' : 'No';
+               return obj[prop] ? 'Yes' : 'No'
              }
-             return obj[prop];
-           });
+             return obj[prop]
+           })
          })
        )
-     );
+     )
    }
 
 Given this function, the following code...
@@ -241,9 +92,9 @@ Given this function, the following code...
       {name: 'Omar Omni',      table: 5, veggie: false},
       {name: 'Ivana Huggacow', table: 1, veggie: True}],
      ['name', 'table', 'veggie']
-   );
+   )
 
-...would produce a DOM Element corresponding to the following HTML:
+...would produce output corresponding to the following HTML:
 
 .. code-block:: html
 
@@ -351,37 +202,213 @@ flexible arguments to be passed in.
 |                                                        | content as-is.                          |
 +--------------------------------------------------------+-----------------------------------------+
 
-For example, the table code we looked at earlier could also be written
-like so, making use of ``map`` on element creation functions::
-
-   function createTable(headers, objects, properties) {
-     return TABLE({cellSpacing: 1, border: 1, "class": "data sortable"}
-     , THEAD(TR(TH.map(headers)))
-     , TBODY(
-         TR.map(objects, function(obj) {
-           return TD.map(properties, function(prop) {
-             var value = obj[prop];
-             if (typeof value == "boolean") {
-               value = value ? "Yes" : "No";
-             }
-             return value;
-           });
-         })
-       )
-     );
-   }
-
-This isn't essentially any less complex than the previous method, but
-there is a decrease in the number of nested method calls and you can see
-how the default behaviour in the absence of a mapping function has slightly
-simplified creation of the table headers.
-
 This example shows how you could make use of the ``attributes`` and
 ``itemIndex`` arguments to the mapping function to implement table
 striping::
 
    TR.map(rows, function(row, attributes, loop) {
-     attributes['class'] = (loop.index % 2 == 0 ? 'stripe1' : 'stripe2');
-     return TD.map(row);
-   });
+     attributes['class'] = (loop.index % 2 == 0 ? 'stripe1' : 'stripe2')
+     return TD.map(row)
+   })
 
+Building from Arrays
+====================
+
+To make use of DOMBuilder's :ref:`output-modes` without using the rest of its
+API, you can define HTML elements as nested Arrays, where each array represents
+an element and each element can consist of a tag name, an optional ``Object``
+defining element attributes and an arbitrary number of content items.
+
+For example:
+
++--------------------------------------+-------------------------------------+
+| Input                                | Sample HTML Output                  |
++======================================+=====================================+
+| ``['div']``                          | ``<div></div>``                     |
++--------------------------------------+-------------------------------------+
+| ``['div', {id: 'test'}]``            | ``<div id="test"></div>``           |
++--------------------------------------+-------------------------------------+
+| ``['div', 'content']``               | ``<div>content</div>``              |
++--------------------------------------+-------------------------------------+
+| ``['div', {id: 'test'}, 'content']`` | ``<div id="test">content</div>``    |
++--------------------------------------+-------------------------------------+
+| ``['div', 'oh, ', ['span', 'hi!']]`` | ``<div>oh, <span>hi!</span></div>`` |
++--------------------------------------+-------------------------------------+
+
+To create content from a nested Array in this format, use:
+
+.. js:function:: DOMBuilder.build(contents[, mode])
+
+   Builds the specified type of output from a nested Array representation
+   of HTML elements.
+
+   :param Array contents:
+      Content defined as a nested Array
+   :param String mode:
+      Name of the output mode to use. If not given, defaults to
+      :js:attr:`DOMBuilder.mode`
+
+::
+
+   var article =
+     ['div', {'class': 'article'}
+     , ['h2', 'Article title']
+     , ['p', 'Paragraph one']
+     , ['p', 'Paragraph two']
+     ];
+
+   >>> DOMBuilder.build(article, 'html').toString()
+   <div class="article"><h2>Article title</h2><p>Paragraph one</p><p>Paragraph two</p></div>
+
+
+Core API
+========
+
+These are the core functions whose output can be controlled using
+:ref:`output-modes`.
+
+.. js:function:: DOMBuilder.createElement(tagName[, attributes], children], mode])
+
+   Creates an HTML element with the given tag name, attributes and
+   children, optionally with a forced output mode.
+
+   :param String tagName: the name of the element to be created.
+   :param Object attributes: attributes to be applied to the new element.
+   :param Array children: childen to be appended to the new element.
+   :param String mode: the mode to be used to create the element.
+
+   If children are provided, they will be appended to the new element.
+   Any children which are not elements or fragments will be coerced to
+   ``String`` and appended as text nodes.
+
+   .. versionchanged:: 2.0
+      Now delegates to the configured mode to do all the real work.
+
+.. js:function:: DOMBuilder.fragment()
+
+   Creates a container grouping any given elements together without the
+   need to wrap them in a redundant element. This functionality was for
+   :doc:`dommode` - see :ref:`document-fragments` - but is supported by all
+   output modes for the same grouping purposes.
+
+   Supported argument formats are:
+
+   +--------------------------------------------------------+
+   | Fragment Creation Arguments                            |
+   +=====================+==================================+
+   | ``(child1, ...)``   | an arbitrary number of children. |
+   +---------------------+----------------------------------+
+   + ``([child1, ...])`` | an ``Array`` of children.        |
+   +---------------------+----------------------------------+
+
+.. _output-modes:
+
+Output Modes
+============
+
+.. versionadded:: 2.0
+
+By itself, the core API isn't capable of doing anything but producing
+nested Array representations of elements and fragments. DOMBuilder
+provides the ability to register new modes, which make use of the
+arguments given when elements and fragments are created.
+
+.. js:function:: DOMBuilder.addMode(mode)
+
+   Adds a new mode and exposes an API for it in the DOMBuilder object
+   under a property corresponding to the mode's name.
+
+   :param Object mode:
+      Modes are defined as an ``Object`` with the following properties.
+
+      ``name``
+         the mode's name.
+      ``createElement(tagName, attributes, children)``
+         a Function which takes a tag name, attributes object and list of
+         children and returns a content item.
+      ``fragment(children)``
+         a Function which takes a list of children and returns a content
+         fragment.
+      ``isPlainObject(object)`` (optional)
+         a Function which can be used to eliminate false positives when
+         DOMBuilder is trying to determine whether or not an attributes
+         object was given - it should return ``false`` if given a
+         mode-specific content object.
+      ``api`` (optional)
+         an object defining additional public API for the mode and
+         exposing the variables, functions and constructors used in its
+         implementation, if appropriate.
+
+   When a mode is added, a ``DOMBuilder.<name>`` Object  is also created,
+   containing element  functions which will always create content using
+   the given mode and any additional properties which were defined via an
+   ``api`` Object.
+
+Example: a mode which prints out the arguments it was given::
+
+   DOMBuilder.addMode({
+     name: 'log'
+   , createElement: function(tagName, attributes, children) {
+       console.log(tagName, attributes, children)
+       return tagName
+     }
+   })
+
+   >>> DOMBuilder.build(article, 'log')
+   h2 Object {} ["Article title"]
+   p Object {} ["Paragraph one"]
+   p Object {} ["Paragraph two"]
+   div Object { class="article"} ["h2", "p", "p"]
+
+Setting a mode's name as :js:attr:`DOMBuilder.mode` makes it the default
+output format.
+
+.. js:attribute:: DOMBuilder.mode
+
+   Determines which mode :js:func:`DOMBuilder.createElement` and
+   :js:func:`DOMBuilder.fragment` will use by default.
+
+Provided Modes
+--------------
+
+Implementations of the following default modes are provided for use:
+
+Output modes:
+
++----------------+----------------------------------------------------------------+-----------------+
+| Name           | Output                                                         | Documentation   |
++================+================================================================+=================+
+| ``'dom'``      | DOM Elements                                                   | :doc:`dommode`  |
++----------------+----------------------------------------------------------------+-----------------+
+| ``'html'``     | :js:class:`MockElement` objects which ``toString()`` to HTML4  | :doc:`htmlmode` |
++----------------+----------------------------------------------------------------+-----------------+
+
+Feature modes:
+
++----------------+----------------------------------------------------------------+------------------+
+| Name           | Output                                                         | Documentation    |
++================+================================================================+==================+
+| ``'template'`` | :js:class:`TemplateNode` objects which render an output format | :doc:`templates` |
++----------------+----------------------------------------------------------------+------------------+
+
+Temporarily Switching Mode
+--------------------------
+
+If you're going to be working with mixed output types, forgetting to reset
+:js:attr:`DOMBuilder.mode` would be catastrophic, so DOMBuilder provides
+:js:func:`DOMBuilder.withMode` to manage it for you.
+
+.. js:function:: DOMBuilder.withMode(mode, func[, args...])
+
+   Calls a function, with :js:attr:`DOMBuilder.mode` set to the given value
+   for the duration of the function call, and returns its output.
+
+   Any additional arguments passed after the ``func`` argument will be passed
+   to the function when it is called.
+
+   >>> function createParagraph() { return P('Bed and', BR(), 'BReakfast'); }
+   >>> DOMBuilder.mode = 'dom'
+   >>> createParagraph().toString() // DOM mode by default
+   "[object HTMLParagraphElement]"
+   >>> DOMBuilder.withMode('HTML', createParagraph).toString();
+   "<p>Bed and<br>BReakfast</p>"
