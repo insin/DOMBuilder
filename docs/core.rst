@@ -28,7 +28,7 @@ Core API
 
    Creates a container grouping any given elements together without the
    need to wrap them in a redundant element. This functionality was for
-   `DOM Mode`_ - see `Document Fragments`_ - but is supported by all
+   :doc:`dommode` - see :ref:`document-fragments` - but is supported by all
    output modes for the same grouping purposes.
 
    Supported argument formats are:
@@ -113,21 +113,21 @@ Implementations of the following default modes are provided for use:
 
 Output modes:
 
-+----------------+----------------------------------------------------------------+---------------+
-| Name           | Output                                                         | Documentation |
-+================+================================================================+===============+
-| ``'dom'``      | DOM Elements                                                   | `DOM Mode`_   |
-+----------------+----------------------------------------------------------------+---------------+
-| ``'html'``     | :js:class:`MockElement` objects which ``toString()`` to HTML4  | `HTML Mode`_  |
-+----------------+----------------------------------------------------------------+---------------+
++----------------+----------------------------------------------------------------+-----------------+
+| Name           | Output                                                         | Documentation   |
++================+================================================================+=================+
+| ``'dom'``      | DOM Elements                                                   | :doc:`dommode`  |
++----------------+----------------------------------------------------------------+-----------------+
+| ``'html'``     | :js:class:`MockElement` objects which ``toString()`` to HTML4  | :doc:`htmlmode` |
++----------------+----------------------------------------------------------------+-----------------+
 
 Feature modes:
 
-+----------------+----------------------------------------------------------------+---------------+
-| Name           | Output                                                         | Documentation |
-+================+================================================================+===============+
-| ``'template'`` | :js:class:`TemplateNode` objects which render an output format | `Templates`_  |
-+----------------+----------------------------------------------------------------+---------------+
++----------------+----------------------------------------------------------------+------------------+
+| Name           | Output                                                         | Documentation    |
++================+================================================================+==================+
+| ``'template'`` | :js:class:`TemplateNode` objects which render an output format | :doc:`templates` |
++----------------+----------------------------------------------------------------+------------------+
 
 Temporarily Switching Mode
 --------------------------
@@ -144,21 +144,12 @@ If you're going to be working with mixed output types, forgetting to reset
    Any additional arguments passed after the ``func`` argument will be passed
    to the function when it is called.
 
-The following `FireBug`_ console session shows :js:func:`DOMBuilder.withMode` in action::
-
-    >>> function createParagraph() { return P("Bed and", BR(), "BReakfast"); }
-    >>> createParagraph().toString() // DOM mode by default
-    "[object HTMLParagraphElement]"
-    >>> DOMBuilder.withMode("HTML", createParagraph).toString();
-    "<p>Bed and<br>BReakfast</p>"
-    >>> DOMBuilder.withMode("XHTML", createParagraph).toString();
-    "<p>Bed and<br />BReakfast</p>"
-    >>> DOMBuilder.withMode("HTML", function() {
-    ...     return createParagraph() + " " + DOMBuilder.withMode("XHTML", createParagraph);
-    ... })
-    "<p>Bed and<br>BReakfast</p> <p>Bed and<br />BReakfast</p>"
-
-.. _Firebug: http://www.getfirebug.com
+   >>> function createParagraph() { return P('Bed and', BR(), 'BReakfast'); }
+   >>> DOMBuilder.mode = 'dom'
+   >>> createParagraph().toString() // DOM mode by default
+   "[object HTMLParagraphElement]"
+   >>> DOMBuilder.withMode('HTML', createParagraph).toString();
+   "<p>Bed and<br>BReakfast</p>"
 
 .. _element-functions:
 
@@ -389,8 +380,8 @@ This example shows how you could make use of the ``attributes`` and
 ``itemIndex`` arguments to the mapping function to implement table
 striping::
 
-   TR.map(rows, function(row, attributes, itemIndex) {
-     attributes['class'] = (itemIndex % 2 == 0 ? 'stripe1' : 'stripe2');
+   TR.map(rows, function(row, attributes, loop) {
+     attributes['class'] = (loop.index % 2 == 0 ? 'stripe1' : 'stripe2');
      return TD.map(row);
    });
 

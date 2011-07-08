@@ -7,7 +7,13 @@ DOM mode provides an output mode which generates DOM Elements from
 :js:func:`DOMBuilder.fragment` calls.
 
 The DOM mode API and element functions which always create DOM Elements
-are exposed as ``DOMBuuilder.dom``.
+are exposed as :js:attr:`DOMBuilder.dom`.
+
+.. js:attribute:: DOMBuilder.dom
+
+   Element functions which will always create DOM Element output.
+
+   .. versionadded:: 2.0
 
 Element Creation
 ================
@@ -77,6 +83,8 @@ handling between DOM and HTML modes.
    * In HTML mode, the given HTML will be used, unescaped, as the
      element's contents.
 
+.. _document-fragments:
+
 Document Fragments
 ==================
 
@@ -135,9 +143,9 @@ For example, with a `newforms`_ ``FormSet`` object, which contains multiple
 ``Form`` objects. If you wanted to generate a heading and a table for each
 form object and have the whole lot sitting side-by-side in the document::
 
-   var formFragment = DOMBuilder.fragment.map(formset.forms, function(form, index) {
+   var formFragment = DOMBuilder.fragment.map(formset.forms, function(form, loop) {
      return [
-       H2('Widget ' + (index + 1)),
+       H2('Widget ' + (loop.index + 1)),
        TABLE(TBODY(
          TR.map(form.boundFields(), function(field) {
            return [TH(field.labelTag()), TD(field.asWidget())];

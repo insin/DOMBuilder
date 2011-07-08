@@ -7,7 +7,14 @@ objects from :js:func:`DOMBuilder.createElement` calls and
 :js:class:`MockFragment` objects from :js:func:`DOMBuilder.fragment` calls.
 
 The HTML mode API and element functions which always create DOM Elements
-are exposed as ``DOMBuuilder.dom``.
+are exposed as :js:attr:`DOMBuilder.html`.
+
+.. js:attribute:: DOMBuilder.html
+
+   Element functions which will always create HTML MockElement output, which
+   ``toString()`` to HTML.
+
+   .. versionadded:: 2.0
 
 .. _mock-dom-objects:
 
@@ -36,9 +43,6 @@ Mock Elements
    A representation of a DOM Element, its attributes and child nodes.
 
    Arguments are as per :js:func:`DOMBuilder.createElement`.
-
-   .. versionchanged:: 1.3
-      Renamed from "Tag" to "HTMLElement"
 
    .. versionchanged:: 2.0
       Renamed from "HTMLElement" to "MockElement"
@@ -73,7 +77,7 @@ Mock Elements
       registered after the element has been inserted into the document via
       ``innerHTML``.
 
-      If neccessary, a unique id will be generated.
+      If necessary, a unique id will be generated.
 
       .. versionchanged:: 1.4
          Added the optional ``trackEvents`` argument to support registration

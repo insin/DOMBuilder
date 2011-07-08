@@ -2,8 +2,8 @@
 DOMBuilder
 ==========
 
-DOMBuilder takes some of the pain out of dynamically creating HTML
-elements in JavaScript and supports generating multiple types of output
+DOMBuilder takes *some* of the pain out of dynamically creating HTML
+content in JavaScript and supports generating multiple types of output
 from the same inputs.
 
 .. toctree::
@@ -16,115 +16,84 @@ from the same inputs.
    news
    license
 
-DOMBuilder supports two main patterns of usage:
+Quick Guide
+===========
 
-1. Using Output Modes to Create Content from Nested Arrays
-==========================================================
-
-To make use of DOMBuilder's output modes without using the rest of its API,
-you can define elements as nested Arrays, where each array represents an
-element and each element can consist of a tag name, an optional Object
-defining element attributes and an arbitrary number of content items.
-
-For example:
-
-+--------------------------------------+-------------------------------------+
-| Input                                | Sample HTML Output                  |
-+======================================+=====================================+
-| ``['div']``                          | ``<div></div>``                     |
-+--------------------------------------+-------------------------------------+
-| ``['div', {id: 'test'}]``            | ``<div id="test"></div>``           |
-+--------------------------------------+-------------------------------------+
-| ``['div', 'content']``               | ``<div>content</div>``              |
-+--------------------------------------+-------------------------------------+
-| ``['div', {id: 'test'}, 'content']`` | ``<div id="test">content</div>``    |
-+--------------------------------------+-------------------------------------+
-| ``['div', 'oh, ', ['span', 'hi!']]`` | ``<div>oh, <span>hi!</span></div>`` |
-+--------------------------------------+-------------------------------------+
-
-To create content from a nested Array in this format, use:
-
-.. js:function:: DOMBuilder.build(contents[, mode])
-
-   Builds the specified type of output from a nested Array representation
-   of HTML elements.
-
-   :param Array contents:
-      Content defined as a nested Array
-   :param String mode:
-      Name of the output mode to use. If not given, defaults to
-      :js:attr:`DOMBuilder.mode`
-
-::
+You may have seen HTML represented as a series of nested Arrays and Objects,
+like so:
 
    var article =
      ['div', {'class': 'article'}
      , ['h2', 'Article title']
      , ['p', 'Paragraph one']
      , ['p', 'Paragraph two']
-     ];
+     ]
+
+Using one of its output modes, DOMBuilder can take one of these structures and
+turn it into an HTML String, or generate a DOM Element from it using
+:js:func:`DOMBuilder.build`::
 
    >>> DOMBuilder.build(article, 'html').toString()
    <div class="article"><h2>Article title</h2><p>Paragraph one</p><p>Paragraph two</p></div>
 
-2. Using the DOMBuilder API
-===========================
+   >>> DOMBuilder.build(article, 'dom').toString()
+   [object HTMLDivElement]
 
-The :ref:`core-api` consists of the :js:func:`DOMBuilder.createElement` and
-:js:func:`DOMBuilder.fragment` functions, which allow definition of an
-element or content fragment, and assignment of its attributes and
-children, in a single call. Additonally, all non-element children are
-coerced to Strings and appended as text nodes::
+DOMBuilder also provides a convenient, declarative API for generating HTML
+content - it provides a number of objects which contain functions named for the
+type of content they create::
 
-   // Vanilla DOM API
-   var div = document.createElement('div');
-   div.id = 'test';
-   div.appendChild(document.createTextNode('content1'));
-   var strong = document.createElement('strong');
-   strong.appendChild(document.createTextNode('content2'));
-   div.appendChild(strong);
-
-   // Equivalent with core DOMBuilder API
-   var div = DOMBuilder.createElement('div', {id: 'test'}, [
-     'content1',
-     DOMBuilder.createElement('strong', {}, ['content2'])
-   ]);
-
-To allow creation of HTML elements more succinctly and declaratively,
-DOMBuilder provides :ref:`element-functions`, which accept a variety of more
-flexible argument combinations and normalise then for use with the core
-functions::
-
-   // Equivalent with DOMBuilder element functions
-   var el = DOMBuilder.dom;
-   var div = el.DIV({id: 'test'}, 'content1', el.STRONG('content2'));
-
-For convenience creating content based on an lists of data, DOMBuilder
-provides :js:func:`DOMBuilder.map`, which is also made accessible via
-each element function with more flexible arguments, and
-:js:func:`DOMBuilder.fragment.map`::
-
-   var items = [1, 2, 3, 4];
-
-   // Without assuming existence of Array.prototype.map
-   var lis = [];
-   for (var i = 0, l = items.length; i < l; i++) {
-     lis.push(el.LI({'class': 'item'}, items[i]));
+   with(DOMBuilder.array) {
+     var article =
+       DIV({'class': 'article'}
+       , H2('Article title')
+       , P('Paragraph one')
+       , P('Paragraph two')
+       )
    }
-   var ul = el.UL(lis);
 
-   // Assuming Array.prototype.map
-   var ul = UL(items.map(function(item) {
-       return el.LI({'class': 'item'}, item);
+If you just want to use this API to go straight to a particular type of output,
+you can do that using the functions defined in :js:attr:`DOMBuilder.dom` and
+:js:attr:`DOMBuilder.html` instead.
+
+If you want to be able to switch freely between output modes, or you won't know
+until runtime, you can use the API through :js:attr:`DOMBuilder.elements`,
+controlling what it outputs by setting the :js:attr:`DOMBuilder.mode` flag to
+``'dom'`` or ``'html'``, or calling a function which it with
+:js:func:`DOMBuilder.withMode`::
+
+   var el = DOMBuilder.elements
+   function shoutThing(thing) {
+     return el.STRONG(thing)
+   }
+
+   >>> DOMBuilder.mode = 'html'
+   >>> shoutThing('Hello!').toString()
+   <strong>Hello!</strong>
+   >>> DOMBuilder.withMode('dom', shoutThing, 'Hey there!')
+   [object HTMLStrongElement]
+
+Every element function has a ``map`` function attached to it which allows you
+to generate content from an Array of things::
+
+   var el = DOMBuilder.elements
+   function shoppingList(items) {
+     return el.OL(el.LI.map(items))
+   }
+
+   >>> shoppingList(['Cheese', 'Bread', 'Butter'])
+   <ol><li>Cheese</li><li>Bread</li><li>Butter</li></ol>
+
+   function opinionatedShoppingList(items) {
+     return el.OL(el.LI.map(function(item, attrs, loop) {
+       if (item == 'Cheese') attrs['class'] = 'eww'
+       if (item == 'Butter') return el.EM(item)
+       return item
      })
-   );
+   }
 
-   // With DOMBuilder.map
-   var ul = el.UL(DOMBuilder.map('li', items, {'class': 'item'}));
-   );
-
-   // With element function .map
-   var ul = el.UL(el.LI.map(items, {'class': 'item'}));
+   >>> opinionatedShoppingList(['Cheese', 'Bread', 'Butter'])
+   <ol><li class="eww">Cheese</li><li>Bread</li><li><em>Butter</em></li></ol>
 
 Installation
 ============
@@ -157,25 +126,16 @@ Builds
 Multiple preconfigured builds of DOMBuilder are available to suit various
 needs:
 
+`DOM and HTML`_
+   For creation of mixed content, with no default output format
 `DOM only`_
    For creation of DOM Elements, with :doc:`dommode` as the default output format
 `HTML only`_
-   For creation of HTML Strings, wit :doc:`htmlmode` as the default output format
-`DOM and HTML`_
-   For creation of mixed content, with no default output format
-`DOM templates`_
-   For creation of DOM Elements using templates, with :doc:`dommode` as the default output format
-`HTML templates`_
-   For creation of HTML Strings using templates, with :doc:`htmlmode` as default output format
-`DOM and HTML templates`_
-   For creation of mixed content using templates, with no default output format
+   For creation of HTML Strings, with :doc:`htmlmode` as the default output format
 
+.. _`DOM and HTML`: https://github.com/insin/DOMBuilder/raw/master/builds/DOMBuilder.min.js
 .. _`DOM only`: https://github.com/insin/DOMBuilder/raw/master/builds/DOMBuilder.dom.min.js
 .. _`HTML only`: https://github.com/insin/DOMBuilder/raw/master/builds/DOMBuilder.html.min.js
-.. _`DOM and HTML`: https://github.com/insin/DOMBuilder/raw/master/builds/DOMBuilder.dom-html.min.js
-.. _`DOM templates`: https://github.com/insin/DOMBuilder/raw/master/builds/DOMBuilder.dom-template.min.js
-.. _`HTML templates`: https://github.com/insin/DOMBuilder/raw/master/builds/DOMBuilder.html-template.min.js
-.. _`DOM and HTML templates`: https://github.com/insin/DOMBuilder/raw/master/builds/DOMBuilder.dom-html-template.min.js
 
 Dependencies
 ~~~~~~~~~~~~

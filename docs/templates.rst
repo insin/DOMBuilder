@@ -2,4 +2,4 @@
 Templates
 =========
 
-.. versionadded:: 2.0
+.. versionadded:: 2.1
