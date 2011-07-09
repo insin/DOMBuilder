@@ -143,18 +143,18 @@ The avaible components are:
 .. _`DOMBuilder.html.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.html.js
 .. _`DOMBuilder.template.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.template.js
 
-Builds
-~~~~~~
+Compressed Builds
+~~~~~~~~~~~~~~~~~
 
-Multiple preconfigured builds of DOMBuilder are available to suit various
-needs:
+Multiple preconfigured, compressed builds of DOMBuilder are available to suit
+various needs:
 
 `DOM and HTML`_
-   For creation of mixed content, with no default output format
+   For creation of mixed content, with :doc:`dommode` as the default output format.
 `DOM only`_
-   For creation of DOM Elements, with :doc:`dommode` as the default output format
+   For creation of DOM Elements, with :doc:`dommode` as the default output format.
 `HTML only`_
-   For creation of HTML Strings, with :doc:`htmlmode` as the default output format
+   For creation of HTML Strings, with :doc:`htmlmode` as the default output format.
 
 .. _`DOM and HTML`: https://github.com/insin/DOMBuilder/raw/master/builds/DOMBuilder.min.js
 .. _`DOM only`: https://github.com/insin/DOMBuilder/raw/master/builds/DOMBuilder.dom.min.js

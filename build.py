@@ -6,7 +6,8 @@ TEMPLATE = """/**
  * DOMBuilder {version} (modes: {modes}) - https://github.com/insin/DOMBuilder
  * MIT licensed
  */
-{code}"""
+{code}
+DOMBuilder.mode = '{mode}';"""
 
 def main():
     base = open('lib/DOMBuilder.js').read()
@@ -16,17 +17,23 @@ def main():
 
     version = VERSION_RE.search(base).group(1)
 
-    # Equivalent to 1.4.*
+    # Uncompressed DOM+HTML
+    open('DOMBuilder.js', 'w').write(TEMPLATE.format(
+        version=version, mode='dom', modes='dom [default], html',
+        code=(base + dom + html)
+    ))
+    # DOM+HTML
     open('DOMBuilder.min.js', 'w').write(TEMPLATE.format(
-        version=version, modes='dom [default], html', code=compress(base + dom + html)
+        version=version, mode='dom', modes='dom [default], html',
+        code=compress(base + dom + html)
     ))
     # DOM-only
     open('DOMBuilder.dom.min.js', 'w').write(TEMPLATE.format(
-        version=version, modes='dom', code=compress(base + dom)
+        version=version, mode='dom', modes='dom', code=compress(base + dom)
     ))
-    # New for 2.0 - templates, with DOM as default output for client side
-    open('DOMBuilder.template.min.js', 'w').write(TEMPLATE.format(
-        version=version, modes='dom [default], html, template', code=compress(base + dom + html + template)
+    # HTML-only
+    open('DOMBuilder.html.min.js', 'w').write(TEMPLATE.format(
+        version=version, mode='html', modes='html', code=compress(base + html)
     ))
 
 def compress(js):
