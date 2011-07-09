@@ -16,6 +16,19 @@ function shallowCopy(a) {
   return b;
 }
 
+test('DOMBuilder.apply', function() {
+  var context = {};
+  DOMBuilder.apply(context, 'template');
+  var allTemplateFunctionsPresent = true;
+  for (var prop in DOMBuilder.modes.template.apply) {
+    if(typeof context[prop] != 'function') {
+      allTemplateFunctionsPresent = false;
+      break;
+    }
+  }
+  ok(allTemplateFunctionsPresent, 'All expected template functions were added to context object');
+});
+
 test('getTemplate/selectTemplate', function() {
   // Simulates templates allowing overriding and specialisation per content type
   // via the use of selectTemplate.

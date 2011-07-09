@@ -23,17 +23,6 @@ test('DOMBuilder.apply', function() {
   }
   ok(allElementFunctionsPresent, 'All expected element functions were added to context object');
   ok(true, 'An exception was not raised when an invalid mode was passed');
-
-  context = {};
-  DOMBuilder.apply(context, 'template');
-  var allTemplateFunctionsPresent = true;
-  for (var prop in DOMBuilder.modes.template.apply) {
-    if(typeof context[prop] != 'function') {
-      allTemplateFunctionsPresent = false;
-      break;
-    }
-  }
-  ok(allTemplateFunctionsPresent, 'All expected template functions were added to context object');
 });
 
 test('DOMBuilder.withMode', function() {

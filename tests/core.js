@@ -1,4 +1,13 @@
-module('Core');
+module('Core', {
+  setup: function() {
+    DOMBuilder.mode = null;
+  },
+  tearDown: function() {
+    if (DOMBuilder.mode !== null) {
+      fail('DOMBuilder.mode was not null after test completed: ' + DOMBuilder.mode);
+    }
+  }
+});
 
 (function() {
 
