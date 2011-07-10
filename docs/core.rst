@@ -329,11 +329,11 @@ arguments given when elements and fragments are created.
       ``fragment(children)``
          a Function which takes a list of children and returns a content
          fragment.
-      ``isPlainObject(object)`` (optional)
+      ``isModeObject(object)`` (optional)
          a Function which can be used to eliminate false positives when
          DOMBuilder is trying to determine whether or not an attributes
-         object was given - it should return ``false`` if given a
-         mode-specific content object.
+         object was given - it should return ``true`` if given a mode-created
+         content object.
       ``api`` (optional)
          an object defining additional public API for the mode and
          exposing the variables, functions and constructors used in its
