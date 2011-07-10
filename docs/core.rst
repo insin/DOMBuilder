@@ -257,6 +257,8 @@ To create content from a nested Array in this format, use:
      , ['p', 'Paragraph two']
      ];
 
+::
+
    >>> DOMBuilder.build(article, 'html').toString()
    <div class="article"><h2>Article title</h2><p>Paragraph one</p><p>Paragraph two</p></div>
 
@@ -364,6 +366,8 @@ Example: a mode which prints out the arguments it was given::
        return tagName
      }
    })
+
+::
 
    >>> DOMBuilder.build(article, 'log')
    h2 Object {} ["Article title"]
