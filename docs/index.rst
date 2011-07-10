@@ -134,13 +134,15 @@ The avaible components are:
    DOM output mode - adds ``DOMBuilder.dom``
 `DOMBuilder.html.js`_
    HTML output mode - adds ``DOMBuilder.html``
-`DOMBuilder.template.js`_
-   Template feature mode - adds ``DOMBuilder.template``
+
+.. `DOMBuilder.template.js`_
+      Template feature mode - adds ``DOMBuilder.template``
+
+   .. _`DOMBuilder.template.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.template.js
 
 .. _`DOMBuilder.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.js
 .. _`DOMBuilder.dom.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.dom.js
 .. _`DOMBuilder.html.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.html.js
-.. _`DOMBuilder.template.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.template.js
 
 Compressed Builds
 ~~~~~~~~~~~~~~~~~
@@ -183,8 +185,8 @@ Node.js
 .. versionadded:: 1.4.1
 
 DOMBuilder can be installed as a `Node.js`_ module using Node Package
-Manager. The Node.js build includes :doc:`htmlmode` and :doc:`templates`,
-with HTML as the default output format.
+Manager. The Node.js build includes :doc:`htmlmode` and has HTML as the default
+output format.
 
 Install::
 
