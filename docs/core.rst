@@ -427,22 +427,47 @@ If you're going to be working with mixed output types, forgetting to reset
 Referencing Element Functions
 =============================
 
-Create a local variable referencing the element functions you want to use::
+Some options for convenient ways to reference element functions.
 
-   var el = DOMBuilder.dom
-   el.DIV('Hello')
+Create a local variable referencing the element functions you want to use:
 
-Use the ``with`` statement to put the element functions in the variable resolution
-path::
+   ::
 
-   with (DOMBuilder.dom) {
-     DIV('Hello')
-   }
+      var el = DOMBuilder.dom
+      el.DIV('Hello')
 
-Add element functions to the global scope using :js:func:`DOMBuilder.apply`::
+Use the ``with`` statement to put the element functions of your choice in the
+variable resolution path:
 
-   DOMBuilder.apply(window, 'dom')
-   DIV('Hello')
+   ::
+
+      with (DOMBuilder.dom) {
+        DIV('Hello')
+      }
+
+   Some people consider `with Statement Considered Harmful`_ the final word on
+   using the ``with`` statement at all, but it's actually a pretty nice fit for
+   builder and template code in which properties are only ever *read* from the
+   scoped object and it accounts for a significant percentage of peroperty
+   lookups.
+
+   Just be aware that the ``with`` statement will be considered a syntax error
+   if you wish to *opt-in* to `ECMAScript 5's strict mode`_ in the future.
+
+Add element functions to the global scope using :js:func:`DOMBuilder.apply`:
+
+   ::
+
+      DOMBuilder.apply(window, 'dom')
+      DIV('Hello')
+
+   Filling the global scope full of properties isn't something which should be
+   done lightly, but you might be ok with it for quick scripts or for utilities
+   which you'll be using often and which are named in ways which are unlikely to
+   conflict with your other code, such as DOMBuilder's upper-cased element
+   functions.
+
+   This particular piece of documentation won't judge you - it's your call.
 
 .. js:function:: DOMBuilder.apply(context[, mode])
 
@@ -455,3 +480,6 @@ Add element functions to the global scope using :js:func:`DOMBuilder.apply`::
 
       If not given, element functions from :js:attr:`DOMBuilder.elements` will
       be used.
+
+.. _`with Statement Considered Harmful`: http://www.yuiblog.com/blog/2006/04/11/with-statement-considered-harmful/
+.. _`ECMAScript 5's strict mode`: https://developer.mozilla.org/en/JavaScript/Strict_mode
