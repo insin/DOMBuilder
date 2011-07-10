@@ -447,7 +447,7 @@ scope chain for variable resolution:
 
    Some people consider `with Statement Considered Harmful`_ the final word on
    using the ``with`` statement *at all*, but to quote `The Dude`_ - yeah,
-   well, y'know, that's just, like, your opionon, man. It's actually a pretty
+   well, y'know, that's just, like, your opinion, man. It's actually a pretty
    nice fit for builder and templating code in which properties are only ever
    *read* from the scoped object and it accounts for a significant proportion of
    property lookups.
