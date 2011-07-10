@@ -2,6 +2,10 @@
 DOMBuilder Core
 ===============
 
+.. note::
+   For brevity, some further examples will assume that element functions are
+   available in the global scope.
+
 .. _core-api:
 
 .. _element-functions:
