@@ -2,6 +2,9 @@
 DOMBuilder Core
 ===============
 
+This page documents functions and capabilities which are implemented by the core
+DOMBUilder.js script.
+
 .. note::
    For brevity, some further examples will assume that element functions are
    available in the global scope.
