@@ -445,12 +445,12 @@ scope chain for variable resolution:
         DIV('Hello')
       }
 
-   Some people consider `with Statement Considered Harmful`_ the final word on
-   using the ``with`` statement *at all*, but to quote `The Dude`_ - yeah,
-   well, y'know, that's just, like, your opinion, man. It's actually a pretty
-   nice fit for builder and templating code in which properties are only ever
-   *read* from the scoped object and it accounts for a significant proportion of
-   property lookups.
+   You could consider the `with statement misunderstood`_; some consider
+   `with Statement Considered Harmful`_ the final word on using the ``with``
+   statement *at all*, but to quote `The Dude`_ - yeah, well, y'know, that's
+   just, like, your opinion, man. It's actually a pretty nice fit for builder
+   and templating code in which properties are only ever *read* from the scoped
+   object and it accounts for a significant proportion of property lookups.
 
    Just be aware that the ``with`` statement will be considered a syntax error
    if you wish to *opt-in* to `ECMAScript 5's strict mode`_ in the future, but
@@ -485,6 +485,7 @@ Add element functions to the global scope using :js:func:`DOMBuilder.apply`:
       be used.
 
 .. _`with statement`: https://developer.mozilla.org/en/JavaScript/Reference/Statements/with
+.. _`with statement misunderstood`: http://webreflection.blogspot.com/2009/12/with-worlds-most-misunderstood.html
 .. _`with Statement Considered Harmful`: http://www.yuiblog.com/blog/2006/04/11/with-statement-considered-harmful/
 .. _`The Dude`: http://www.imdb.com/title/tt0118715/quotes
 .. _`ECMAScript 5's strict mode`: https://developer.mozilla.org/en/JavaScript/Strict_mode
