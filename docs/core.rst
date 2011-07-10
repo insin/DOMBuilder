@@ -335,14 +335,25 @@ arguments given when elements and fragments are created.
          object was given - it should return ``true`` if given a mode-created
          content object.
       ``api`` (optional)
-         an object defining additional public API for the mode and
-         exposing the variables, functions and constructors used in its
-         implementation, if appropriate.
+         an Object defining a public API for the mode's implementation, exposing
+         variables, functions and constructors used in implementation which
+         may be of interest to somone who needs to make use of the mode's
+         internals.
+      ``apply`` (optional)
+         an Object defining additional properties to be added to the object
+         DOMBuilder creates for easy access to mode-specific element functions
+         (see below). Just as element functions are a convenience layer over
+         :js:func:`DOMBuilder.createElement`, the purpose of the ``apply``
+         property is to allow modes to provde a convenient way to access
+         mode-specific functionality.
 
-   When a mode is added, a ``DOMBuilder.<name>`` Object  is also created,
-   containing element  functions which will always create content using
-   the given mode and any additional properties which were defined via an
-   ``api`` Object.
+         Any properties specified with ``apply`` will also be added to objects
+         passed into :js:func:`DOMBuilder.apply` when a mode is specified.
+
+   When a mode is added, a ``DOMBuilder.<mode name>`` Object is also created,
+   containing element functions which will always create content using
+   the given mode and any additional properties which were defined via the
+   mode's ``apply`` properties.
 
 Example: a mode which prints out the arguments it was given::
 
@@ -383,13 +394,13 @@ Output modes:
 | ``'html'``     | :js:class:`MockElement` objects which ``toString()`` to HTML4  | :doc:`htmlmode` |
 +----------------+----------------------------------------------------------------+-----------------+
 
-Feature modes:
+.. Feature modes:
 
-+----------------+----------------------------------------------------------------+------------------+
-| Name           | Output                                                         | Documentation    |
-+================+================================================================+==================+
-| ``'template'`` | :js:class:`TemplateNode` objects which render an output format | :doc:`templates` |
-+----------------+----------------------------------------------------------------+------------------+
+   +----------------+----------------------------------------------------------------+------------------+
+   | Name           | Output                                                         | Documentation    |
+   +================+================================================================+==================+
+   | ``'template'`` | :js:class:`TemplateNode` objects which render an output format | :doc:`templates` |
+   +----------------+----------------------------------------------------------------+------------------+
 
 Temporarily Switching Mode
 --------------------------
@@ -412,3 +423,35 @@ If you're going to be working with mixed output types, forgetting to reset
    "[object HTMLParagraphElement]"
    >>> DOMBuilder.withMode('HTML', createParagraph).toString();
    "<p>Bed and<br>BReakfast</p>"
+
+Referencing Element Functions
+=============================
+
+Create a local variable referencing the element functions you want to use::
+
+   var el = DOMBuilder.dom
+   el.DIV('Hello')
+
+Use the ``with`` statement to put the element functions in the variable resolution
+path::
+
+   with (DOMBuilder.dom) {
+     DIV('Hello')
+   }
+
+Add element functions to the global scope using :js:func:`DOMBuilder.apply`::
+
+   DOMBuilder.apply(window, 'dom')
+   DIV('Hello')
+
+.. js:function:: DOMBuilder.apply(context[, mode])
+
+   Adds element functions to the given object, optionally for a specific mode.
+
+   :param Object context: An object which element functions will be added to.
+   :param String mode:
+      The name of a mode for which mode-specific element functions and
+      convenience API should be added.
+
+      If not given, element functions from :js:attr:`DOMBuilder.elements` will
+      be used.

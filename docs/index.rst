@@ -12,7 +12,6 @@ from the same inputs.
    core
    dommode
    htmlmode
-   templates
    news
    license
 

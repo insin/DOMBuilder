@@ -6,13 +6,16 @@ HTML mode provides an output mode which generates :js:class:`MockElement`
 objects from :js:func:`DOMBuilder.createElement` calls and
 :js:class:`MockFragment` objects from :js:func:`DOMBuilder.fragment` calls.
 
-The HTML mode API and element functions which always create DOM Elements
-are exposed as :js:attr:`DOMBuilder.html`.
+The HTML mode API is exposed through ``DOMBuilder.modes.html.api``.
+
+Mode-specific element and convenience functions are exposed through
+:js:attr:`DOMBuilder.html`.
 
 .. js:attribute:: DOMBuilder.html
 
-   Element functions which will always create HTML MockElement output, which
-   ``toString()`` to HTML.
+   Contains element functions which always create :ref:`mock-dom-objects` (which
+   ``toString()`` to HTML) and convenience functions related to
+   :ref:`html-escaping`.
 
    .. versionadded:: 2.0
 

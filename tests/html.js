@@ -13,15 +13,16 @@ module('HTML', {
 
 var elements = DOMBuilder.elements;
 var html = DOMBuilder.html;
+var htmlAPI = DOMBuilder.modes.html.api;
 
 test('MockElement', function() {
   expect(23);
 
-  equals(typeof html.MockElement, 'function', 'MockElement is accessible via DOMBuilder.html');
+  equals(typeof htmlAPI.MockElement, 'function', 'MockElement is accessible via DOMBuilder.modes.html');
 
   // No attributes or children
-  var el = new html.MockElement('A');
-  ok(el instanceof html.HTMLNode, 'MockElement is-an HTMLNode');
+  var el = new htmlAPI.MockElement('A');
+  ok(el instanceof htmlAPI.HTMLNode, 'MockElement is-an HTMLNode');
   equal(el.tagName, 'a', 'Tag names are lower-cased');
   deepEqual(el.attributes, {}, 'Attributes are initialised as empty if not given');
   deepEqual(el.childNodes, [], 'Children are initialised as empty if not given');
@@ -30,7 +31,7 @@ test('MockElement', function() {
   deepEqual(el, el.cloneNode(true), 'Clones are really clones');
 
   // Initialise with attributes and children
-  el = new html.MockElement('div', {'class': 'test', title: 'test'},
+  el = new htmlAPI.MockElement('div', {'class': 'test', title: 'test'},
                                        [elements.B('test'), elements.BR()]);
   equal(el.toString(),
         '<div class="test" title="test"><b>test</b><br></div>',
@@ -38,7 +39,7 @@ test('MockElement', function() {
   deepEqual(el, el.cloneNode(true), 'Clones with attributes and children are really clones');
 
   // Appending a child
-  var el = new html.MockElement('div', {'class': 'test'}, ['One']);
+  var el = new htmlAPI.MockElement('div', {'class': 'test'}, ['One']);
   equal(el.childNodes.length, 1, 'Initial childNodes count');
   el.appendChild(elements.P('Two'));
   equal(el.childNodes.length, 2, 'Post-append childNodes count');
@@ -58,7 +59,7 @@ test('MockElement', function() {
 
   // Initialise with a fragment
   f = DOMBuilder.fragment([elements.H2('Two'), 'Three', elements.P('Four')]);
-  var el = new html.MockElement('div', {'class': 'test'}, ['One', f, 'Five']);
+  var el = new htmlAPI.MockElement('div', {'class': 'test'}, ['One', f, 'Five']);
   equal(el.childNodes.length, 5, 'Fragment contents inlined on creation');
   equal(f.childNodes.length, 0, 'Fragment was emptied');
   equal(el.toString(),
@@ -66,24 +67,24 @@ test('MockElement', function() {
         'Rendering after initialising with a fragment');
 
   // Attributes are lower-cased
-  el = new html.MockElement('a', {HREF: 'test'}, ['test']);
+  el = new htmlAPI.MockElement('a', {HREF: 'test'}, ['test']);
   equal(el.toString(), '<a href="test">test</a>', "Attributes are lower-cased");
 
   // Empty tags rendered appropriately
   var emptyTags = 'area|base|br|col|frame|hr|input|img|link|meta|param'.split('|');
   function createEmptyTags() {
     return DOMBuilder.fragment.map(emptyTags, function(t) {
-      return new html.MockElement(t);
+      return new htmlAPI.MockElement(t);
     });
   }
   equal(createEmptyTags().toString(),
         '<area><base><br><col><frame><hr><input><img><link><meta><param>',
         'empty tags render as expected in HTML mode');
 
-  el = new html.MockElement('br', {clear: 'all'}, ['test']);
+  el = new htmlAPI.MockElement('br', {clear: 'all'}, ['test']);
   equal(el.toString(), '<br clear="all">', 'Empty tag children are ignored if present');
 
-  el = new html.MockElement('input', {type: 'button', click: function(){}});
+  el = new htmlAPI.MockElement('input', {type: 'button', click: function(){}});
   equal(el.toString(), '<input type="button">', ' Attributes which would have been handled by jQuery are ignored');
 });
 
@@ -91,23 +92,23 @@ test('MockFragment', function() {
   expect(17);
 
   // MockFragment is available
-  equal(typeof html.MockFragment, 'function', 'MockFragment is accessible via DOMBuilder');
+  equal(typeof htmlAPI.MockFragment, 'function', 'MockFragment is accessible via DOMBuilder');
 
   // No children
-  var f1 = new html.MockFragment();
-  ok(f1 instanceof html.HTMLNode, 'MockFragment is-an HTMLNode');
+  var f1 = new htmlAPI.MockFragment();
+  ok(f1 instanceof htmlAPI.HTMLNode, 'MockFragment is-an HTMLNode');
   deepEqual(f1.childNodes.length, 0, 'Children are initialised as empty if not given');
   deepEqual(f1, f1.cloneNode(true), 'Clones are really clones');
   equal(f1.toString(), '', 'Rendering with no children');
 
   // Initialuse with children
-  var f2 = new html.MockFragment([elements.H2('One'), 'Two', elements.P('Three')]);
+  var f2 = new htmlAPI.MockFragment([elements.H2('One'), 'Two', elements.P('Three')]);
   equal(f2.childNodes.length, 3, 'Initial childNodes count');
   deepEqual(f2, f2.cloneNode(true), 'Clones are really clones');
   equal(f2.toString(), '<h2>One</h2>Two<p>Three</p>', 'Rendering with children');
 
   // Initialise with a fragment
-  var f1 = new html.MockFragment([elements.B('Zero'), f2, elements.B('Four')]);
+  var f1 = new htmlAPI.MockFragment([elements.B('Zero'), f2, elements.B('Four')]);
   equal(f1.childNodes.length, 5,  'Fragment contents inlined on creation');
   equals(f2.childNodes.length, 0, 'Fragment which was inlined was emptied');
   equal(f1.toString(),
@@ -137,7 +138,7 @@ test('HTML Escaping', function() {
 
   var s = '< > & \' "';
   var ss = html.markSafe(s);
-  ok(ss instanceof html.SafeString, 'markSafe yields SafeStrings');
+  ok(ss instanceof htmlAPI.SafeString, 'markSafe yields SafeStrings');
   ok(ss instanceof String, 'SafeString is-a String');
   ok(!html.isSafe(s), 'isSafe returns false for Strings');
   ok(html.isSafe(ss), 'isSafe returns true for SafeStrings');

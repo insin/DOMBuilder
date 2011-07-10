@@ -7,6 +7,7 @@ module('Template', {
 (function() {
 
 var templates = DOMBuilder.template;
+var templateAPI = DOMBuilder.modes.template.api;
 
 function shallowCopy(a) {
   var b = {};
@@ -36,14 +37,14 @@ test('getTemplate/selectTemplate', function() {
   templates.$template('override/test_detail_page');
   templates.$template('test_detail_page');
 
-  raises(function() { templates.getTemplate('missing'); },
-         templates.TemplateNotFoundError,
+  raises(function() { templateAPI.getTemplate('missing'); },
+         templateAPI.TemplateNotFoundError,
          'getTemplate - missing template throws error');
-  equal(templates.getTemplate('test_detail_page').name, 'test_detail_page', 'getTemplate gets correct template');
-  raises(function() { templates.selectTemplate(['missing1', 'missing2', 'missing3']); },
-         templates.TemplateNotFoundError,
+  equal(templateAPI.getTemplate('test_detail_page').name, 'test_detail_page', 'getTemplate gets correct template');
+  raises(function() { templateAPI.selectTemplate(['missing1', 'missing2', 'missing3']); },
+         templateAPI.TemplateNotFoundError,
          'selectTemplate - missing template throws error if none could be found');
-  equal(templates.selectTemplate([
+  equal(templateAPI.selectTemplate([
           'override/test_detail_page_thing', 'override/test_detail_page', 'test_detail_page'
         ]).name, 'override/test_detail_page', 'selectTemplate gets first matching template');
 });
@@ -117,7 +118,7 @@ test('Context', function() {
 });
 
 test('BlockContext', function() {
-  var b = new templates.BlockContext();
+  var b = new templateAPI.BlockContext();
   deepEqual(b.blocks, {}, 'Initialised with empty lookup');
 
   // Add some blocks
@@ -163,22 +164,22 @@ test('BlockContext', function() {
 
 test('Variable', function() {
   // Variables resolve against contexts
-  var v = new templates.Variable('test');
+  var v = new templateAPI.Variable('test');
   strictEqual(v.resolve(templates.Context({test: 42})), 42, 'Variable resolved');
-  raises(function() { v.resolve(templates.Context()); }, templates.VariableNotFoundError,
+  raises(function() { v.resolve(templates.Context()); }, templateAPI.VariableNotFoundError,
          'Exception thrown if context variable missing');
 
   // Nested lookups are supported with the . operator
-  v = new templates.Variable('test.foo.bar');
+  v = new templateAPI.Variable('test.foo.bar');
   strictEqual(v.resolve(templates.Context({test: {foo: {bar: 42}}})), 42,
               'Nested lookups performed');
   raises(function() { v.resolve(templates.Context({test: {food: {bar: 42}}})); },
-         templates.VariableNotFoundError, 'Exception thrown for invalid nested lookups');
+         templateAPI.VariableNotFoundError, 'Exception thrown for invalid nested lookups');
   raises(function() { v.resolve(templates.Context({test: null})); },
-         templates.VariableNotFoundError,
+         templateAPI.VariableNotFoundError,
          'Attempted lookup on null raises appropriate error');
   raises(function() { v.resolve(templates.Context({test: undefined})); },
-         templates.VariableNotFoundError,
+         templateAPI.VariableNotFoundError,
         'Attempted lookup on undefined raises appropriate error');
 
   // Functions found during variable resolution will be called
@@ -191,7 +192,7 @@ test('Variable', function() {
       };
     }
   })), 42, 'Functions are called if part of lookup path');
-  strictEqual(new templates.Variable('test.bar').resolve(templates.Context({
+  strictEqual(new templateAPI.Variable('test.bar').resolve(templates.Context({
     test: {
       foo: 42,
       bar: function() { return this.foo; }
@@ -250,15 +251,15 @@ test('Template', function() {
   raises(function() {
       templates.$template({name: 'test', extend: 'missing'}).render(templates.Context());
     },
-    templates.TemplateNotFoundError,
+    templateAPI.TemplateNotFoundError,
     'Missing parent template throws TemplateNotFoundError');
 });
 
 test('ForNode', function() {
   var items, forloops = [];
   var f = templates.$for('item in items', {render: function(context) {
-    forloops.push(shallowCopy(new templates.Variable('forloop').resolve(context)));
-    return new templates.Variable('item').resolve(context);
+    forloops.push(shallowCopy(new templateAPI.Variable('forloop').resolve(context)));
+    return new templateAPI.Variable('item').resolve(context);
   }});
 
   // Zero items
@@ -334,9 +335,9 @@ test('ForNode', function() {
   // Multiple loop context variables
   forloops = [];
   f = templates.$for('a, b in items', {render: function(context) {
-    forloops.push(shallowCopy(new templates.Variable('forloop').resolve(context)));
-    return [new templates.Variable('a').resolve(context),
-            new templates.Variable('a').resolve(context)];
+    forloops.push(shallowCopy(new templateAPI.Variable('forloop').resolve(context)));
+    return [new templateAPI.Variable('a').resolve(context),
+            new templateAPI.Variable('a').resolve(context)];
   }});
   items = f.render(templates.Context({'items': [[1,1],[2,2],[3,3]]}));
   deepEqual(items, [[1,1],[2,2],[3,3]],
@@ -392,7 +393,7 @@ test('ForNode', function() {
   ];
   for (var i = 0, l = invalidExprs.length; i < l; i++) {
      raises(function() { templates.$for(invalidExprs[i]); },
-            templates.TemplateSnytaxError,
+            templateAPI.TemplateSyntaxError,
             'Invalid: "' + invalidExprs[i] + '"');
   }
 
@@ -438,13 +439,13 @@ test('IfNode', function() {
   ];
   for (var i = 0, expr; expr = invalidExprs[i]; i++) {
     raises(function() { templates.$if(expr); },
-           templates.TemplateSyntaxError,
+           templateAPI.TemplateSyntaxError,
            'Invalid: ' + expr);
   }
 
   var if_ = templates.$if('test > 4', {
     render: function(context) {
-      return new templates.Variable('a').resolve(context);
+      return new templateAPI.Variable('a').resolve(context);
     }
   }, templates.$else('{{ test }} displeased me.'));
 
@@ -496,7 +497,7 @@ test('BlockNode', function() {
   equal(b1.name, 'foo', 'Block name as String argument');
   equal(b2.name, 'foo', 'Block name as Object argument');
   var c = templates.Context();
-  c.renderContext.set('blockContext', new templates.BlockContext());
+  c.renderContext.set('blockContext', new templateAPI.BlockContext());
   var bc = c.renderContext.get('blockContext');
   bc.addBlocks({'foo': b2});
   bc.addBlocks({'foo': b1});
@@ -531,7 +532,7 @@ test('IncludeNode', function() {
   // truthy argument, the included template's context will consist of only the
   // given context variables. Convention is to use 'only'.
   var includeContext;
-  var t = new templates.Template('extracontexttest', [{
+  var t = new templateAPI.Template('extracontexttest', [{
     render: function(context) { includeContext = context; }
   }]);
   c = templates.Context({foo: 'bar'});
@@ -544,7 +545,7 @@ test('IncludeNode', function() {
 
 test('CycleNode', function() {
   // With constants and variables
-  var cycle = new templates.CycleNode(['a', templates.$var('b'), 'c']);
+  var cycle = new templateAPI.CycleNode(['a', templates.$var('b'), 'c']);
   equal(cycle.id, 'cycle1', ' Expected id generated');
   strictEqual(cycle.variableName, null, 'Default variable name is null');
   strictEqual(cycle.silent, false, 'Not silent by default');
@@ -559,7 +560,7 @@ test('CycleNode', function() {
   strictEqual(c.renderContext.get('cycle1'), 0, 'Next index moves back to the start');
 
   // Options
-  cycle = new templates.CycleNode(['a', 'b', 'c'], {as: 'bar', silent: true});
+  cycle = new templateAPI.CycleNode(['a', 'b', 'c'], {as: 'bar', silent: true});
   equal(cycle.id, 'cycle2', ' Expected id generated');
   equal(cycle.variableName, 'bar', 'Variable name set');
   strictEqual(cycle.silent, true, 'silent set');
@@ -569,7 +570,7 @@ test('CycleNode', function() {
 });
 
 test('ElementNode', function() {
-  var el = new templates.ElementNode('p', {id: 'item{{ foo }}'}, ['Content']);
+  var el = new templateAPI.ElementNode('p', {id: 'item{{ foo }}'}, ['Content']);
   strictEqual(el.dynamicAttrs, true, 'Dynamic attributes detected');
   var c = templates.Context({foo: 42});
   var result = el.render(c);

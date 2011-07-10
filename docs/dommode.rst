@@ -6,8 +6,9 @@ DOM mode provides an output mode which generates DOM Elements from
 :js:func:`DOMBuilder.createElement` calls and DOM DocumentFragments from
 :js:func:`DOMBuilder.fragment` calls.
 
-The DOM mode API and element functions which always create DOM Elements
-are exposed as :js:attr:`DOMBuilder.dom`.
+The DOM mode API is exposed through ``DOMBuilder.modes.dom.api``.
+
+Mode-specific element functions are exposed through :js:attr:`DOMBuilder.dom`.
 
 .. js:attribute:: DOMBuilder.dom
 
