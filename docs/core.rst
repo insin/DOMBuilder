@@ -2,8 +2,8 @@
 DOMBuilder Core
 ===============
 
-This page documents functions and capabilities which are implemented by the core
-DOMBUilder.js script.
+This page documents the ``DOMBuilder`` object implemented in the core
+DOMBuilder.js script.
 
 .. note::
    For brevity, some further examples will assume that element functions are
