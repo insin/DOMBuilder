@@ -190,7 +190,7 @@ Map functions provide a shorthand for:
    .. versionchanged:: 2.0
       ``defaultAttributes`` is now required - flexible arguments are now
       handled by the ``map`` functions exposed on element creation
-      functions; ``mode`` argument was added. A loop status object is now
+      functions; the ``mode`` argument was added; a loop status object is now
       passed when calling the mapping function.
 
 This function is also exposed via element creation functions. Each
@@ -262,7 +262,7 @@ To create content from a nested Array in this format, use:
      , ['h2', 'Article title']
      , ['p', 'Paragraph one']
      , ['p', 'Paragraph two']
-     ];
+     ]
 
 ::
 
@@ -315,7 +315,8 @@ These are the core functions whose output can be controlled using
 Output Modes
 ============
 
-.. versionadded:: 2.0
+.. versionchanged:: 2.0
+   Output modes now sit independent of DOMBuilder core and are pluggable.
 
 By itself, the core API isn't capable of doing anything but producing
 nested Array representations of elements and fragments. DOMBuilder
@@ -363,6 +364,8 @@ arguments given when elements and fragments are created.
    containing element functions which will always create content using
    the given mode and any additional properties which were defined via the
    mode's ``apply`` properties.
+
+   .. versionadded:: 2.0
 
 Example: a mode which prints out the arguments it was given::
 
@@ -428,11 +431,11 @@ If you're going to be working with mixed output types, forgetting to reset
    Any additional arguments passed after the ``func`` argument will be passed
    to the function when it is called.
 
-   >>> function createParagraph() { return P('Bed and', BR(), 'BReakfast'); }
+   >>> function createParagraph() { return P('Bed and', BR(), 'BReakfast') }
    >>> DOMBuilder.mode = 'dom'
    >>> createParagraph().toString() // DOM mode by default
    "[object HTMLParagraphElement]"
-   >>> DOMBuilder.withMode('HTML', createParagraph).toString();
+   >>> DOMBuilder.withMode('HTML', createParagraph).toString()
    "<p>Bed and<br>BReakfast</p>"
 
 Referencing Element Functions
@@ -494,6 +497,9 @@ Add element functions to the global scope using :js:func:`DOMBuilder.apply`:
 
       If not given, element functions from :js:attr:`DOMBuilder.elements` will
       be used.
+
+   .. versionchanged:: 2.0
+      The context object argument is now required.
 
 .. _`with statement`: https://developer.mozilla.org/en/JavaScript/Reference/Statements/with
 .. _`with statement misunderstood`: http://webreflection.blogspot.com/2009/12/with-worlds-most-misunderstood.html

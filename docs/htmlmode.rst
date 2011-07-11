@@ -174,10 +174,10 @@ handlers which have been specified at a later time, after you've inserted
 the generated HTML into the document using ``innerHTML``::
 
    var article = html.DIV({"class":"article"},
-      html.P({id: "para1", click: function() { alert(this.id); }}, "Paragraph 1"),
-      html.P({click: function() { alert(this.id); }}, "Paragraph 2")
-   );
-   document.getElementById("articles").innerHTML = article.toString(true);
+      html.P({id: "para1", click: function() { alert(this.id) }}, "Paragraph 1"),
+      html.P({click: function() { alert(this.id) }}, "Paragraph 2")
+   )
+   document.getElementById("articles").innerHTML = article.toString(true)
 
 When you pass ``true`` into the ``toString()`` call as above, DOMBuilder
 does two things:
@@ -204,14 +204,14 @@ we can use that information to fetch the corresponding DOM Elements and
 reister the event handlers - you can do just that using
 :js:func:`MockElement.addEvents()`::
 
-   article.addEvents();
+   article.addEvents()
 
 Now, clicking on either paragraph will result in its id being alerted.
 
 DOMBuilder also provides a bit of sugar for performing these two steps in
 a single call, :js:func:`MockElement.insertWithEvents()`::
 
-    article.insertWithEvents(document.getElementById("articles"));
+    article.insertWithEvents(document.getElementById("articles"))
 
 .. _html-escaping:
 
@@ -247,7 +247,7 @@ already marked as safe.
 Assuming we're in HTML mode, this example shows how autoescaping deals with
 malicious input::
 
-   >>> var input = "<span style=\"font-size: 99999px;\" onhover=\"location.href='whereveriwant'\">Free money!</span>";
+   >>> var input = "<span style=\"font-size: 99999px;\" onhover=\"location.href='whereveriwant'\">Free money!</span>"
    >>> P("Steve the dog says: ", input).toString()
    "<p>Steve the dog says: &lt;span style=&quot;font-size: 99999px;&quot; onhover=&quot;location.href=&#39;whereveriwant&#39;&quot;&gt;Free money!&lt;/span&gt;</p>"
 
@@ -255,8 +255,8 @@ But say you have a ``String`` containing HTML which you trust and do want to
 render, like a status message you've just created, or an ``XMLHTTPRequest``
 response::
 
-   >>> var html = DOMBuilder.html;
-   >>> var response = 'You have <strong>won the internet!</strong>';
+   >>> var html = DOMBuilder.html
+   >>> var response = 'You have <strong>won the internet!</strong>'
    >>> html.P('According to our experts: ', response).toString()
    '<p>According to our experts: You have &lt;strong&gt;won the internet!&lt;/strong&gt;</p>'
    >>> html.P('According to our experts: ', html.markSafe(response)).toString()
@@ -270,9 +270,9 @@ response::
 To avoid accidentally removing safe status from a ``String``, try not to mark it
 safe until it's ready for use::
 
-   >>> var response = '<span style="font-family: Comic Sans MS">Your money is safe with us!</span>';
-   >>> function tasteFilter(s) { return s.replace(/Comic Sans MS/gi, 'Verdana'); }
-   >>> var safeResponse = html.markSafe(response);
+   >>> var response = '<span style="font-family: Comic Sans MS">Your money is safe with us!</span>'
+   >>> function tasteFilter(s) { return s.replace(/Comic Sans MS/gi, 'Verdana') }
+   >>> var safeResponse = html.markSafe(response)
    >>> html.P('Valued customer: ', safeResponse).toString()
    '<p>Valued customer: <span style="font-family: Comic Sans MS">Your money is safe with us!</span></p>'
    >>> html.P('Valued customer: ', tasteFilter(safeResponse)).toString()

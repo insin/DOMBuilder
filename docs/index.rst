@@ -194,6 +194,6 @@ Install::
 
 Import::
 
-   var DOMBuilder = require('DOMBuilder');
+   var DOMBuilder = require('DOMBuilder')
 
 .. _`Node.js`: http://nodejs.org

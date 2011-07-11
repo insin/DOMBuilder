@@ -56,16 +56,16 @@ the input is left blank::
          , value: 'email@host.com', defaultValue: 'email@host.com'
          , focus: function() {
              if (this.value == this.defaultValue) {
-               this.value = '';
+               this.value = ''
              }
            }
          , blur: function() {
              if (this.value == '') {
-               this.value = this.defaultValue;
+               this.value = this.defaultValue
              }
            }
          }
-       );
+       )
 
 .. _`events which have jQuery shortcut methods`: http://api.jquery.com/category/events/
 
@@ -150,11 +150,11 @@ form object and have the whole lot sitting side-by-side in the document::
        H2('Widget ' + (loop.index + 1)),
        TABLE(TBODY(
          TR.map(form.boundFields(), function(field) {
-           return [TH(field.labelTag()), TD(field.asWidget())];
+           return [TH(field.labelTag()), TD(field.asWidget())]
          })
        ))
-     ];
-   });
+     ]
+   })
 
 Appending ``formFragment`` would result in the equivalent of the following
 HTML:
