@@ -28,11 +28,25 @@ var testMode = {
 , fragment: function(c) {
     return '<#fragment' + (c.length ? ' ' + c.join('') : '') + '>';
   }
+, apply: {
+    testApply: function() {}
+  }
 };
 
 DOMBuilder.addMode(testMode);
 
-test('Element & fragment Array output', function() {
+test('DOMBuilder.addMode', 3, function() {
+  ok(DOMBuilder.modes.test,
+     'Mode object added to DOMBuilder.modes');
+  equal(Object.prototype.toString.call(DOMBuilder.test),
+        '[object Object]',
+        'Mode-specific element functions added');
+  strictEqual(DOMBuilder.modes.test.apply.testApply,
+              DOMBuilder.test.testApply,
+              'Mode apply properties added to mode-specific element functions');
+});
+
+test('Element & fragment Array output', 9, function() {
   deepEqual(el.DIV(), ['div']);
   deepEqual(el.DIV('1'), ['div', {}, '1']);
   deepEqual(el.DIV({'1': '2'}), ['div', {'1': '2'}]);
@@ -70,7 +84,7 @@ test('Element & fragment Array output', function() {
                ]);
 });
 
-test('Map Array output', function() {
+test('Map Array output', 4, function() {
   var items = [1, 2, 3];
   var loopStatus = [];
   var expectedLoopStatus = [{
@@ -107,7 +121,7 @@ test('Map Array output', function() {
   deepEqual(loopStatus, expectedLoopStatus);
 });
 
-test('Building from Array', function() {
+test('Building from Array', 2, function() {
   var a = ['div', {'class': 'test'}
           , 'before'
           , ['span'

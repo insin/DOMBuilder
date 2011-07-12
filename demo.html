@@ -12,14 +12,18 @@
   h2 { font-size: 140%; margin: 1em 0 1em -2%; }
   .testClass { background-color: #ddd; }
   </style>
-  <!--script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script-->
+  <script type="text/javascript">
+  if (location.hash == "#jQuery")
+  {
+      // That's pure evil coming out the back of you
+      document.write('<script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></s' + 'cript>');
+  }
+  </script>
   <script type="text/javascript" src="lib/DOMBuilder.js"></script>
   <script type="text/javascript" src="lib/DOMBuilder.dom.js"></script>
   <script type="text/javascript" src="lib/DOMBuilder.html.js"></script>
   <script type="text/javascript" src="lib/DOMBuilder.template.js"></script>
   <script type="text/javascript">
-  DOMBuilder.mode = 'dom';
-
   function createTable(headers, objects, properties)
   {
       return TABLE({cellSpacing: 1, border: 1, "class": "data sortable"},
@@ -46,6 +50,9 @@
 
   function demo()
   {
+      DOMBuilder.mode = 'dom';
+
+      document.getElementById("jQueryAvailable").innerHTML = DOMBuilder.util.JQUERY_AVAILABLE;
       with (DOMBuilder.elements)
       {
           document.body.appendChild(
@@ -281,51 +288,27 @@
         document.getElementById("domTemplate").appendChild(
             template.renderTemplate('child', context));
       });
+
+      document.getElementById("innerHTMLAttribute").appendChild(
+        DIV({innerHTML: '<strong>Hello world!</strong>'}
+        , SPAN({style: 'color: red; font-weight: bold'}, "I shouldn't be here :(")
+        )
+      );
   };
-
-  function createScriptAndWait(src, waitForName, then)
-  {
-      var script = document.createElement("script");
-      script.type = "text/javascript";
-      script.src = src;
-      document.getElementsByTagName("head")[0].appendChild(script);
-      waitForLoad(waitForName, then, 100);
-  }
-
-  function waitForLoad(name, then, delay)
-  {
-      if (typeof window[name] == "undefined")
-      {
-          return setTimeout((function(a,b,c) {
-              return function() { waitForLoad(a,b,c); }
-          })(name,then,delay), delay);
-      }
-      then();
-  }
 
   window.onload = demo;
-  /*
-  function()
-  {
-      if (location.hash == "#jQuery")
-      {
-          createScriptAndWait( "http://code.jquery.com/jquery-latest.js", "jQuery", function() {
-              createScriptAndWait("DOMBuilder.js", "DOMBuilder", demo);
-          });
-      }
-      else
-      {
-          createScriptAndWait("DOMBuilder.js", "DOMBuilder", function() {
-              createScriptAndWait("http://code.jquery.com/jquery-latest.js", "jQuery", demo);
-          });
-      }
-  };
-  */
   </script>
 </head>
 <body>
 
 <h1>DOMBuilder Demo Page</h1>
+
+<ul>
+<li><a href="#jQuery" onclick="location.hash = '#jQuery'; location.reload()">with jQuery</a></li>
+<li><a href="#" onclick="location.hash = ''; location.reload()">without jQuery</a></li>
+</ul>
+
+<code>DOMBuilder.util.JQUERY_AVAILABLE == <span id="jQueryAvailable"></span></code>
 
 <h2>W3C Example Table</h2>
 <div id="w3cExampleTable"></div>
@@ -350,6 +333,9 @@
 
 <h2>DOM via Template Inheritance</h2>
 <div id="domTemplate"></div>
+
+<h2>innerHTML attribute</h2>
+<div id="innerHTMLAttribute"></div>
 
 <h2>Added using <code>with (DOMBuilder.elements)</code></h2>
 

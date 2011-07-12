@@ -335,7 +335,7 @@ arguments given when elements and fragments are created.
          the mode's name.
       ``createElement(tagName, attributes, children)``
          a Function which takes a tag name, attributes object and list of
-         children and returns a content item.
+         children and returns a content object.
       ``fragment(children)``
          a Function which takes a list of children and returns a content
          fragment.
@@ -347,7 +347,7 @@ arguments given when elements and fragments are created.
       ``api`` (optional)
          an Object defining a public API for the mode's implementation, exposing
          variables, functions and constructors used in implementation which
-         may be of interest to somone who needs to make use of the mode's
+         may be of interest to anyone who wants to make use of the mode's
          internals.
       ``apply`` (optional)
          an Object defining additional properties to be added to the object

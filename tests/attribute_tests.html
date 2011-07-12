@@ -10,9 +10,25 @@
   .row1 { background-color: #f3f6f9; }
   .row2 { background-color: #f6f9fc; }
   </style>
-  <!--script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script-->
-  <!--script type="text/javascript" src="../DOMBuilder.js"></script-->
   <script type="text/javascript">
+  if (location.hash == "#jQuery")
+  {
+      document.write('<script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></s' + 'cript>');
+  }
+  </script>
+  <script type="text/javascript" src="../lib/DOMBuilder.js"></script>
+  <script type="text/javascript" src="../lib/DOMBuilder.dom.js"></script>
+  <script type="text/javascript" src="../lib/DOMBuilder.html.js"></script>
+  <script type="text/javascript" src="../lib/DOMBuilder.template.js"></script>
+  <script type="text/javascript">
+  if (location.hash != "#jQuery")
+  {
+      document.write('<script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></s' + 'cript>');
+  }
+  </script>
+  <script type="text/javascript">
+  var NBSP = "\u00A0";
+
   function runTests(testConfigs, testFunction)
   {
       var results = [];
@@ -244,7 +260,10 @@
 
   function attributeTests()
   {
+      DOMBuilder.mode = 'dom';
       DOMBuilder.apply(window);
+      document.getElementById("jQueryAvailable").innerHTML = DOMBuilder.util.JQUERY_AVAILABLE;
+
       var inputTestResults = runTests(INPUT_TESTS, testInputValues);
       document.getElementById("inputTestResults").appendChild(
           createResultsTable(
@@ -267,45 +286,17 @@
               optionTestResults));
   }
 
-  function createScriptAndWait(src, waitForName, then)
-  {
-      var script = document.createElement("script");
-      script.type = "text/javascript";
-      script.src = src;
-      document.getElementsByTagName("head")[0].appendChild(script);
-      waitForLoad(waitForName, then, 100);
-  }
-
-  function waitForLoad(name, then, delay)
-  {
-      if (typeof window[name] == "undefined")
-      {
-          return setTimeout((function(a,b,c) {
-              return function() { waitForLoad(a,b,c); }
-          })(name,then,delay), delay);
-      }
-      then();
-  }
-
-  window.onload = function()
-  {
-      if (location.hash == "#jQuery")
-      {
-          createScriptAndWait("http://code.jquery.com/jquery-latest.js", "jQuery", function() {
-              createScriptAndWait("../DOMBuilder.js", "DOMBuilder", attributeTests);
-          });
-      }
-      else
-      {
-          createScriptAndWait("../DOMBuilder.js", "DOMBuilder", function() {
-              createScriptAndWait("http://code.jquery.com/jquery-latest.js", "jQuery", attributeTests);
-          });
-      }
-  };
+  window.onload = attributeTests;
   </script>
 </head>
 <body>
   <h1>DOMBuilder Attribute Tests</h1>
+  <ul>
+   <li><a href="#jQuery" onclick="location.hash = '#jQuery'; location.reload()">with jQuery</a></li>
+   <li><a href="#" onclick="location.hash = ''; location.reload()">without jQuery</a></li>
+  </ul>
+  <code>DOMBuilder.util.JQUERY_AVAILABLE == <span id="jQueryAvailable"></span></code>
+
   <form style="display: none">
     <div id="fixture"></div>
     <input type="reset" id="reset" value="Reset">
