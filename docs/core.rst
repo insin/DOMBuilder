@@ -66,7 +66,6 @@ The following function reates a ``<table>`` representation of a list of
 objects, taking advantage of the flexible combinations of arguments
 accepted by element functions::
 
-   var el = DOMBuilder.dom
    /**
     * @param headers a list of column headings.
     * @param objects the objects to be displayed.
