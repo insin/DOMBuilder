@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
   <title>DOMBuilder.template Reddit Posts</title>
@@ -11,9 +11,12 @@
   .date-line a { text-decoration: none; }
   .comment-line a { font-family: sans-serif; font-size: 0.75em; color: gray; font-weight: bold;  text-decoration: none; }
   </style>
+  <!-- Equivalent to DOM+Template bundle-->
   <script src="https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.js"></script>
   <script src="https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.dom.js"></script>
   <script src="https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.template.js"></script>
+  <script>DOMBuilder.mode = 'dom';</script>
+  <!-- Template code -->
   <script>
   var template = DOMBuilder.template;
   with (template) {
