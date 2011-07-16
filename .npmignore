@@ -1,0 +1,11 @@
+.git*
+.project
+build.py
+demo.*
+.settings/
+dist/
+docs/
+examples/
+tests/
+lib/DOMBuilder.dom.js
+lib/DOMBuilder.template.js
