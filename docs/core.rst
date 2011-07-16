@@ -320,15 +320,16 @@ Output Modes
 .. versionchanged:: 2.0
    Output modes now sit independent of DOMBuilder core and are pluggable.
 
-By itself, the core API isn't capable of doing anything but producing
-nested Array representations of elements and fragments. DOMBuilder
-provides the ability to register new modes, which make use of the
-arguments given when elements and fragments are created.
+DOMBuilder provides the ability to register new modes, which make use of
+the arguments given when elements and fragments are created.
 
 .. js:function:: DOMBuilder.addMode(mode)
 
    Adds a new mode and exposes an API for it in the DOMBuilder object
    under a property corresponding to the mode's name.
+
+   The first mode to be added will have its name stored in
+   :js:attr:`DOMBuilder.mode`, making it the default output mode.
 
    :param Object mode:
       Modes are defined as an ``Object`` with the following properties.
@@ -403,7 +404,7 @@ Implementations of the following default modes are provided for use:
 Output modes:
 
 +----------------+----------------------------------------------------------------+-----------------+
-| Name           | Output                                                         | Documentation   |
+| Name           | Outputs                                                        | Documentation   |
 +================+================================================================+=================+
 | ``'dom'``      | DOM Elements                                                   | :doc:`dommode`  |
 +----------------+----------------------------------------------------------------+-----------------+
@@ -413,7 +414,7 @@ Output modes:
 .. Feature modes:
 
    +----------------+----------------------------------------------------------------+------------------+
-   | Name           | Output                                                         | Documentation    |
+   | Name           | Outputs                                                        | Documentation    |
    +================+================================================================+==================+
    | ``'template'`` | :js:class:`TemplateNode` objects which render an output format | :doc:`templates` |
    +----------------+----------------------------------------------------------------+------------------+
