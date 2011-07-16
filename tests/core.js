@@ -48,7 +48,7 @@ test('DOMBuilder.addMode', 3, function() {
 
 test('Element & fragment Array output', 9, function() {
   deepEqual(el.DIV(), ['div']);
-  deepEqual(el.DIV('1'), ['div', {}, '1']);
+  deepEqual(el.DIV('1'), ['div', '1']);
   deepEqual(el.DIV({'1': '2'}), ['div', {'1': '2'}]);
   deepEqual(el.DIV({'1': '2'}, '3'), ['div', {'1': '2'}, '3']);
   deepEqual(el.DIV({'1': '2'}, ['3']), ['div', {'1': '2'}, '3']);
@@ -71,7 +71,7 @@ test('Element & fragment Array output', 9, function() {
           );
   deepEqual(a, ['div', {'class': 'test'}
                , 'before'
-               , ['span', {}
+               , ['span'
                  , 'stuff'
                  , ['#document-fragment'
                    , ['strong', {'class': 'very'}, 'things']
@@ -106,9 +106,9 @@ test('Map Array output', 4, function() {
     return item;
   });
   deepEqual(result, [
-      ['li', {}, 1]
-    , ['li', {}, 2]
-    , ['li', {}, 3]
+      ['li', 1]
+    , ['li', 2]
+    , ['li', 3]
     ]);
   deepEqual(loopStatus, expectedLoopStatus);
 
