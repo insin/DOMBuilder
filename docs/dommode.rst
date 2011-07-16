@@ -31,7 +31,7 @@ element's attributes and an event handling function as the corresponding
 value. Any of the following events can be registered in this manner:
 
 +----------------------------------------------------------------------+
-| Event names                                                          |
+| Event Names                                                          |
 +===========+===========+==========+============+============+=========+
 | blur      | focus     | focusin  | focusout   | load       | resize  |
 +-----------+-----------+----------+------------+------------+---------+

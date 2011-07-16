@@ -19,25 +19,17 @@ Element Functions
 Element functions accept flexible combinations of input arguments,
 creating a declarative layer on top of :js:func:`DOMBuilder.createElement`.
 
-DOMBuilder core provides two objects which contain element functions:
+:js:attr:`DOMBuilder.elements` is an ``Object`` containing a function for
+each valid tag name declared in the HTML 4.01 `Strict DTD`_,
+`Frameset DTD`_ and `HTML5 differences from HTML4 W3C Working Draft`_,
+referenced by the corresponding tag name in uppercase.
 
 .. js:attribute:: DOMBuilder.elements
 
    Element functions which create contents based on the current value of
    :js:attr:`DOMBuilder.mode`
 
-.. js:attribute:: DOMBuilder.array
-
-   Element functions which will always create nested element Array output.
-
-   This is the default output format if :js:attr:`DOMBuilder.mode` is
-   ``null``, effectively making it a ``null`` mode.
-
-Each of these is an ``Object`` containing a function for each valid tag
-name declared in the HTML 4.01 `Strict DTD`_, `Frameset DTD`_ and
-`HTML5 differences from HTML4 W3C Working Draft`_, referenced by the
-corresponding tag name in uppercase. An exhaustive list is available
-below in :ref:`element-function-names`.
+An exhaustive list is available below in :ref:`element-function-names`.
 
 When called, these functions will create an element with the corresponding
 tag name, giving it any attributes which are specified as properties of an
@@ -219,58 +211,6 @@ striping::
      attributes['class'] = (loop.index % 2 == 0 ? 'stripe1' : 'stripe2')
      return TD.map(row)
    })
-
-Building from Arrays
-====================
-
-To make use of DOMBuilder's :ref:`output-modes` without using the rest of its
-API, you can define HTML elements as nested Arrays, where each array represents
-an element and each element can consist of a tag name, an optional ``Object``
-defining element attributes and an arbitrary number of content items.
-
-For example:
-
-+--------------------------------------+-------------------------------------+
-| Input                                | Sample HTML Output                  |
-+======================================+=====================================+
-| ``['div']``                          | ``<div></div>``                     |
-+--------------------------------------+-------------------------------------+
-| ``['div', {id: 'test'}]``            | ``<div id="test"></div>``           |
-+--------------------------------------+-------------------------------------+
-| ``['div', 'content']``               | ``<div>content</div>``              |
-+--------------------------------------+-------------------------------------+
-| ``['div', {id: 'test'}, 'content']`` | ``<div id="test">content</div>``    |
-+--------------------------------------+-------------------------------------+
-| ``['div', 'oh, ', ['span', 'hi!']]`` | ``<div>oh, <span>hi!</span></div>`` |
-+--------------------------------------+-------------------------------------+
-
-To create content from a nested Array in this format, use:
-
-.. js:function:: DOMBuilder.build(contents[, mode])
-
-   Builds the specified type of output from a nested Array representation
-   of HTML elements.
-
-   :param Array contents:
-      Content defined as a nested Array
-   :param String mode:
-      Name of the output mode to use. If not given, defaults to
-      :js:attr:`DOMBuilder.mode`
-
-::
-
-   var article =
-     ['div', {'class': 'article'}
-     , ['h2', 'Article title']
-     , ['p', 'Paragraph one']
-     , ['p', 'Paragraph two']
-     ]
-
-::
-
-   >>> DOMBuilder.build(article, 'html').toString()
-   <div class="article"><h2>Article title</h2><p>Paragraph one</p><p>Paragraph two</p></div>
-
 
 Core API
 ========
@@ -542,3 +482,66 @@ An exhaustive list of the available element function names.
 +----------+----------+------------+----------+------------+---------+----------+----------+--------+----------+
 | TIME     | TITLE    | TR         | TRACK    | TT         | UL      | VAR      | VIDEO    | WBR    |          |
 +----------+----------+------------+----------+------------+---------+----------+----------+--------+----------+
+
+Building from Arrays
+====================
+
+To make use of DOMBuilder's :ref:`output-modes` without using the rest of its
+API, you can define HTML elements as nested Arrays, where each array represents
+an element and each element can consist of a tag name, an optional ``Object``
+defining element attributes and an arbitrary number of content items.
+
+For example:
+
++--------------------------------------+-------------------------------------+
+| Input                                | Sample HTML Output                  |
++======================================+=====================================+
+| ``['div']``                          | ``<div></div>``                     |
++--------------------------------------+-------------------------------------+
+| ``['div', {id: 'test'}]``            | ``<div id="test"></div>``           |
++--------------------------------------+-------------------------------------+
+| ``['div', 'content']``               | ``<div>content</div>``              |
++--------------------------------------+-------------------------------------+
+| ``['div', {id: 'test'}, 'content']`` | ``<div id="test">content</div>``    |
++--------------------------------------+-------------------------------------+
+| ``['div', 'oh, ', ['span', 'hi!']]`` | ``<div>oh, <span>hi!</span></div>`` |
++--------------------------------------+-------------------------------------+
+
+To create content from a nested Array in this format, use:
+
+.. js:function:: DOMBuilder.build(contents[, mode])
+
+   Builds the specified type of output from a nested Array representation
+   of HTML elements.
+
+   :param Array contents:
+      Content defined as a nested Array
+   :param String mode:
+      Name of the output mode to use. If not given, defaults to
+      :js:attr:`DOMBuilder.mode`
+
+::
+
+   var article =
+     ['div', {'class': 'article'}
+     , ['h2', 'Article title']
+     , ['p', 'Paragraph one']
+     , ['p', 'Paragraph two']
+     ]
+
+::
+
+   >>> DOMBuilder.build(article, 'html').toString()
+   <div class="article"><h2>Article title</h2><p>Paragraph one</p><p>Paragraph two</p></div>
+
+You can also use the element function and core API to create array
+representations of HTML elements, by setting :js:attr:`DOMBuilder.mode`
+to ``null`` and using :js:attr:`DOMBuilder.elements`, or directly by using
+the element functions defined in :js:attr:`DOMBuilder.array`:
+
+.. js:attribute:: DOMBuilder.array
+
+   Element functions which will always create nested element Array output.
+
+   This is the default output format if :js:attr:`DOMBuilder.mode` is
+   ``null``, effectively making it a ``null`` mode.
