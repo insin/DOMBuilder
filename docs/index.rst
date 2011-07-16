@@ -72,7 +72,7 @@ function which generates content using :js:func:`DOMBuilder.withMode`::
    function shoutThing(thing) {
      return el.STRONG(thing)
    }
-   
+
 ::
 
    >>> DOMBuilder.mode = 'html'
@@ -105,7 +105,7 @@ You can generate output from one of these structures using
    >>> DOMBuilder.build(article, 'dom').toString()
    [object HTMLDivElement]
 
-You can also generate these kinds of structures using the same element functions
+You can also generate these kinds of structures using the element functions
 defined in :js:attr:`DOMBuilder.array`.
 
 This is just a quick guide to what DOMBuilder can do - dive into the rest of the
