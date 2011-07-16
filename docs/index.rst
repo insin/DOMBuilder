@@ -157,9 +157,9 @@ various needs:
 `HTML only`_
    For creation of HTML Strings, with :doc:`htmlmode` as the default output format.
 
-.. _`DOM and HTML`: https://github.com/insin/DOMBuilder/raw/master/builds/DOMBuilder.min.js
-.. _`DOM only`: https://github.com/insin/DOMBuilder/raw/master/builds/DOMBuilder.dom.min.js
-.. _`HTML only`: https://github.com/insin/DOMBuilder/raw/master/builds/DOMBuilder.html.min.js
+.. _`DOM and HTML`: https://github.com/insin/DOMBuilder/raw/master/dist/DOMBuilder.min.js
+.. _`DOM only`: https://github.com/insin/DOMBuilder/raw/master/dist/DOMBuilder.dom.min.js
+.. _`HTML only`: https://github.com/insin/DOMBuilder/raw/master/dist/DOMBuilder.html.min.js
 
 Dependencies
 ~~~~~~~~~~~~

@@ -17,19 +17,19 @@ def main():
     version = VERSION_RE.search(base).group(1)
 
     # Uncompressed DOM+HTML
-    open('DOMBuilder.js', 'w').write(TEMPLATE.format(
+    open('dist/DOMBuilder.js', 'w').write(TEMPLATE.format(
         version=version, modes='dom [default], html', code=(base + dom + html)
     ))
     # DOM+HTML
-    open('DOMBuilder.min.js', 'w').write(TEMPLATE.format(
+    open('dist/DOMBuilder.min.js', 'w').write(TEMPLATE.format(
         version=version, modes='dom [default], html', code=compress(base + dom + html)
     ))
     # DOM-only
-    open('DOMBuilder.dom.min.js', 'w').write(TEMPLATE.format(
+    open('dist/DOMBuilder.dom.min.js', 'w').write(TEMPLATE.format(
         version=version, modes='dom [default]', code=compress(base + dom)
     ))
     # HTML-only
-    open('DOMBuilder.html.min.js', 'w').write(TEMPLATE.format(
+    open('dist/DOMBuilder.html.min.js', 'w').write(TEMPLATE.format(
         version=version, modes='html [default]', code=compress(base + html)
     ))
 
