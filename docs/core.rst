@@ -34,8 +34,10 @@ DOMBuilder core provides two objects which contain element functions:
    ``null``, effectively making it a ``null`` mode.
 
 Each of these is an ``Object`` containing a function for each valid tag
-name declared in the HTML 4.01 `Strict DTD`_ and `Frameset DTD`_, referenced by
-the corresponding tag name in uppercase.
+name declared in the HTML 4.01 `Strict DTD`_, `Frameset DTD`_ and
+`HTML5 differences from HTML4 W3C Working Draft`_, referenced by the
+corresponding tag name in uppercase. An exhaustive list is available
+below in :ref:`element-function-names`.
 
 When called, these functions will create an element with the corresponding
 tag name, giving it any attributes which are specified as properties of an
@@ -59,6 +61,7 @@ Element functions accept the following variations of arguments:
 
 .. _`Strict DTD`: http://www.w3.org/TR/html4/sgml/dtd.html
 .. _`Frameset DTD`: http://www.w3.org/TR/html4/sgml/framesetdtd.html
+.. _`HTML5 differences from HTML4 W3C Working Draft`: http://dev.w3.org/html5/html4-differences/#new-elements
 
 Example:
 
@@ -505,3 +508,36 @@ Add element functions to the global scope using :js:func:`DOMBuilder.apply`:
 .. _`with Statement Considered Harmful`: http://www.yuiblog.com/blog/2006/04/11/with-statement-considered-harmful/
 .. _`The Dude`: http://www.imdb.com/title/tt0118715/quotes
 .. _`ECMAScript 5's strict mode`: https://developer.mozilla.org/en/JavaScript/Strict_mode
+
+.. _element-function-names:
+
+Element Function Names
+======================
+
+An exhaustive list of the available element function names.
+
++--------------------------------------------------------------------------------------------------------------+
+| Element Function Names                                                                                       |
++==========+==========+============+==========+============+=========+==========+==========+========+==========+
+| A        | ABBR     | ACRONYM    | ADDRESS  | AREA       | ARTICLE | ASIDE    | AUDIO    | B      | BDI      |
++----------+----------+------------+----------+------------+---------+----------+----------+--------+----------+
+| BDO      | BIG      | BLOCKQUOTE | BODY     | BR         | BUTTON  | CANVAS   | CAPTION  | CITE   | CODE     |
++----------+----------+------------+----------+------------+---------+----------+----------+--------+----------+
+| COL      | COLGROUP | COMMAND    | DATALIST | DD         | DEL     | DETAILS  | DFN      | DIV    | DL       |
++----------+----------+------------+----------+------------+---------+----------+----------+--------+----------+
+| DT       | EM       | EMBED      | FIELDSET | FIGCAPTION | FIGURE  | FOOTER   | FORM     | FRAME  | FRAMESET |
++----------+----------+------------+----------+------------+---------+----------+----------+--------+----------+
+| H1       | H2       | H3         | H4       | H5         | H6      | HR       | HEAD     | HEADER | HGROUP   |
++----------+----------+------------+----------+------------+---------+----------+----------+--------+----------+
+| HTML     | I        | IFRAME     | IMG      | INPUT      | INS     | KBD      | KEYGEN   | LABEL  | LEGEND   |
++----------+----------+------------+----------+------------+---------+----------+----------+--------+----------+
+| LI       | LINK     | MAP        | MARK     | META       | METER   | NAV      | NOSCRIPT | OBJECT | OL       |
++----------+----------+------------+----------+------------+---------+----------+----------+--------+----------+
+| OPTGROUP | OPTION   | OUTPUT     | P        | PARAM      | PRE     | PROGRESS | Q        | RP     | RT       |
++----------+----------+------------+----------+------------+---------+----------+----------+--------+----------+
+| RUBY     | SAMP     | SCRIPT     | SECTION  | SELECT     | SMALL   | SOURCE   | SPAN     | STRONG | STYLE    |
++----------+----------+------------+----------+------------+---------+----------+----------+--------+----------+
+| SUB      | SUMMARY  | SUP        | TABLE    | TBODY      | TD      | TEXTAREA | TFOOT    | TH     | THEAD    |
++----------+----------+------------+----------+------------+---------+----------+----------+--------+----------+
+| TIME     | TITLE    | TR         | TRACK    | TT         | UL      | VAR      | VIDEO    | WBR    |          |
++----------+----------+------------+----------+------------+---------+----------+----------+--------+----------+
