@@ -1,5 +1,5 @@
 /**
- * DOMBuilder 2.0.0-pre (modes: dom [default], html) - https://github.com/insin/DOMBuilder
+ * DOMBuilder 2.0.0 (modes: dom [default], html) - https://github.com/insin/DOMBuilder
  * MIT licensed
  */
 (function(__global__) {
@@ -350,7 +350,7 @@ function loopStatus(i, l) {
 // === DOMBuilder API ==========================================================
 
 var DOMBuilder = {
-  version: '2.0.0-pre'
+  version: '2.0.0'
 
 // ------------------------------------------------------------------- Modes ---
 
