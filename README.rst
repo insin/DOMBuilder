@@ -6,12 +6,23 @@ DOMBuilder takes *some* of the pain out of dynamically creating HTML
 content in JavaScript and supports generating multiple types of output
 from the same inputs.
 
-**Version 2.0.0 release on July 17th, 2011**
+**Version 2.0.0 released on July 17th, 2011**
 
 See `News for DOMBuilder`_ for what's new and backwards-incompatible
 changes since 1.4.*.
 
 .. _`News for DOMBuilder`: http://readthedocs.org/docs/dombuilder/en/2.0.0/news.html
+
+Yes, there are a million builder libraries about. DOMBuilder's goals are to:
+
+* Make it easier to switch from DOM Element output to HTML String output
+  if performence becomes an issue, by providing mock DOM objects and event
+  registration helpers when generating HTML from the exact same input.
+* Make it easier to write JavaScript components which can be shared between
+  the frontend and backend - `newforms`_ is an example of such a component,
+  which aims to share validation code between the two.
+
+.. _`newforms`: https://github.com/insin/newforms
 
 Installation
 ============
