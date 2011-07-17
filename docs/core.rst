@@ -442,7 +442,7 @@ Add element functions to the global scope using :js:func:`DOMBuilder.apply`:
       be used.
 
    .. versionchanged:: 2.0
-      The context object argument is now required.
+      The ``context`` argument is now required; added the ``mode`` argument.
 
 .. _`with statement`: https://developer.mozilla.org/en/JavaScript/Reference/Statements/with
 .. _`with statement misunderstood`: http://webreflection.blogspot.com/2009/12/with-worlds-most-misunderstood.html
@@ -485,6 +485,8 @@ An exhaustive list of the available element function names.
 
 Building from Arrays
 ====================
+
+.. versionadded:: 2.0
 
 To make use of DOMBuilder's :ref:`output-modes` without using the rest of its
 API, you can define HTML elements as nested Arrays, where each array represents

@@ -1,6 +1,38 @@
 News for DOMBuilder
 ===================
 
+Version 2.0.0
+-------------
+
+* Output modes are now pluggable, using ``DOMBuilder.addMode``.
+* Output mode specific element functions are now available under
+  ``DOMBuilder.dom`` and ``DOMBuilder.html``.
+* HTML Mode no longer has any dependency on DOM Mode.
+* Updated attribute-setting code based on jQuery 1.6.2.
+* Nested Array representations of HTML can now be used to generate output
+  with an output mode, using ``DOMBuilder.build``.
+* Nested Array structures can be built using element functions under
+  ``DOMBuilder.array``.
+* Added support for new tags defined in HTML 5.
+* You can now specify a mode for ``DOMBuilder.apply``, which will also
+  apply any additional API for the specified mode, if available.
+
+Backwards-incompatible changes:
+
+* When calling ``DOMBuilder.map``, the default attributes argument is now
+  required - flexible arguments are now handled by the ``map`` functions
+  exposed on element creation functions.
+* ``DOMBuilder.map`` now passes a loop status object to the given mapping
+  function instead of an index.
+* The context argument object to ``DOMBuilder.apply`` is now required.
+* ``DOMBuilder.apply`` no longer adds an ``NBSP`` property.
+* HTML mode mock DOM objects were renamed to ``MockElement`` and
+  ``MockFragment``.
+* HTML mode no longer supports XHTML-style closing slashes for empty
+  elements.
+* ``markSafe`` and ``isSafe`` moved to ``DOMBuilder.html.markSafe`` and
+  ``DOMBuilder.html.isSafe``, respectively.
+
 Version 1.4.4
 -------------
 
