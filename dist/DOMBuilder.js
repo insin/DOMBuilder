@@ -1004,11 +1004,13 @@ var modules = !!(typeof module !== 'undefined' && module.exports)
    */
   , TAG_NAME_LOOKUP = lookup(TAG_NAMES)
   /**
-   * Lookup for tags defined as EMPTY in the HTML 4.01 Strict and Frameset DTDs.
+   * Lookup for tags defined as EMPTY in the HTML 4.01 Strict and Frameset DTDs
+   * and in the HTML5 spec.
    * @const
    * @type {Object.<string, boolean>}
    */
-  , EMPTY_TAGS = lookup('area base br col frame hr input img link meta param'.split(' '))
+  , EMPTY_TAGS = lookup(('area base br col command embed frame hr input img ' +
+                         'keygen link meta param source track wbr').split(' '))
   /**
    * Cross-browser event registration.
    * @param {string} id
