@@ -164,7 +164,7 @@ Event Handlers and ``innerHTML``
 
 In DOM mode, :ref:`event-handlers` specified for an element are registered
 when it's being created - these are skipped when generating HTML, as we
-would just be inserting the resut of calling ``toString()`` on the event
+would just be inserting the result of calling ``toString()`` on the event
 handling functions, which wouldn't make any sense.
 
 To allow you to use the same code to define event handlers regardless of
@@ -189,7 +189,7 @@ does two things:
    found. If an ``id`` attribute was not provided, a unique id is
    generated and stored in the element for later use.
 
-This is the HTML which ewsulted from the above code, where you can
+This is the HTML which resulted from the above code, where you can
 see the generated ``id`` attribute in place:
 
 .. code-block:: html
@@ -201,7 +201,7 @@ see the generated ``id`` attribute in place:
 
 Since we know which elements have event handlers and what their ids are,
 we can use that information to fetch the corresponding DOM Elements and
-reister the event handlers - you can do just that using
+register the event handlers - you can do just that using
 :js:func:`MockElement.addEvents()`::
 
    article.addEvents()

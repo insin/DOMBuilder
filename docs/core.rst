@@ -57,7 +57,7 @@ Element functions accept the following variations of arguments:
 
 Example:
 
-The following function reates a ``<table>`` representation of a list of
+The following function creates a ``<table>`` representation of a list of
 objects, taking advantage of the flexible combinations of arguments
 accepted by element functions::
 

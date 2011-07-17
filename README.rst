@@ -6,6 +6,13 @@ DOMBuilder takes *some* of the pain out of dynamically creating HTML
 content in JavaScript and supports generating multiple types of output
 from the same inputs.
 
+**Version 2.0.0 release on July 17th, 2011**
+
+See `News for DOMBuilder`_ for what's new and backwards-incompatible
+changes since 1.4.*.
+
+.. _`News for DOMBuilder`: http://readthedocs.org/docs/dombuilder/en/2.0.0/news.html
+
 Installation
 ============
 
@@ -15,7 +22,7 @@ Browsers
 DOMBuilder is a modular library, which supports adding new output modes and
 feature modes as plugins.
 
-The avaible components are:
+The available components are:
 
 `DOMBuilder.js`_
    Core library
@@ -151,7 +158,7 @@ This is useful for writing libraries which need to support outputting both DOM
 Elements and HTML Strings, or for unit-testing code which normally generates DOM
 Elements by flipping the mode in your tests to switch to HTML String output.
 
-DOMBuilder also supports using its output modes with another common menas of
+DOMBuilder also supports using its output modes with another common means of
 defining HTML in JavaScript code, using nested lists (representing elements and
 their contents) and objects (representing attributes), like so::
 
