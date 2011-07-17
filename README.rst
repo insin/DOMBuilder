@@ -2,149 +2,185 @@
 DOMBuilder
 ==========
 
-DOMBuilder takes some of the pain out of programatically creating DOM
-Elements and HTML in JavaScript, providing element creation functions
-which give you a more declarative, compact API to work with when creating
-content in code.
+DOMBuilder takes *some* of the pain out of dynamically creating HTML
+content in JavaScript and supports generating multiple types of output
+from the same inputs.
 
-Version 1.4.4 released on 19th May 2011
-========================================
+Installation
+============
 
-`v1.4.4 documentation at readthedocs.org`_.
+Browsers
+--------
 
-.. _`v1.4.4 documentation at readthedocs.org`: http://readthedocs.org/docs/dombuilder/en/1.4.4/
+DOMBuilder is a modular library, which supports adding new output modes and
+feature modes as plugins.
 
-Download v1.4.4 for browsers:
+The avaible components are:
 
-* `DOMBuilder.js`_
-* `DOMBuilder.min.js`_
+`DOMBuilder.js`_
+   Core library
+`DOMBuilder.dom.js`_
+   DOM output mode - adds ``DOMBuilder.dom``
+`DOMBuilder.html.js`_
+   HTML output mode - adds ``DOMBuilder.html``
 
-Install for `Node.js`_ using Node Package Manager (npm)::
+.. `DOMBuilder.template.js`_
+      Template feature mode - adds ``DOMBuilder.template``
+
+   .. _`DOMBuilder.template.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.template.js
+
+.. _`DOMBuilder.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.js
+.. _`DOMBuilder.dom.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.dom.js
+.. _`DOMBuilder.html.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.html.js
+
+Compressed Builds
+~~~~~~~~~~~~~~~~~
+
+Multiple preconfigured, compressed builds of DOMBuilder are available to suit
+various needs:
+
+`DOM and HTML`_
+   For creation of mixed content, with DOM Mode as the default output format.
+`DOM only`_
+   For creation of DOM Elements, with DOM Mode as the default output format.
+`HTML only`_
+   For creation of HTML Strings, with HTML Mode as the default output format.
+
+.. _`DOM and HTML`: https://github.com/insin/DOMBuilder/raw/master/dist/DOMBuilder.min.js
+.. _`DOM only`: https://github.com/insin/DOMBuilder/raw/master/dist/DOMBuilder.dom.min.js
+.. _`HTML only`: https://github.com/insin/DOMBuilder/raw/master/dist/DOMBuilder.html.min.js
+
+Dependencies
+~~~~~~~~~~~~
+
+There are no *required* dependencies, but if `jQuery`_ (>= 1.4) is
+available, DOMBuilder will make use of it when creating DOM Elements and
+setting up their attributes and event handlers.
+
+If not, DOMBuilder will fall back to using some less comprehensive
+workarounds for cross-browser DOM issues and use the `traditional event
+registration model`_ for compatibility.
+
+.. _`jQuery`: http://jquery.com
+.. _`traditional event registration model`: http://www.quirksmode.org/js/events_tradmod.html
+
+Node.js
+-------
+
+DOMBuilder can be installed as a `Node.js`_ module using Node Package
+Manager. The Node.js build includes HTML Mode and has HTML as the default
+output format.
+
+Install::
 
    npm install DOMBuilder
 
-Use in `Akshell`_ by adding the following to your app's ``manifest.json``::
+Import::
 
-   "insin/DOMBuilder:1.4.1"
+   var DOMBuilder = require('DOMBuilder')
 
-.. _`DOMBuilder.js`: https://github.com/insin/DOMBuilder/raw/1.4.4/DOMBuilder.js
-.. _`DOMBuilder.min.js`: https://github.com/insin/DOMBuilder/raw/1.4.4/DOMBuilder.min.js
 .. _`Node.js`: http://nodejs.org
-.. _`Akshell`: http://akshell.com
 
-Version 1.4 released on 13th February 2011
-==========================================
+Quick Guide
+===========
 
-Significant changes in this release:
+DOMBuilder provides a convenient, declarative API for generating HTML elements,
+via objects which contain functions named for the HTML element they create::
 
-**DOM mode**:
-
-- `jQuery`_ (>= 1.4) is no longer a dependency, but will be used for
-  creating elements/setting attributes/adding event listeners when
-  present; otherwise, DOMBuilder implements a less comprehensive set of
-  cross-browser workarounds.
-
-**HTML mode**:
-
-- `Event listeners can now be added in HTML mode`_ using the same API as DOM
-  mode - a new ``insertWithEvents`` method takes care of doing all the
-  work for you if you want to try using the same code in HTML mode in case
-  there's a performance boost to be had.
-
-- Fixed HTML escaping bugs: attribute names and unknown tag names are now
-  escaped.
-
-.. _`jQuery`: http://jquery.com
-.. _`Event listeners can now be added in HTML mode`: http://readthedocs.org/docs/dombuilder/en/1.4/htmlmode.html#event-handlers-and-innerhtml
-
-Basic usage
------------
-
-Use ``DOMBuilder.apply()`` to add element creation functions to a context
-object. A function will be added for each HTML tag, with its name being
-the tag name in upper case. If you don't pass in a context object, one
-will be created for you.
-
-Element creation functions take an (optional) ``Object`` specifying element
-attributes and as many additional arguments as you like specifying element
-contents.
-
-For example, the following code::
-
-   var html = DOMBuilder.apply();
-   var article =
-     html.DIV({"class": "article"},
-       html.H2("Article title"),
-       html.P("Paragraph one"),
-       html.P("Paragraph two")
-     );
-
-...will produce a DOM element corresponding to the following HTML::
-
-   <div class="article">
-     <h2>Article title</h2>
-     <p>Paragraph one</p>
-     <p>Paragraph two</p>
-   </div>
-
-For convenience, you may want to create the utility methods in the global
-scope, which is done like so::
-
-   DOMBuilder.apply(window);
-   var article =
-     DIV({"class": "article"},
-       H2("Article title"),
-       P("Paragraph one"),
-       P("Paragraph two")
-     );
-
-Map functions make it a breeze to work with lists of items::
-
-   var headers = ["One", "Two", "Three"];
-   var rows = [["1.1", "1.2", "1.3"], ["2.1", "2.2", "2.3"]];
-   var table =
-     TABLE({"class": "data"},
-       THEAD(TR(TH.map(headers))),
-       TBODY(
-         TR.map(rows, function(cells, attrs, index) {
-           attrs["class"] = (index % 2 == 0 ? "odd" : "even");
-           return TD.map(cells);
-         })
+   with(DOMBuilder.dom) {
+     var article =
+       DIV({'class': 'article'}
+       , H2('Article title')
+       , P('Paragraph one')
+       , P('Paragraph two')
        )
-     );
+   }
 
-...which is equivalent to::
+Every element function also has a ``map`` function attached to it which allows
+you to easily generate content from a list of items::
 
-   <table class="data">
-   <thead>
-     <tr>
-       <th>One</th><th>Two</th><th>Three</th>
-     </tr>
-   </thead>
-   <tbody>
-     <tr class="odd">
-       <td>1.1</td><td>1.2</td><td>1.3</td>
-     </tr>
-     <tr class="even">
-       <td>2.1</td><td>2.2</td><td>2.3</td>
-     </tr>
-   </tbody>
-   </table>
+   var el = DOMBuilder.html
+   function shoppingList(items) {
+     return el.OL(el.LI.map(items))
+   }
 
-Multiple output modes
----------------------
+::
 
-DOMBuilder can generate DOM Elements or HTML strings interchangeably, depending
-on its `output mode`_ at element creation time.
+   >>> shoppingList(['Cheese', 'Bread', 'Butter'])
+   <ol><li>Cheese</li><li>Bread</li><li>Butter</li></ol>
 
-This allows you to run the same code in different contexts (e.g. same content
-generation code on the client and server), easily switch how content is generated
-and inserted on the client when you're looking for performance gains, and sanity
-check DOM creation code in unit tests without having to verify DOM trees, by
-generating HTML instead.
+You can control ``map`` output by passing in a callback function::
 
-.. _`output mode`: http://readthedocs.org/docs/dombuilder/en/1.4.4/htmlmode.html#DOMBuilder.mode
+   function opinionatedShoppingList(items) {
+     return el.OL(el.LI.map(function(item, attrs, loop) {
+       if (item == 'Cheese') attrs['class'] = 'eww'
+       if (item == 'Butter') return el.EM(item)
+       return item
+     })
+   }
 
-`Read the documentation to find out more...`_
+::
 
-.. _`Read the documentation to find out more...`: http://readthedocs.org/docs/dombuilder/en/1.4.4/index.html
+   >>> opinionatedShoppingList(['Cheese', 'Bread', 'Butter'])
+   <ol><li class="eww">Cheese</li><li>Bread</li><li><em>Butter</em></li></ol>
+
+If you want to use this API to go straight to a particular type of output, you
+can do so using the functions defined in `DOMBuilder.dom`` and
+``DOMBuilder.html``, as demonstrated above.
+
+If you want to be able to switch freely between output modes, or you won't know
+which kind of output you need until runtime, you can use the same API via
+``DOMBuilder.elements``, controlling what it outputs by setting the
+``DOMBuilder.mode`` flag to ``'dom'`` or ``'html'``, or calling a
+function which generates content using ``DOMBuilder.withMode``::
+
+   var el = DOMBuilder.elements
+   function shoutThing(thing) {
+     return el.STRONG(thing)
+   }
+
+::
+
+   >>> DOMBuilder.mode = 'html'
+   >>> shoutThing('Hello!').toString()
+   <strong>Hello!</strong>
+   >>> DOMBuilder.withMode('dom', shoutThing, 'Hey there!')
+   [object HTMLStrongElement]
+
+This is useful for writing libraries which need to support outputting both DOM
+Elements and HTML Strings, or for unit-testing code which normally generates DOM
+Elements by flipping the mode in your tests to switch to HTML String output.
+
+DOMBuilder also supports using its output modes with another common menas of
+defining HTML in JavaScript code, using nested lists (representing elements and
+their contents) and objects (representing attributes), like so::
+
+   var article =
+     ['div', {'class': 'article'}
+     , ['h2', 'Article title']
+     , ['p', 'Paragraph one']
+     , ['p', 'Paragraph two']
+     ]
+
+You can generate output from one of these structures using
+``DOMBuilder.build``, specifying the output mode::
+
+   >>> DOMBuilder.build(article, 'html').toString()
+   <div class="article"><h2>Article title</h2><p>Paragraph one</p><p>Paragraph two</p></div>
+
+   >>> DOMBuilder.build(article, 'dom').toString()
+   [object HTMLDivElement]
+
+You can also generate these kinds of structures using the element functions
+defined in ``DOMBuilder.array``.
+
+This is just a quick guide to what DOMBuilder can do - dive into the
+`full documentation`_ to find out about the rest of its features, such as:
+
+* Registering event handlers.
+* Making it more convenient to work with innerHTML and event handlers.
+* Populating DocumentFragments with content in a single call.
+* Being able to use fragments in HTML mode via mock DOM objects.
+* HTML escaping in HTML mode.
+
+.. _`full documentation`: http://readthedocs.org/docs/dombuilder/en/latest/
