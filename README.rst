@@ -143,14 +143,14 @@ You can control ``map`` output by passing in a callback function::
    <ol><li class="eww">Cheese</li><li>Bread</li><li><em>Butter</em></li></ol>
 
 If you want to use this API to go straight to a particular type of output, you
-can do so using the functions defined in `DOMBuilder.dom`` and
+can do so using the functions defined in ``DOMBuilder.dom`` and
 ``DOMBuilder.html``, as demonstrated above.
 
-If you want to be able to switch freely between output modes, or you won't know
-which kind of output you need until runtime, you can use the same API via
+If you want to be able to switch freely between `output modes`_, or you won't
+know which kind of output you need until runtime, you can use the same API via
 ``DOMBuilder.elements``, controlling what it outputs by setting the
 ``DOMBuilder.mode`` flag to ``'dom'`` or ``'html'``, or calling a
-function which generates content using ``DOMBuilder.withMode``::
+function which generates content using `DOMBuilder.withMode`_::
 
    var el = DOMBuilder.elements
    function shoutThing(thing) {
@@ -181,7 +181,7 @@ their contents) and objects (representing attributes), like so::
      ]
 
 You can generate output from one of these structures using
-``DOMBuilder.build``, specifying the output mode::
+`DOMBuilder.build`_, specifying the output mode::
 
    >>> DOMBuilder.build(article, 'html').toString()
    <div class="article"><h2>Article title</h2><p>Paragraph one</p><p>Paragraph two</p></div>
@@ -195,10 +195,18 @@ defined in ``DOMBuilder.array``.
 This is just a quick guide to what DOMBuilder can do - dive into the
 `full documentation`_ to find out about the rest of its features, such as:
 
-* Registering event handlers.
-* Making it more convenient to work with innerHTML and event handlers.
-* Populating DocumentFragments with content in a single call.
-* Being able to use fragments in HTML mode via mock DOM objects.
-* HTML escaping in HTML mode.
+* Registering `event handlers`_.
+* Making it more convenient to work with `innerHTML and event handlers`_.
+* Populating `DocumentFragments`_ with content in a single call.
+* Being able to use fragments in HTML mode via `mock DOM objects`_.
+* `HTML escaping`_ in HTML mode.
 
+.. _`output modes`: http://readthedocs.org/docs/dombuilder/en/latest/core.html#output-modes
+.. _`DOMBuilder.withMode`: http://readthedocs.org/docs/dombuilder/en/latest/core.html#temporarily-switching-mode
+.. _`DOMBuilder.build`: http://readthedocs.org/docs/dombuilder/en/latest/core.html#building-from-arrays
 .. _`full documentation`: http://readthedocs.org/docs/dombuilder/en/latest/
+.. _`event handlers`: http://readthedocs.org/docs/dombuilder/en/latest/dommode.html#event-handlers
+.. _`innerHTML and event handlers`: http://readthedocs.org/docs/dombuilder/en/latest/htmlmode.html#event-handlers-and-innerhtml
+.. _`DocumentFragments`: http://readthedocs.org/docs/dombuilder/en/latest/dommode.html#document-fragments
+.. _`mock DOM objects`: http://readthedocs.org/docs/dombuilder/en/2.0.0/htmlmode.html#mock-dom-objects
+.. _`HTML escaping`: http://readthedocs.org/docs/dombuilder/en/2.0.0/htmlmode.html#html-escaping
