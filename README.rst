@@ -212,7 +212,7 @@ This is just a quick guide to what DOMBuilder can do - dive into the
 .. _`HTML escaping`: http://readthedocs.org/docs/dombuilder/en/2.0.0/htmlmode.html#html-escaping
 
 MIT License
------------
+===========
 
 Copyright (c) 2011, Jonathan Buchanan
 
