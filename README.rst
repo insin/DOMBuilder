@@ -134,7 +134,7 @@ You can control ``map`` output by passing in a callback function::
        if (item == 'Cheese') attrs['class'] = 'eww'
        if (item == 'Butter') return el.EM(item)
        return item
-     })
+     }))
    }
 
 ::
