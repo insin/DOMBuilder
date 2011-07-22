@@ -130,7 +130,7 @@ you to easily generate content from a list of items::
 You can control ``map`` output by passing in a callback function::
 
    function opinionatedShoppingList(items) {
-     return el.OL(el.LI.map(function(item, attrs, loop) {
+     return el.OL(el.LI.map(items, function(item, attrs, loop) {
        if (item == 'Cheese') attrs['class'] = 'eww'
        if (item == 'Butter') return el.EM(item)
        return item
