@@ -184,9 +184,9 @@ Node.js
 
 .. versionadded:: 1.4.1
 
-DOMBuilder can be installed as a `Node.js`_ module using Node Package
-Manager. The Node.js build includes :doc:`htmlmode` and has HTML as the default
-output format.
+DOMBuilder can be installed as a `Node.js`_ module using `npm`_. The
+Node.js build includes :doc:`htmlmode` and has HTML as the default output
+format.
 
 Install::
 
@@ -197,3 +197,20 @@ Import::
    var DOMBuilder = require('DOMBuilder')
 
 .. _`Node.js`: http://nodejs.org
+.. _`npm`: http://npmjs.org/
+
+Akshell
+-------
+
+DOMBuilder is available as an `Akshell`_ app, which includes HTML Mode and
+has HTML as the default output format.
+
+Add the following to your app's ``manifest.json``::
+
+   "insin/DOMBuilder:2.0.0"
+
+Import::
+
+   var DOMBuilder = require('DOMBuilder')
+
+.. _`Akshell`: http://akshell.com
