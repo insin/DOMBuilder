@@ -1,5 +1,5 @@
+=========
 Templates
 =========
 
-.. versionadded:: 2.0
-
+*Coming in version 2.1.*

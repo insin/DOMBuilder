@@ -1,3 +1,7 @@
+/**
+ * DOMBuilder 2.0.0 (modes: dom [default], html) - https://github.com/insin/DOMBuilder
+ * MIT licensed
+ */
 (function(__global__) {
 
 // --------------------------------------------------------------- Utilities ---
@@ -727,5 +731,683 @@ if (modules) {
 else {
   __global__.DOMBuilder = DOMBuilder;
 }
+
+})(this);
+(function(__global__) {
+
+// --------------------------------------------------------------- Utilities ---
+
+var modules = !!(typeof module !== 'undefined' && module.exports)
+  , DOMBuilder = (modules ? require('./DOMBuilder') : __global__.DOMBuilder)
+  , document = __global__.document
+  // Native functions
+  , hasOwn = Object.prototype.hasOwnProperty
+  // DOMBuilder utilities
+  , EVENT_ATTRS = DOMBuilder.util.EVENT_ATTRS
+  , JQUERY_AVAILABLE = DOMBuilder.util.JQUERY_AVAILABLE
+  , setInnerHTML = DOMBuilder.util.setInnerHTML
+  /**
+   * Cross-browser means of creating a DOM Element with attributes.
+   * @param {string} tagName
+   * @param {Object} attributes
+   * @return {Element}
+   */
+  , createElement = (JQUERY_AVAILABLE
+      ? function(tagName, attributes) {
+          if (hasOwn.call(attributes, 'innerHTML')) {
+            var html = attributes.innerHTML;
+            delete attributes.innerHTML;
+            return jQuery('<' + tagName + '>', attributes).html(html).get(0);
+          }
+          else {
+            return jQuery('<' + tagName + '>', attributes).get(0);
+          }
+        }
+      : (function() {
+          var attrFix = {
+                tabindex: 'tabIndex'
+              }
+            , propFix = {
+                tabindex: 'tabIndex'
+              , readonly: 'readOnly'
+              , 'for': 'htmlFor'
+              , 'class': 'className'
+              , maxlength: 'maxLength'
+              , cellspacing: 'cellSpacing'
+              , cellpadding: 'cellPadding'
+              , rowspan: 'rowSpan'
+              , colspan: 'colSpan'
+              , usemap: 'useMap'
+              , frameborder: 'frameBorder'
+              , contenteditable: 'contentEditable'
+              }
+            , support = (function() {
+                var div = document.createElement('div');
+                div.setAttribute('className', 't');
+                div.innerHTML = '<span style="color:silver">s<span>';
+                var span = div.getElementsByTagName('span')[0];
+                var input = document.createElement('input');
+                input.value = 't';
+                input.setAttribute('type', 'radio');
+                return {
+                  style: /silver/.test(span.getAttribute('style'))
+                , getSetAttribute: div.className != 't'
+                , radioValue: input.value == 't'
+                }
+              })()
+            , formHook
+            // Hook for boolean attributes
+            , boolHook = function(elem, value, name) {
+                var propName;
+                if (value !== false) {
+                  // value is true since we know at this point it's type boolean and not false
+                  // Set boolean attributes to the same name and set the DOM property
+                  propName = propFix[name] || name;
+                  if (propName in elem) {
+                    // Only set the IDL specifically if it already exists on the element
+                    elem[propName] = true;
+                  }
+                  elem.setAttribute(name, name.toLowerCase());
+                }
+                return name;
+              }
+            , attrHooks = {
+                type: function(elem, value) {
+                  if (!support.radioValue && value == 'radio' && elem.nodeName == 'input') {
+                    // Setting the type on a radio button after the value resets the value in IE6-9
+                    // Reset value to its default in case type is set after value
+                    var val = elem.value;
+                    elem.setAttribute('type', value);
+                    if (val) {
+                      elem.value = val;
+                    }
+                    return value;
+                  }
+                }
+                // Use the value property for back compat
+                // Use the formHook for button elements in IE6/7
+              , value: function(elem, value, name) {
+                  if (formHook && elem.nodeName == 'button') {
+                    return formHook.set(elem, value, name);
+                  }
+                  // Does not return so that setAttribute is also used
+                  elem.value = value;
+                }
+              }
+            , rboolean = /^(?:autofocus|autoplay|async|checked|controls|defer|disabled|hidden|loop|multiple|open|readonly|required|scoped|selected)$/i
+            , rinvalidChar = /\:|^on/
+            ;
+
+          // IE6/7 do not support getting/setting some attributes with get/setAttribute
+          if (!support.getSetAttribute) {
+            // propFix is more comprehensive and contains all fixes
+            attrFix = propFix;
+
+            // Use this for any attribute on a form in IE6/7
+            formHook = attrHooks.name = attrHooks.title = function(elem, value, name) {
+              // Check form objects in IE (multiple bugs related)
+              // Only use nodeValue if the attribute node exists on the form
+              var ret = elem.getAttributeNode(name);
+              if (ret) {
+                ret.nodeValue = value;
+                return value;
+              }
+            };
+
+            // Set width and height to auto instead of 0 on empty string( Bug #8150 )
+            // This is for removals
+            attrHooks.width = attrHooks.height = function(elem, value) {
+              if (value === '') {
+                elem.setAttribute(name, 'auto');
+                return value;
+              }
+            };
+          }
+
+          if (!support.style) {
+            attrHooks.style = function(elem, value) {
+              return (elem.style.cssText = ''+value);
+            };
+          }
+
+          function setAttr(elem, name, value, pass) {
+            // Fallback to prop when attributes are not supported
+            if (!('getAttribute' in elem)) {
+              // Inlined version of the relevant bits of prop
+              name = propFix[name] || name;
+              if (value !== undefined) {
+                return (elem[name] = value);
+              }
+              return;
+            }
+
+            var ret, hook;
+            // Normalize the name if needed
+            name = attrFix[name] || name;
+            var hook = attrHooks[name];
+
+            if (!hook) {
+              // Use boolHook for boolean attributes
+              if (rboolean.test(name)) {
+                hook = boolHook;
+              }
+              // Use formHook for forms and if the name contains certain characters
+              else if (formHook && name != 'className' &&
+                (elem.nodeName == 'form' || rinvalidChar.test(name))) {
+                hook = formHook;
+              }
+            }
+
+            if (value !== undefined ) {
+              if (hook && (ret = hook(elem, value, name)) !== undefined) {
+                return ret;
+              }
+              else {
+                elem.setAttribute(name, ''+value );
+                return value;
+              }
+            }
+          }
+
+          return function(tagName, attributes) {
+            var el = document.createElement(tagName)
+              , name
+              , value
+              ;
+            if (hasOwn.call(attributes, 'innerHTML')) {
+                setInnerHTML(el, attributes.innerHTML);
+                delete attributes.innerHTML;
+            }
+            for (name in attributes) {
+              value = attributes[name];
+              if (EVENT_ATTRS[name]) {
+                el['on' + name] = value;
+              }
+              else {
+                setAttr(el, name, value);
+              }
+            }
+            return el;
+          };
+        })())
+  ;
+
+// === Register mode plugin ====================================================
+
+DOMBuilder.addMode({
+  name: 'dom'
+, createElement: function(tagName, attributes, children) {
+    var hasInnerHTML = hasOwn.call(attributes, 'innerHTML')
+      // Create the element and set its attributes and event listeners
+      , el = createElement(tagName, attributes)
+      ;
+
+    // If content was set via innerHTML, we're done...
+    if (!hasInnerHTML) {
+      // ...otherwise, append children
+      for (var i = 0, l = children.length, child; i < l; i++) {
+        child = children[i];
+        if (child && child.nodeType) {
+          el.appendChild(child);
+        }
+        else {
+          el.appendChild(document.createTextNode(''+child));
+        }
+      }
+    }
+    return el;
+  }
+, fragment: function(children) {
+    var fragment = document.createDocumentFragment();
+    for (var i = 0, l = children.length, child; i < l; i++) {
+      child = children[i];
+      if (child.nodeType) {
+        fragment.appendChild(child);
+      }
+      else {
+        fragment.appendChild(document.createTextNode(''+child));
+      }
+    }
+    return fragment;
+  }
+, isModeObject: function(obj) {
+    return !!obj.nodeType;
+  }
+, api: {
+    createElement: createElement
+  }
+});
+
+})(this);
+(function(__global__) {
+
+// --------------------------------------------------------------- Utilities ---
+
+var modules = !!(typeof module !== 'undefined' && module.exports)
+  , DOMBuilder = (modules ? require('./DOMBuilder') : __global__.DOMBuilder)
+  // Native functions
+  , hasOwn = Object.prototype.hasOwnProperty
+  , splice = Array.prototype.splice
+  // DOMBuilder utilities
+  , EVENT_ATTRS = DOMBuilder.util.EVENT_ATTRS
+  , FRAGMENT_NAME = DOMBuilder.util.FRAGMENT_NAME
+  , JQUERY_AVAILABLE = DOMBuilder.util.JQUERY_AVAILABLE
+  , TAG_NAMES = DOMBuilder.util.TAG_NAMES
+  , extend = DOMBuilder.util.extend
+  , inheritFrom = DOMBuilder.util.inheritFrom
+  , lookup = DOMBuilder.util.lookup
+  , setInnerHTML = DOMBuilder.util.setInnerHTML
+  /**
+   * Lookup for known tag names.
+   * @const
+   * @type {Object.<string, boolean>}
+   */
+  , TAG_NAME_LOOKUP = lookup(TAG_NAMES)
+  /**
+   * Lookup for tags defined as EMPTY in the HTML 4.01 Strict and Frameset DTDs
+   * and in the HTML5 spec.
+   * @const
+   * @type {Object.<string, boolean>}
+   */
+  , EMPTY_TAGS = lookup(('area base br col command embed frame hr input img ' +
+                         'keygen link meta param source track wbr').split(' '))
+  /**
+   * Cross-browser event registration.
+   * @param {string} id
+   * @param {string} event
+   * @param {Function} handler
+   */
+  , addEvent = (JQUERY_AVAILABLE
+      ? function(id, event, handler) { jQuery('#' + id)[event](handler); }
+      : function(id, event, handler) {
+          document.getElementById(id)['on' + event] = handler;
+        })
+  ;
+
+// ----------------------------------------------------------- HTML Escaping ---
+
+/**
+ * String subclass which marks the given string as safe for inclusion
+ * without escaping.
+ * @constructor
+ * @extends {String}
+ * @param {string} value
+ */
+function SafeString(value) {
+  this.value = value;
+}
+inheritFrom(SafeString, String);
+
+/**
+ * @return {string}
+ */
+SafeString.prototype.toString = SafeString.prototype.valueOf = function() {
+  return this.value;
+};
+
+/**
+ * Marks a string as safe
+ * @param {string} value
+ * @return {SafeString}
+ */
+function markSafe(value) {
+  return new SafeString(value);
+}
+
+/**
+ * Determines if a string is safe.
+ * @param {string|SafeString} value
+ * @return {boolean}
+ */
+function isSafe(value) {
+  return (value instanceof SafeString);
+}
+
+/**
+ * Escapes sensitive HTML characters.
+ * @param {string} s
+ * @return {string}
+ */
+function escapeHTML(s) {
+  return s.split('&').join('&amp;')
+           .split('<').join('&lt;')
+            .split('>').join('&gt;')
+             .split('"').join('&quot;')
+              .split("'").join('&#39;');
+}
+
+/**
+ * If the given input is a SafeString, returns its value; otherwise, coerces
+ * to String and escapes.
+ * @param {*} html
+ * @return {string}
+ */
+function conditionalEscape(html) {
+  if (html instanceof SafeString) {
+    return html.value;
+  }
+  return escapeHTML(''+html);
+}
+
+// ------------------------------------------------------- Mock DOM Elements ---
+
+/**
+ * Partially emulates a DOM Node for HTML generation.
+ * @constructor
+ * @param {Array=} childNodes
+ */
+function HTMLNode(childNodes) {
+  /**
+   * @type {Array}
+   */
+  this.childNodes = childNodes || [];
+
+  // Ensure MockFragment contents are inlined, as if this object's child
+  // nodes were appended one-by-one.
+  this._inlineFragments();
+}
+inheritFrom(HTMLNode, Object);
+
+/**
+ * Replaces any MockFragment objects in child nodes with their own
+ * child nodes and empties the fragment.
+ * @private
+ */
+HTMLNode.prototype._inlineFragments = function() {
+  for (var i = 0, l = this.childNodes.length, child; i < l; i++) {
+    child = this.childNodes[i];
+    if (child instanceof MockFragment) {
+      // Replace the fragment with its contents
+      splice.apply(this.childNodes, [i, 1].concat(child.childNodes));
+      // Clear the fragment on append, as per DocumentFragment
+      child.childNodes = [];
+    }
+  }
+};
+
+/**
+ * Emulates appendChild, inserting fragment child node contents and
+ * emptying the fragment if one is given.
+ * @param {*} node
+ */
+HTMLNode.prototype.appendChild = function(node) {
+  if (node instanceof MockFragment) {
+    this.childNodes = this.childNodes.concat(node.childNodes);
+    // Clear the fragment on append, as per DocumentFragment
+    node.childNodes = [];
+  }
+  else {
+    this.childNodes.push(node);
+  }
+};
+
+/**
+ * Emulates cloneNode so cloning of MockFragment objects works
+ * as expected.
+ * @param {boolean} deep
+ * @return {HTMLNode}
+ */
+HTMLNode.prototype.cloneNode = function(deep) {
+  var clone = this._clone();
+  if (deep === true)
+  {
+    for (var i = 0, l = this.childNodes.length, node; i < l; i++) {
+      node = this.childNodes[i];
+      if (node instanceof MockElement) {
+        clone.childNodes.push(node.cloneNode(deep));
+      }
+      else {
+        clone.childNodes.push(node);
+      }
+    }
+  }
+  return clone;
+};
+
+/**
+ * Creates the object to be used for deep cloning.
+ * @protected
+ */
+HTMLNode.prototype._clone = function() {
+  return new Node();
+};
+
+/**
+ * Partially emulates a DOM Element for HTML generation.
+ * @constructor
+ * @extends {HTMLNode}
+ * @param {string} tagName
+ * @param {Object=} attributes
+ * @param {Array=} childNodes
+ */
+function MockElement(tagName, attributes, childNodes) {
+  HTMLNode.call(this, childNodes);
+  /** @type {string} */
+  this.tagName = this.nodeName = tagName.toLowerCase();
+  /** @type {Object} */
+  this.attributes = attributes || {};
+}
+inheritFrom(MockElement, HTMLNode);
+/** @type {number} */
+MockElement.eventTrackerId = 1;
+/** @type {number} */
+MockElement.prototype.nodeType = 1;
+/**
+ * @protected
+ * @return {MockElement}
+ */
+MockElement.prototype._clone = function() {
+  return new MockElement(this.tagName, extend({}, this.attributes));
+};
+
+/**
+ * Creates an HTML representation of an MockElement.
+ *
+ * If true is passed as an argument and any event attributes are found, this
+ * method will ensure the resulting element has an id so  the handlers for the
+ * event attributes can be registered after the element has been inserted into
+ * the document via innerHTML.
+ *
+ * If necessary, a unique id will be generated.
+ *
+ * @param {boolean=} trackEvents
+ * @return {string}
+ */
+MockElement.prototype.toString = function(trackEvents) {
+  trackEvents = (typeof trackEvents != 'undefined' ? trackEvents : false);
+  var tagName = (TAG_NAME_LOOKUP[this.tagName]
+                 ? this.tagName
+                 : conditionalEscape(this.tagName))
+      // Opening tag
+    , parts = ['<' + tagName]
+    , attr
+    ;
+  // Tag attributes
+  for (attr in this.attributes) {
+    // innerHTML is a special case, as we can use it to (perhaps
+    // inadvisedly) specify entire contents as a string.
+    if (attr === 'innerHTML') {
+      continue;
+    }
+    // Don't create attributes which wouldn't make sense in HTML mode when the
+    // DOM is available - they can be dealt with after insertion using
+    // addEvents().
+    if (EVENT_ATTRS[attr]) {
+      if (trackEvents === true && !this.eventsFound) {
+        /** @type {boolean|undefined} */
+        this.eventsFound = true;
+      }
+      continue;
+    }
+    parts.push(' ' + conditionalEscape(attr.toLowerCase()) + '="' +
+               conditionalEscape(this.attributes[attr]) + '"');
+  }
+  if (this.eventsFound && !hasOwn.call(this.attributes, 'id')) {
+    // Ensure an id is present so we can grab this element later
+    this.id  = '__DB' + MockElement.eventTrackerId++ + '__';
+    parts.push(' id="' + this.id + '"');
+  }
+  parts.push('>');
+
+  if (EMPTY_TAGS[tagName]) {
+    return parts.join('');
+  }
+
+  // If innerHTML was given, use it exclusively for the contents
+  if (hasOwn.call(this.attributes, 'innerHTML')) {
+    parts.push(this.attributes.innerHTML);
+  }
+  else {
+    for (var i = 0, l = this.childNodes.length, node; i < l; i++) {
+      node = this.childNodes[i];
+      if (node instanceof MockElement || node instanceof SafeString) {
+        parts.push(node.toString(trackEvents));
+      }
+      else {
+        // Coerce to string and escape
+        parts.push(escapeHTML(''+node));
+      }
+    }
+  }
+
+  // Closing tag
+  parts.push('</' + tagName + '>');
+  return parts.join('');
+};
+
+/**
+ * If event attributes were found when toString(true) was called, this
+ * method will retrieve the resulting DOM Element by id, attach event handlers
+ * to it and call addEvents on any MockElement children.
+ */
+MockElement.prototype.addEvents = function() {
+  if (this.eventsFound) {
+    var id = (hasOwn.call(this.attributes, 'id')
+              ? conditionalEscape(this.attributes.id)
+              : this.id)
+      , attr
+      ;
+    for (attr in this.attributes) {
+      if (EVENT_ATTRS[attr]) {
+        addEvent(id, attr, this.attributes[attr]);
+      }
+    }
+    delete this.eventsFound;
+    delete this.id;
+  }
+
+  for (var i = 0, l = this.childNodes.length, node; i < l; i++) {
+    node = this.childNodes[i];
+    if (node instanceof MockElement) {
+      node.addEvents();
+    }
+  }
+};
+
+/**
+ * @param {Element} el
+ */
+MockElement.prototype.insertWithEvents = function(el) {
+  setInnerHTML(el, this.toString(true));
+  this.addEvents();
+};
+
+/**
+ * Partially emulates a DOM DocumentFragment for HTML generation.
+ * @constructor
+ * @extends {HTMLNode}
+ * @param {Array=} childNodes
+ */
+function MockFragment(childNodes) {
+  HTMLNode.call(this, childNodes);
+}
+inheritFrom(MockFragment, HTMLNode);
+/**
+ * @protected
+ * @return {MockFragment}
+ */
+MockFragment.prototype._clone = function() {
+  return new MockFragment();
+};
+/** @type {number} */
+MockFragment.prototype.nodeType = 11;
+/** @type {string} */
+MockFragment.prototype.nodeName = FRAGMENT_NAME;
+
+/**
+ * Creates an HTML representation of an MockFragment.
+ *
+ * If true is passed as an argument, it will be passed on to
+ * any child MockElements when their toString() is called.
+ *
+ * @param {boolean=} trackEvents
+ * @return {string}
+ */
+MockFragment.prototype.toString = function(trackEvents) {
+  trackEvents = (typeof trackEvents != 'undefined' ? trackEvents : false);
+  var parts = [];
+  // Contents
+  for (var i = 0, l = this.childNodes.length, node; i < l; i++) {
+    node = this.childNodes[i];
+    if (node instanceof MockElement || node instanceof SafeString) {
+      parts.push(node.toString(trackEvents));
+    }
+    else {
+      // Coerce to string and escape
+      parts.push(escapeHTML(''+node));
+    }
+  }
+
+  return parts.join('');
+};
+
+/**
+ * Calls addEvents() on any MockElement children.
+ */
+MockFragment.prototype.addEvents = function() {
+  for (var i = 0, l = this.childNodes.length, node; i < l; i++) {
+    node = this.childNodes[i];
+    if (node instanceof MockElement) {
+      node.addEvents();
+    }
+  }
+};
+
+/**
+ * @param {Element} el
+ */
+MockFragment.prototype.insertWithEvents = function(el) {
+  setInnerHTML(el, this.toString(true));
+  this.addEvents();
+};
+
+// === Register mode plugin ====================================================
+
+DOMBuilder.addMode({
+  name: 'html'
+, createElement: function(tagName, attributes, children) {
+    return new MockElement(tagName, attributes, children);
+  }
+, fragment: function(children) {
+    return new MockFragment(children);
+  }
+, isModeObject: function(obj) {
+    return (obj instanceof HTMLNode ||
+            obj instanceof SafeString);
+  }
+, api: {
+    conditionalEscape: conditionalEscape
+  , isSafe: isSafe
+  , markSafe: markSafe
+  , SafeString: SafeString
+  , HTMLNode: HTMLNode
+  , MockElement: MockElement
+  , MockFragment: MockFragment
+  }
+, apply: {
+    isSafe: isSafe
+  , markSafe: markSafe
+  }
+});
 
 })(this);

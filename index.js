@@ -1,7 +1,6 @@
-var DOMBuilder = require('./lib/DOMBuilder')
+var DOMBuilder = require('./lib/DOMBuilder');
 
-// Modes: html [default], template
+// Modes: html [default]
 require('./lib/DOMBuilder.html');
-require('./lib/DOMBuilder.template');
 
-DOMBuilder.util.extend(exports, DOMBuilder);
+module.exports = DOMBuilder;

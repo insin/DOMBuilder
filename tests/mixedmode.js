@@ -7,9 +7,23 @@ module('Mixed mode');
 var mixed = DOMBuilder.elements;
 
 function testBothModes(testFunc) {
-  DOMBuilder.withMode('dom', testFunc)
   DOMBuilder.withMode('dom', testFunc);
+  DOMBuilder.withMode('html', testFunc);
 }
+
+test('DOMBuilder.apply', function() {
+  var context = {};
+  DOMBuilder.apply(context, 'badmode');
+  var allElementFunctionsPresent = true;
+  for (var i = 0, tagName; tagName =  DOMBuilder.util.TAG_NAMES[i]; i++) {
+    if (typeof context[tagName.toUpperCase()] != 'function') {
+      allElementFunctionsPresent = false;
+      break;
+    }
+  }
+  ok(allElementFunctionsPresent, 'All expected element functions were added to context object');
+  ok(true, 'An exception was not raised when an invalid mode was passed');
+});
 
 test('DOMBuilder.withMode', function() {
   expect(6);
@@ -24,7 +38,7 @@ test('DOMBuilder.withMode', function() {
       equal(DOMBuilder.mode, 'html', 'mode set back correctly after nested function');
       DOMBuilder.withMode('template', function() {
         equal(DOMBuilder.mode, 'template', 'mode set correctly within nested function');
-        x // ReferenceError
+        x; // ReferenceError
       });
       fail('exception should be bubbling right about now');
     });

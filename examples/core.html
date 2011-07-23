@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>DOMBuilder Core Examples</title>
+  <script src="../lib/DOMBuilder.js"></script>
+  <script src="../lib/DOMBuilder.html.js"></script>
+  <script>
+  var article =
+      ['div', {'class': 'article'}
+      , ['h2', 'Article title']
+      , ['p', 'Paragraph one']
+      , ['p', 'Paragraph two']
+      ];
+  console.log(DOMBuilder.build(article, 'html').toString());
+
+  var el = DOMBuilder.elements;
+  var article = DOMBuilder.withMode(null, function() {
+    return el.DIV({'class': 'article'}
+           , el.H2('Article title')
+           , el.P('Paragraph one')
+           , el.P('Paragraph two')
+           );
+  });
+
+  DOMBuilder.addMode({
+    name: 'log'
+  , createElement: function(tagName, attributes, children) {
+      console.log(tagName, attributes, children);
+      return tagName;
+    }
+  });
+
+  DOMBuilder.build(article, 'log');
+  </script>
+</head>
+<body>
+</body>
+</html>

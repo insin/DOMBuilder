@@ -1,11 +1,11 @@
 {
   "name": "DOMBuilder",
-  "version": "2.0.0-alpha1",
-  "description": "Builder and templating library - generate HTML or DOM Elements (mostly) interchangeably",
-  "tags": ["DOM", "HTML", "builder", "template"],
+  "description": "Builder library - generate HTML with an API which is also usable in the browser",
+  "version": "2.0.0",
   "author": "Jonathan Buchanan <jonathan.buchanan@gmail.com> (https://github.com/insin)",
-  "homepage": "http://readthedocs.org/docs/dombuilder/latest/",
-  "main": "./index",
+  "tags": ["HTML", "builder"],
+  "homepage": "http://readthedocs.org/docs/dombuilder/en/latest/",
+  "main": "index",
   "repository": {
     "type": "git",
     "url": "https://github.com/insin/DOMBuilder.git"

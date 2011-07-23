@@ -16,17 +16,21 @@ def main():
 
     version = VERSION_RE.search(base).group(1)
 
-    # Equivalent to 1.4.*
-    open('DOMBuilder.min.js', 'w').write(TEMPLATE.format(
+    # Uncompressed DOM+HTML
+    open('dist/DOMBuilder.js', 'w').write(TEMPLATE.format(
+        version=version, modes='dom [default], html', code=(base + dom + html)
+    ))
+    # DOM+HTML
+    open('dist/DOMBuilder.min.js', 'w').write(TEMPLATE.format(
         version=version, modes='dom [default], html', code=compress(base + dom + html)
     ))
     # DOM-only
-    open('DOMBuilder.dom.min.js', 'w').write(TEMPLATE.format(
-        version=version, modes='dom', code=compress(base + dom)
+    open('dist/DOMBuilder.dom.min.js', 'w').write(TEMPLATE.format(
+        version=version, modes='dom [default]', code=compress(base + dom)
     ))
-    # New for 2.0 - templates, with DOM as default output for client side
-    open('DOMBuilder.template.min.js', 'w').write(TEMPLATE.format(
-        version=version, modes='dom [default], html, template', code=compress(base + dom + html + template)
+    # HTML-only
+    open('dist/DOMBuilder.html.min.js', 'w').write(TEMPLATE.format(
+        version=version, modes='html [default]', code=compress(base + html)
     ))
 
 def compress(js):

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>DOMBuilder.dom Reddit Posts</title>
+  <style>
+  .clearleft { clear: left; }
+  .post { margin-bottom: 10px; }
+  .post img { display: block; float: left; padding: 5px; }
+  .title { font-family: sans-serif; font-size: 1em; text-decoration: none; }
+  .date-line { font-family: sans-serif; font-size: 0.6em; color: gray; }
+  .date-line a { text-decoration: none; }
+  .comment-line a { font-family: sans-serif; font-size: 0.75em; color: gray; font-weight: bold;  text-decoration: none; }
+  </style>
+  <!-- Equivalent to DOM-only bundle -->
+  <script src="https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.js"></script>
+  <script src="https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.dom.js"></script>
+  <script>DOMBuilder.mode = 'dom';</script>
+  <!-- DOM code -->
+  <script>
+  DOMBuilder.apply(window);
+
+  function postTmpl(post) {
+    return DIV({'class': 'post'}
+    , post.thumbnail ? IMG({src: post.thumbnail}) : []
+    , A({href: post.url}, post.title)
+    , DIV({'class': 'date-line'}
+      , 'submitted by '
+      , A({'href': 'http://www.reddit.com/user/' + post.author}
+        , post.author
+        )
+      )
+    , DIV({'class': 'comment-line'}
+      , A({'href': 'http://www.reddit.com/' + post.permalink}
+        , post.num_comments + ' comments'
+        )
+      )
+    );
+  }
+
+  function postList(posts) {
+    return DIV({'class': 'hfeed'}
+    , DOMBuilder.fragment.map(posts, function(postData) {
+        return [
+          postTmpl(postData.data)
+        , DIV({'class': 'clearleft'})
+        ];
+      })
+    );
+  }
+
+  function displayPosts(data) {
+    var stage = document.getElementById('stage');
+    var start = new Date().getTime();
+    stage.appendChild(postList(data.data.children));
+    var end = new Date().getTime();
+    stage.parentNode.insertBefore(
+      DOMBuilder.dom.P('Template rendered in ' + (end-start) + ' ms'),
+      stage
+    );
+  }
+  </script>
+</head>
+
+<body>
+  <p>DOMBuilder.dom version of a <a href="https://gist.github.com/969788">sample crazy_template document</a>.</p>
+  <div id="stage"></div>
+  <script src="http://www.reddit.com/.json?jsonp=displayPosts"></script>
+</body>
+</html>

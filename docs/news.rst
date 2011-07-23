@@ -1,19 +1,67 @@
 News for DOMBuilder
 ===================
 
+Version 2.0.0
+-------------
+
+*July 17th, 2011*
+
+* Output modes are now pluggable, using ``DOMBuilder.addMode``.
+* Output mode specific element functions are now available under
+  ``DOMBuilder.dom`` and ``DOMBuilder.html``.
+* HTML Mode no longer has any dependency on DOM Mode.
+* Updated attribute-setting code based on jQuery 1.6.2.
+* Nested Array representations of HTML can now be used to generate output
+  with an output mode, using ``DOMBuilder.build``.
+* Nested Array structures can be built using element functions under
+  ``DOMBuilder.array``.
+* Added support for new tags defined in HTML 5.
+* You can now specify a mode for ``DOMBuilder.apply``, which will also
+  apply any additional API for the specified mode, if available.
+
+Backwards-incompatible changes:
+
+* When calling ``DOMBuilder.map``, the default attributes argument is now
+  required - flexible arguments are now handled by the ``map`` functions
+  exposed on element creation functions.
+* ``DOMBuilder.map`` now passes a loop status object to the given mapping
+  function instead of an index.
+* The context argument object to ``DOMBuilder.apply`` is now required.
+* ``DOMBuilder.apply`` no longer adds an ``NBSP`` property.
+* HTML mode mock DOM objects were renamed to ``MockElement`` and
+  ``MockFragment``.
+* HTML mode no longer supports XHTML-style closing slashes for empty
+  elements.
+* ``markSafe`` and ``isSafe`` moved to ``DOMBuilder.html.markSafe`` and
+  ``DOMBuilder.html.isSafe``, respectively.
+
+Version 1.4.4
+-------------
+
+*May 19th, 2011*
+
+- Additional arguments can now be passed in to ``withMode`` to be passed
+  into the function which will be called.
+
 Version 1.4.3
 -------------
+
+*April 26th, 2011*
 
 - Fixed defect doing child checks on ``null`` and ``undefined`` children.
 
 Version 1.4.2
 -------------
 
+*April 12th, 2011*
+
 - Added support for using the ``innerHTML`` attribute to specify an
-  element's entire contents consitently in DOM and HTML modes.
+  element's entire contents consistently in DOM and HTML modes.
 
 Version 1.4.1
 -------------
+
+*March 4th, 2011*
 
 - Fixed HTML mode bug: event registration now works for nested elements.
 
@@ -28,12 +76,14 @@ Version 1.4.1
 Version 1.4
 -----------
 
+*February 13th, 2011*
+
 - Fixed HTML escaping bugs: attribute names and unknown tag names are now
   escaped.
 
 - A new ``insertWithEvents`` method on DOMBuilder.HTMLElement attempts to
   use ``innerHTML`` in a cross-browser friendly fashion. It's safe to use
-  this method on elements for which innerHTML is readonly, as it dropps
+  this method on elements for which innerHTML is readonly, as it drops
   back to creating DOM Elements in a new element and moving them. If
   jQuery is available, its more comprehensive ``html`` function is used.
 
@@ -47,6 +97,8 @@ Version 1.4
 
 Version 1.3
 -----------
+
+*February 4th, 2011*
 
 - Tag names passed into ``DOMBuilder.HTMLElement`` are now lower-cased.
 
@@ -94,6 +146,8 @@ Version 1.3
 Version 1.2
 -----------
 
+*January 21st, 2011*
+
 - Created Sphinx docs.
 
 - ``Tag`` objects created when in HTML mode now remember which mode was
@@ -120,12 +174,14 @@ Version 1.2
 Version 1.1
 -----------
 
+*October 10th, 2008*
+
 - An ``NBSP`` property is now also added to the context object by
   ``DOMBuilder.apply()``, for convenience.
 
 - ``Boolean`` attributes are now only set if they're ``true``. Added
   items to the demo page to demonstrate that you can now create an
-  explicitly unchecked checkbox and an explicity non-multiple select.
+  explicitly unchecked checkbox and an explicitly non-multiple select.
 
 - Added more IE workarounds for:
 
@@ -135,8 +191,10 @@ Version 1.1
 Version 1.0
 -----------
 
+*June 1st, 2008*
+
 - Added support for passing children to element creation function as an
-  `Array``.
+  ``Array``.
 
 - Added more robust support for registering event handlers, including
   cross-browser event handling utility methods and context correction for IE
