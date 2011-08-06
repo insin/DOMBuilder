@@ -86,7 +86,7 @@ Node.js
 -------
 
 DOMBuilder can be installed as a `Node.js`_ module via `npm`_. The
-Node.js build includes :doc:`htmlmode` and has HTML as the default output
+Node.js build includes `HTML mode`_ and has HTML as the default output
 format.
 
 Install::
@@ -99,6 +99,7 @@ Import::
 
 .. _`Node.js`: http://nodejs.org
 .. _`npm`: http://npmjs.org/
+.. _`HTML mode`: http://readthedocs.org/docs/dombuilder/en/2.0.0/htmlmode.html
 
 Akshell
 -------
