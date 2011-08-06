@@ -13,4 +13,10 @@ module('DOM', {
 
 var dom = DOMBuilder.dom;
 
+test('Regressions', function() {
+  // Button values in IE 6/7
+  var button = dom.BUTTON({value: 'test'});
+  ok('No error creating <button> with value attribute in IE6/7');
+});
+
 })();
