@@ -1,6 +1,14 @@
 News for DOMBuilder
 ===================
 
+Version 2.0.1
+-------------
+
+*August 6th, 2011*
+
+- Fixed nodeName checks in fallback attribute setting code.
+- Fixed error setting button/@value in IE6/7 when not using jQuery.
+
 Version 2.0.0
 -------------
 

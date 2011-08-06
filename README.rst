@@ -6,12 +6,12 @@ DOMBuilder takes *some* of the pain out of dynamically creating HTML
 content in JavaScript and supports generating multiple types of output
 from the same inputs.
 
-**Version 2.0.0 released on July 17th, 2011**
+**Version 2.0.1 released on August 6th, 2011**
 
 See `News for DOMBuilder`_ for what's new and backwards-incompatible
 changes since 1.4.*.
 
-.. _`News for DOMBuilder`: http://readthedocs.org/docs/dombuilder/en/2.0.0/news.html
+.. _`News for DOMBuilder`: http://readthedocs.org/docs/dombuilder/en/latest/news.html
 
 Yes, there are a million builder libraries about. DOMBuilder's goals are to:
 
@@ -99,7 +99,7 @@ Import::
 
 .. _`Node.js`: http://nodejs.org
 .. _`npm`: http://npmjs.org/
-.. _`HTML mode`: http://readthedocs.org/docs/dombuilder/en/2.0.0/htmlmode.html
+.. _`HTML mode`: http://readthedocs.org/docs/dombuilder/en/latest/htmlmode.html
 
 Akshell
 -------
@@ -226,8 +226,8 @@ This is just a quick guide to what DOMBuilder can do - dive into the
 .. _`event handlers`: http://readthedocs.org/docs/dombuilder/en/latest/dommode.html#event-handlers
 .. _`innerHTML and event handlers`: http://readthedocs.org/docs/dombuilder/en/latest/htmlmode.html#event-handlers-and-innerhtml
 .. _`DocumentFragments`: http://readthedocs.org/docs/dombuilder/en/latest/dommode.html#document-fragments
-.. _`mock DOM objects`: http://readthedocs.org/docs/dombuilder/en/2.0.0/htmlmode.html#mock-dom-objects
-.. _`HTML escaping`: http://readthedocs.org/docs/dombuilder/en/2.0.0/htmlmode.html#html-escaping
+.. _`mock DOM objects`: http://readthedocs.org/docs/dombuilder/en/latest/htmlmode.html#mock-dom-objects
+.. _`HTML escaping`: http://readthedocs.org/docs/dombuilder/en/latest/htmlmode.html#html-escaping
 
 MIT License
 ===========

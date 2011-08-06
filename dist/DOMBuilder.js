@@ -1,5 +1,5 @@
 /**
- * DOMBuilder 2.0.0 (modes: dom [default], html) - https://github.com/insin/DOMBuilder
+ * DOMBuilder 2.0.1 (modes: dom [default], html) - https://github.com/insin/DOMBuilder
  * MIT licensed
  */
 (function(__global__) {
@@ -66,8 +66,7 @@ var modules = !!(typeof module != 'undefined' && module.exports)
               while (div.firstChild)
                 el.appendChild(div.firstChild);
             }
-          })
-  ;
+          });
 
 /**
  * Naively copies properties from one Object to another.
@@ -90,8 +89,7 @@ function extend(dest, source) {
 function lookup(a) {
   var obj = {}
     , i = 0
-    , l = a.length
-    ;
+    , l = a.length;
   for (; i < l; i++) {
     obj[a[i]] = true;
   }
@@ -133,7 +131,7 @@ function isFunction(o) {
  * @return {boolean} true if the given object is a String.
  */
 function isString(o) {
-  return (toString.call(o) == "[object String]");
+  return (toString.call(o) == '[object String]');
 }
 
 /**
@@ -265,7 +263,7 @@ function createElementFunction(tag, fixedMode) {
  * At least one argument *must* be provided.
  *
  * @param {string} tagName
- * @param {?string|undefined} fixedMode
+ * @param {string|null|undefined} fixedMode
  * @param {Array} args
  * @return {*}
  */
@@ -276,8 +274,7 @@ function createElementFromArguments(tagName, fixedMode, args) {
       // always have at least one argument when called via element creation
       // functions.
     , argsLength = args.length
-    , firstArg = args[0]
-    ;
+    , firstArg = args[0];
 
   if (argsLength === 1 &&
       isPlainArray(firstArg)) {
@@ -311,7 +308,7 @@ function createElementFromArguments(tagName, fixedMode, args) {
  *    a list of items and a mapping Function.
  *
  * @param {string} tagName
- * @param {?string|undefined} fixedMode
+ * @param {string|null|undefined} fixedMode
  * @param {Array} args
  * @return {Array}
  */
@@ -319,14 +316,12 @@ function mapElementFromArguments(tagName, fixedMode, args) {
   if (isPlainArray(args[0])) { // (items, func)
     var defaultAttrs = {}
       , items = args[0]
-      , func = (isFunction(args[1]) ? args[1] : null)
-      ;
+      , func = (isFunction(args[1]) ? args[1] : null);
   }
   else { // (attrs, items, func)
     var defaultAttrs = args[0]
       , items = args[1]
-      , func = (isFunction(args[2]) ? args[2] : null)
-      ;
+      , func = (isFunction(args[2]) ? args[2] : null);
   }
 
   return DOMBuilder.map(tagName, defaultAttrs, items, func, fixedMode);
@@ -350,7 +345,7 @@ function loopStatus(i, l) {
 // === DOMBuilder API ==========================================================
 
 var DOMBuilder = {
-  version: '2.0.0'
+  version: '2.0.1'
 
 // ------------------------------------------------------------------- Modes ---
 
@@ -485,8 +480,7 @@ var DOMBuilder = {
       , childStartIndex = (attrs === null ? 1 : 2)
       , l = content.length
       , built = []
-      , item
-      ;
+      , item;
     for (var i = childStartIndex; i < l; i++) {
       item = content[i];
       if (isArray(item)) {
@@ -781,6 +775,9 @@ var modules = !!(typeof module !== 'undefined' && module.exports)
               , frameborder: 'frameBorder'
               , contenteditable: 'contentEditable'
               }
+            , nodeName = function(elem, name) {
+                return elem.nodeName && elem.nodeName.toUpperCase() == name.toUpperCase();
+              }
             , support = (function() {
                 var div = document.createElement('div');
                 div.setAttribute('className', 't');
@@ -793,7 +790,7 @@ var modules = !!(typeof module !== 'undefined' && module.exports)
                   style: /silver/.test(span.getAttribute('style'))
                 , getSetAttribute: div.className != 't'
                 , radioValue: input.value == 't'
-                }
+                };
               })()
             , formHook
             // Hook for boolean attributes
@@ -813,7 +810,7 @@ var modules = !!(typeof module !== 'undefined' && module.exports)
               }
             , attrHooks = {
                 type: function(elem, value) {
-                  if (!support.radioValue && value == 'radio' && elem.nodeName == 'input') {
+                  if (!support.radioValue && value == 'radio' && nodeName(elem, 'input')) {
                     // Setting the type on a radio button after the value resets the value in IE6-9
                     // Reset value to its default in case type is set after value
                     var val = elem.value;
@@ -827,16 +824,15 @@ var modules = !!(typeof module !== 'undefined' && module.exports)
                 // Use the value property for back compat
                 // Use the formHook for button elements in IE6/7
               , value: function(elem, value, name) {
-                  if (formHook && elem.nodeName == 'button') {
-                    return formHook.set(elem, value, name);
+                  if (formHook && nodeName(elem, 'button')) {
+                    return formHook(elem, value, name);
                   }
                   // Does not return so that setAttribute is also used
                   elem.value = value;
                 }
               }
             , rboolean = /^(?:autofocus|autoplay|async|checked|controls|defer|disabled|hidden|loop|multiple|open|readonly|required|scoped|selected)$/i
-            , rinvalidChar = /\:|^on/
-            ;
+            , rinvalidChar = /\:|^on/;
 
           // IE6/7 do not support getting/setting some attributes with get/setAttribute
           if (!support.getSetAttribute) {
@@ -870,7 +866,7 @@ var modules = !!(typeof module !== 'undefined' && module.exports)
             };
           }
 
-          function setAttr(elem, name, value, pass) {
+          function setAttr(elem, name, value) {
             // Fallback to prop when attributes are not supported
             if (!('getAttribute' in elem)) {
               // Inlined version of the relevant bits of prop
@@ -884,7 +880,7 @@ var modules = !!(typeof module !== 'undefined' && module.exports)
             var ret, hook;
             // Normalize the name if needed
             name = attrFix[name] || name;
-            var hook = attrHooks[name];
+            hook = attrHooks[name];
 
             if (!hook) {
               // Use boolHook for boolean attributes
@@ -893,17 +889,17 @@ var modules = !!(typeof module !== 'undefined' && module.exports)
               }
               // Use formHook for forms and if the name contains certain characters
               else if (formHook && name != 'className' &&
-                (elem.nodeName == 'form' || rinvalidChar.test(name))) {
+                (nodeName(elem, 'form') || rinvalidChar.test(name))) {
                 hook = formHook;
               }
             }
 
-            if (value !== undefined ) {
+            if (value !== undefined) {
               if (hook && (ret = hook(elem, value, name)) !== undefined) {
                 return ret;
               }
               else {
-                elem.setAttribute(name, ''+value );
+                elem.setAttribute(name, ''+value);
                 return value;
               }
             }
@@ -912,8 +908,7 @@ var modules = !!(typeof module !== 'undefined' && module.exports)
           return function(tagName, attributes) {
             var el = document.createElement(tagName)
               , name
-              , value
-              ;
+              , value;
             if (hasOwn.call(attributes, 'innerHTML')) {
                 setInnerHTML(el, attributes.innerHTML);
                 delete attributes.innerHTML;
@@ -929,8 +924,7 @@ var modules = !!(typeof module !== 'undefined' && module.exports)
             }
             return el;
           };
-        })())
-  ;
+        })());
 
 // === Register mode plugin ====================================================
 
@@ -939,8 +933,7 @@ DOMBuilder.addMode({
 , createElement: function(tagName, attributes, children) {
     var hasInnerHTML = hasOwn.call(attributes, 'innerHTML')
       // Create the element and set its attributes and event listeners
-      , el = createElement(tagName, attributes)
-      ;
+      , el = createElement(tagName, attributes);
 
     // If content was set via innerHTML, we're done...
     if (!hasInnerHTML) {
@@ -1021,8 +1014,7 @@ var modules = !!(typeof module !== 'undefined' && module.exports)
       ? function(id, event, handler) { jQuery('#' + id)[event](handler); }
       : function(id, event, handler) {
           document.getElementById(id)['on' + event] = handler;
-        })
-  ;
+        });
 
 // ----------------------------------------------------------- HTML Escaping ---
 
@@ -1220,8 +1212,7 @@ MockElement.prototype.toString = function(trackEvents) {
                  : conditionalEscape(this.tagName))
       // Opening tag
     , parts = ['<' + tagName]
-    , attr
-    ;
+    , attr;
   // Tag attributes
   for (attr in this.attributes) {
     // innerHTML is a special case, as we can use it to (perhaps
@@ -1244,7 +1235,7 @@ MockElement.prototype.toString = function(trackEvents) {
   }
   if (this.eventsFound && !hasOwn.call(this.attributes, 'id')) {
     // Ensure an id is present so we can grab this element later
-    this.id  = '__DB' + MockElement.eventTrackerId++ + '__';
+    this.id = '__DB' + MockElement.eventTrackerId++ + '__';
     parts.push(' id="' + this.id + '"');
   }
   parts.push('>');
@@ -1285,8 +1276,7 @@ MockElement.prototype.addEvents = function() {
     var id = (hasOwn.call(this.attributes, 'id')
               ? conditionalEscape(this.attributes.id)
               : this.id)
-      , attr
-      ;
+      , attr;
     for (attr in this.attributes) {
       if (EVENT_ATTRS[attr]) {
         addEvent(id, attr, this.attributes[attr]);
