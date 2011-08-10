@@ -33,6 +33,11 @@ def main():
         version=version, modes='html [default]', code=compress(base + html)
     ))
 
+    # Uncompressed full build
+    open('dist/DOMBuilder.template.js', 'w').write(TEMPLATE.format(
+        version=version, modes='dom [default], html, template', code=(base + dom + html + template)
+    ))
+
 def compress(js):
     """Optimises and compresses with the Google Closure Compiler."""
     import httplib, urllib, sys
