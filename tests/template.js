@@ -198,6 +198,20 @@ test('Variable', function() {
       bar: function() { return this.foo; }
     }
   })), 42, 'Nested lookup functions called with appropriate context object');
+
+  // Function calling can be turned off by passing a second argument
+  v = new templateAPI.Variable('events.someHandler', false);
+  var handler = function() {};
+  strictEqual(v.resolve(templates.Context({
+    events: {
+      someHandler: handler
+    }
+  })), handler, 'Function calling during lookups can be disabled');
+  strictEqual(templates.$func('events.someHandler').resolve(templates.Context({
+    events: {
+      someHandler: handler
+    }
+  })), handler, '$func is a convenience function for variable lookup without Function calling');
 });
 
 test('Template', function() {
