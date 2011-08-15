@@ -6,6 +6,40 @@ DOMBuilder takes *some* of the pain out of dynamically creating HTML
 content in JavaScript and supports generating multiple types of output
 from the same inputs.
 
+**Next version: Introducing DOMBuilder.template**
+
+Version 2.1 will add Template mode to DOMBuilder.
+
+- Based on Django templates, including their powerful template inheritance.
+- Templates are defined entirely in JavaScript code, still discovering the
+  pros and cons of this as I go:
+
+  **Pros**
+
+  - Easier to create new template tags, as there's no parsing step.
+  - You can spin template creation out into DSL-like functions, which is
+    expressive and very flexible, using functions to build up sections
+    using logically named functions which create template contents based on
+    data structures, rather than copying and pasting chunks of annotated
+    markup or trying to use includes.
+
+  **Cons**
+
+  - More unwieldy to edit than text-based templates, but manageable if you
+    follow some layout guidelines.
+  - More awkward to do things like optional attributes and arbitrary chunks
+    of HTML, since HTML is defined at the element level using DOMBuilder's
+    element functions.
+
+You can see DOMBuilder.template in action in `Fragile`_, a fledgling
+single-page app (which doesn't have any IE compatibility fixes yet).
+
+`In this live example`_, template inheritance is being used to minimise
+the effort required to create basic admin CRUD screens.
+
+.. _`Fragile`: https://github.com/insin/fragile/
+.. _`In this live example`: http://jonathan.buchanan153.users.btopenworld.com/fragile/fragile.html
+
 **Version 2.0.1 released on August 6th, 2011**
 
 See `News for DOMBuilder`_ for what's new and backwards-incompatible
