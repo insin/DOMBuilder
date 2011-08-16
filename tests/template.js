@@ -477,7 +477,7 @@ test('TextNode', function() {
   // Static text
   var t = templates.$text('test');
   ok(!t.dynamic, 'Static text recognised');
-  equal(t.render(c), 'test', 'Rendering static text');
+  deepEqual(t.render(c), ['test'], 'Rendering static text');
 
   // Dynamic text
   t = templates.$text('{{test}}');
