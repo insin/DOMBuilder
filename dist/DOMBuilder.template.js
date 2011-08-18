@@ -1674,9 +1674,7 @@ Variable.prototype.resolve = Variable.prototype.render = function(context) {
       , next;
     for (var i = 0; i < l; i++) {
       bit = bits[i];
-      if (current === null ||
-          current === undefined ||
-          typeof current[bit] == 'undefined') {
+      if (current == null || typeof current[bit] == 'undefined') {
         throw new VariableNotFoundError('Could not find [' + bit +
                                         '] in ' + current);
       }
