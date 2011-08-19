@@ -19,4 +19,9 @@ test('Regressions', function() {
   ok('No error creating <button> with value attribute in IE6/7');
 });
 
+test('DOMBuilder.textNode', function() {
+  var text = DOMBuilder.textNode('test');
+  equal(text.nodeType, 3, 'Text Node created');
+});
+
 })();

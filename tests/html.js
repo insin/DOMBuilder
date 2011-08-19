@@ -88,6 +88,11 @@ test('MockElement', function() {
   equal(el.toString(), '<input type="button">', ' Attributes which would have been handled by jQuery are ignored');
 });
 
+test('DOMBuilder.textNode', function() {
+  var text = DOMBuilder.textNode('test');
+  equal(typeof text, 'string', 'String returned as-is');
+});
+
 test('MockFragment', function() {
   expect(17);
 

@@ -218,7 +218,7 @@ Core API
 These are the core functions whose output can be controlled using
 :ref:`output-modes`.
 
-.. js:function:: DOMBuilder.createElement(tagName[, attributes], children], mode])
+.. js:function:: DOMBuilder.createElement(tagName[, attributes[, children[, mode]]])
 
    Creates an HTML element with the given tag name, attributes and
    children, optionally with a forced output mode.
@@ -233,7 +233,22 @@ These are the core functions whose output can be controlled using
    ``String`` and appended as text nodes.
 
    .. versionchanged:: 2.0
-      Now delegates to the configured mode to do all the real work.
+      Now delegates to the configured or specified mode to do all the
+      real work.
+
+.. js:function:: DOMBuilder.textNode(text[, mode])
+
+   Creates a Text Node or its output mode equivalent, optionally
+   with a forced output mode.
+
+   This function is provided should you ever need to ``appendChild()`` a
+   String to a previously-created HTML element when writing mixed output
+   code.
+
+   :param String text: contents for the Text Node.
+   :param String mode: the mode to be used to create the Text Node.
+
+   .. versionadded:: 2.1
 
 .. js:function:: DOMBuilder.fragment()
 
