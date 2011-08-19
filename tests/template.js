@@ -256,7 +256,7 @@ test('Template', function() {
 
   result = templates.renderTemplate('child', {message: 'Child Content'});
   equal(''+result,
-'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">' +
+'<!DOCTYPE html>' +
 '<html>' +
 '<head><title>Test Template | Child Subtitle</title></head>' +
 '<body><div id="main">Child Content</div></body>' +
