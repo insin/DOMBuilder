@@ -31,14 +31,11 @@ Version 2.1 will add Template mode to DOMBuilder.
     of HTML, since HTML is defined at the element level using DOMBuilder's
     element functions.
 
-You can see DOMBuilder.template in action in `Fragile`_, a fledgling
-single-page app (which doesn't have any IE compatibility fixes yet).
-
 `In this live example`_, template inheritance is being used to minimise
-the effort required to create basic admin CRUD screens.
+the effort required to create basic admin CRUD screens using `Sacrum`_.
 
-.. _`Fragile`: https://github.com/insin/fragile/
-.. _`In this live example`: http://jonathan.buchanan153.users.btopenworld.com/fragile/fragile.html
+.. _`In this live example`: http://jonathan.buchanan153.users.btopenworld.com/sacrum/fragile/fragile.html
+.. _`Sacrum`: https://github.com/insin/sacrum
 
 **Version 2.0.1 released on August 6th, 2011**
 
@@ -75,15 +72,13 @@ The available components are:
    DOM output mode - adds ``DOMBuilder.dom``
 `DOMBuilder.html.js`_
    HTML output mode - adds ``DOMBuilder.html``
-
-.. `DOMBuilder.template.js`_
-      Template feature mode - adds ``DOMBuilder.template``
-
-   .. _`DOMBuilder.template.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.template.js
+`DOMBuilder.template.js`_
+   Template feature mode - adds ``DOMBuilder.template``
 
 .. _`DOMBuilder.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.js
 .. _`DOMBuilder.dom.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.dom.js
 .. _`DOMBuilder.html.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.html.js
+.. _`DOMBuilder.template.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.template.js
 
 Compressed Builds
 ~~~~~~~~~~~~~~~~~
