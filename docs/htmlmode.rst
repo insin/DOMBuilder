@@ -38,6 +38,68 @@ modes.
 .. _`Node interface`: http://www.w3.org/TR/DOM-Level-2-Core/core.html#ID-1950641247
 .. _`requests for additional operations`: https://github.com/insin/DOMBuilder/issues
 
+HTMLNode
+--------
+
+The base constructor for mock DOM objects implements the following
+subset of the Node interface.
+
+.. js:class:: HTMLNode([childNodes])
+
+   Creates an HTMLNode with a list of initial childNodes - this
+   constructor should only be called by child constructors which are
+   inheriting from it.
+
+   :param Array childNodes: initial child nodes
+
+   **Attributes:**
+
+   .. js:attribute:: HTMLNode.firstChild
+
+      This node's first child node, or ``null`` if it has no child nodes.
+
+      .. versionadded:: 2.1
+
+   .. js:attribute:: HTMLNode.childNodes
+
+      This node's child nodes.
+
+   **Methods::**
+
+   .. js:function:: HTMLNode.appendChild(node)
+
+      Adds to the list of child nodes, for cases where the desired structure
+      cannot be built up at creation time.
+
+      Appending a :js:class:`MockFragment` will append its child nodes
+      instead and clear them from the fragment.
+
+      .. versionadded:: 1.3
+         Added :js:class:`MockFragment` appending behaviour.
+
+   .. js:function:: HTMLNode.cloneNode(deep)
+
+      Clones the element and its attributes - if deep is ``true``, its child
+      nodes will also be cloned.
+
+      .. versionadded:: 1.3
+         Added to support cloning by a :js:class:`MockFragment`.
+
+   .. js:function:: HTMLNode.hasChildNodes()
+
+      Returns ``true`` if this node has any child nodes.
+
+      .. versionadded:: 2.1
+
+   .. js:function:: HTMLNode.removeChild(childNode)
+
+      Removes the given child Node from this Node and returns it.
+
+      Throws an exception if the given node was not one of this node's
+      children.
+
+      .. versionadded:: 2.1
+
 Mock Elements
 -------------
 
@@ -49,23 +111,6 @@ Mock Elements
 
    .. versionchanged:: 2.0
       Renamed from "HTMLElement" to "MockElement"
-
-   .. js:function:: MockElement.appendChild(node)
-
-      Adds to the list of child nodes, for cases where the desired structure
-      cannot be built up at creation time.
-
-      .. versionchanged:: 1.3
-         Appending a :js:class:`MockFragment` will append its
-         child nodes instead and clear them from the fragment.
-
-   .. js:function:: MockElement.cloneNode(deep)
-
-      Clones the element and its attributes - if deep is ``true``, its child
-      nodes will also be cloned.
-
-      .. versionadded:: 1.3
-         Added to support cloning by an :js:class:`MockFragment`.
 
    .. js:function:: MockElement.toString([trackEvents])
 
@@ -114,22 +159,12 @@ DOM DocumentFragments when appended to another fragment or a
 
 .. js:class:: MockFragment([childNodes])
 
-   A representation of a DOM DocumentFragment and its child nodes.
+   A mock representation of a DOM DocumentFragment and its child nodes.
 
    .. versionchanged:: 2.0
       Renamed from "HTMLFragment" to "MockFragment"
 
    :param Array childNodes: initial child nodes
-
-   .. js:function:: MockFragment.appendChild(node)
-
-      Adds to the list of child nodes - appending another fragment will
-      append its child nodes and clear them from the fragment.
-
-   .. js:function:: MockFragment.cloneNode(deep)
-
-      Clones the fragment - there's no point calling this *without* passing in
-      ``true``, as you'll just get an empty fragment back, but that's the API.
 
    .. js:function:: MockFragment.toString([trackEvents])
 

@@ -16,7 +16,7 @@ var html = DOMBuilder.html;
 var htmlAPI = DOMBuilder.modes.html.api;
 
 test('MockElement', function() {
-  expect(23);
+  expect(30);
 
   equals(typeof htmlAPI.MockElement, 'function', 'MockElement is accessible via DOMBuilder.modes.html');
 
@@ -26,9 +26,14 @@ test('MockElement', function() {
   equal(el.tagName, 'a', 'Tag names are lower-cased');
   deepEqual(el.attributes, {}, 'Attributes are initialised as empty if not given');
   deepEqual(el.childNodes, [], 'Children are initialised as empty if not given');
-  ok(!el.xhtml, 'XHTML flag set coorectly in HTML mode');
+  strictEqual(el.firstChild, null, 'fistChild is null if no children were given');
+  strictEqual(el.hasChildNodes(), false, 'Reports having no child nodes when empty');
   equal(el.toString(), '<a></a>', 'Rendering with no attributes or children');
   deepEqual(el, el.cloneNode(true), 'Clones are really clones');
+
+  // Appending a first child
+  el.appendChild('')
+  strictEqual(el.firstChild, el.childNodes[0], 'firstChild is set');
 
   // Initialise with attributes and children
   el = new htmlAPI.MockElement('div', {'class': 'test', title: 'test'},
@@ -36,6 +41,8 @@ test('MockElement', function() {
   equal(el.toString(),
         '<div class="test" title="test"><b>test</b><br></div>',
         'Rendering with attributes and children');
+  strictEqual(el.firstChild, el.childNodes[0], 'firstChild is set');
+  strictEqual(el.hasChildNodes(), true, 'Reports having child nodes');
   deepEqual(el, el.cloneNode(true), 'Clones with attributes and children are really clones');
 
   // Appending a child
@@ -65,6 +72,17 @@ test('MockElement', function() {
   equal(el.toString(),
         '<div class="test">One<h2>Two</h2>Three<p>Four</p>Five</div>',
         'Rendering after initialising with a fragment');
+
+  // Attempting to remove a non-child
+  raises(function() { el.removeChild('what?'); }, Error,
+         'removeChild() throws if given non-child')
+
+  // Idiomatic emptying
+  while (el.firstChild) {
+    el.removeChild(el.firstChild);
+  }
+  deepEqual(el.childNodes, [], 'Children are empty after idiomatic empty');
+  strictEqual(el.firstChild, null, 'fistChild is null after idiomatic empty');
 
   // Attributes are lower-cased
   el = new htmlAPI.MockElement('a', {HREF: 'test'}, ['test']);
