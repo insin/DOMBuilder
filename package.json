@@ -4,8 +4,8 @@
 , "version": "2.1.0"
 , "author": "Jonathan Buchanan <jonathan.buchanan@gmail.com> (https://github.com/insin)"
 , "tags": ["dualsided", "DOM", "HTML", "builder", "templates"]
-, "main": "./lib/dombuilder",
-  "repository": {
+, "main": "./lib/dombuilder"
+, "repository": {
     "type": "git"
   , "url": "https://github.com/insin/DOMBuilder.git"
   }

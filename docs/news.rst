@@ -1,18 +1,20 @@
 News for DOMBuilder
 ===================
 
-Version 2.0.1
--------------
+2.1.0 / 2012-01-27
+------------------
 
-*August 6th, 2011*
+- Added ``DOMBuilder.template``, starting implementation of Template mode - the
+  API should not be considered stable until Version 2.2.
+
+2.0.1 / 2011-08-06
+------------------
 
 - Fixed nodeName checks in fallback attribute setting code.
 - Fixed error setting button/@value in IE6/7 when not using jQuery.
 
-Version 2.0.0
--------------
-
-*July 17th, 2011*
+2.0.0 / 2011-07-17
+------------------
 
 * Output modes are now pluggable, using ``DOMBuilder.addMode``.
 * Output mode specific element functions are now available under
@@ -43,33 +45,25 @@ Backwards-incompatible changes:
 * ``markSafe`` and ``isSafe`` moved to ``DOMBuilder.html.markSafe`` and
   ``DOMBuilder.html.isSafe``, respectively.
 
-Version 1.4.4
--------------
-
-*May 19th, 2011*
+1.4.4 / 2011-05-19
+------------------
 
 - Additional arguments can now be passed in to ``withMode`` to be passed
   into the function which will be called.
 
-Version 1.4.3
--------------
-
-*April 26th, 2011*
+1.4.3 / 2011-04-26
+------------------
 
 - Fixed defect doing child checks on ``null`` and ``undefined`` children.
 
-Version 1.4.2
--------------
-
-*April 12th, 2011*
+1.4.2 / 2011-04-12
+-------------------
 
 - Added support for using the ``innerHTML`` attribute to specify an
   element's entire contents consistently in DOM and HTML modes.
 
-Version 1.4.1
--------------
-
-*March 4th, 2011*
+1.4.1 / 2011-03-04
+------------------
 
 - Fixed HTML mode bug: event registration now works for nested elements.
 
@@ -81,10 +75,8 @@ Version 1.4.1
 
 .. _`Node.js`: http://nodejs.org
 
-Version 1.4
------------
-
-*February 13th, 2011*
+1.4.0 / 2011-02-13
+------------------
 
 - Fixed HTML escaping bugs: attribute names and unknown tag names are now
   escaped.
@@ -103,10 +95,8 @@ Version 1.4
 - Fixed issue #3 - jQuery is now optional, but will be made use of if
   present.
 
-Version 1.3
------------
-
-*February 4th, 2011*
+1.3.0 / 2011-02-04
+------------------
 
 - Tag names passed into ``DOMBuilder.HTMLElement`` are now lower-cased.
 
@@ -151,10 +141,8 @@ Version 1.3
 - Added ``DOMBuilder.fragment()``, a utility method for creating and
   populating DocumentFragment objects.
 
-Version 1.2
------------
-
-*January 21st, 2011*
+1.2.0 / 2011-01-21
+------------------
 
 - Created Sphinx docs.
 
@@ -179,10 +167,8 @@ Version 1.2
   codebase to generate HTML on the backend and DOM elements on the frontend,
   as is currently being implemented in https://github.com/insin/newforms
 
-Version 1.1
------------
-
-*October 10th, 2008*
+1.1.0 / 2008-10-10
+------------------
 
 - An ``NBSP`` property is now also added to the context object by
   ``DOMBuilder.apply()``, for convenience.
@@ -196,10 +182,8 @@ Version 1.1
   - Creating multiple selects
   - Creating pre-selected radio and checkbox inputs
 
-Version 1.0
------------
-
-*June 1st, 2008*
+1.0.0 / 2008-06-01
+------------------
 
 - Added support for passing children to element creation function as an
   ``Array``.

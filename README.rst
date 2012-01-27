@@ -1,6 +1,9 @@
-==========
-DOMBuilder
-==========
+==========================
+DOMBuilder |travis_status|
+==========================
+
+.. |travis_status| image:: https://secure.travis-ci.org/insin/DOMBuilder.png
+   :target: http://travis-ci.org/insin/DOMBuilder
 
 DOMBuilder takes *some* of the pain out of dynamically creating HTML
 content in JavaScript and supports generating multiple types of output
@@ -8,7 +11,11 @@ from the same inputs.
 
 **Next version: Introducing DOMBuilder.template**
 
-Version 2.1 will add Template mode to DOMBuilder.
+DOMBuilder is a modular library, which supports adding new output modes and
+feature modes as plugins.
+
+Version 2.1 will add Template mode to DOMBuilder and the templating API should
+be considered unstable until Version 2.2.
 
 - Based on Django templates, including their powerful template inheritance.
 - Templates are defined entirely in JavaScript code, still discovering the
@@ -58,30 +65,8 @@ Yes, there are a million builder libraries about. DOMBuilder's goals are to:
 Installation
 ============
 
-Browsers
---------
-
-DOMBuilder is a modular library, which supports adding new output modes and
-feature modes as plugins.
-
-The available components are:
-
-`DOMBuilder.js`_
-   Core library
-`DOMBuilder.dom.js`_
-   DOM output mode - adds ``DOMBuilder.dom``
-`DOMBuilder.html.js`_
-   HTML output mode - adds ``DOMBuilder.html``
-`DOMBuilder.template.js`_
-   Template feature mode - adds ``DOMBuilder.template``
-
-.. _`DOMBuilder.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.js
-.. _`DOMBuilder.dom.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.dom.js
-.. _`DOMBuilder.html.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.html.js
-.. _`DOMBuilder.template.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.template.js
-
-Compressed Builds
-~~~~~~~~~~~~~~~~~
+Browserss
+---------
 
 Multiple preconfigured, compressed builds of DOMBuilder are available to suit
 various needs:
@@ -92,10 +77,13 @@ various needs:
    For creation of DOM Elements, with DOM Mode as the default output format.
 `HTML only`_
    For creation of HTML Strings, with HTML Mode as the default output format.
+`Templates`_
+   For templating, with mixed output and DOM Mode as the default output format.
 
 .. _`DOM and HTML`: https://github.com/insin/DOMBuilder/raw/master/dist/DOMBuilder.min.js
 .. _`DOM only`: https://github.com/insin/DOMBuilder/raw/master/dist/DOMBuilder.dom.min.js
 .. _`HTML only`: https://github.com/insin/DOMBuilder/raw/master/dist/DOMBuilder.html.min.js
+.. _`Templates`: https://github.com/insin/DOMBuilder/raw/master/dist/DOMBuilder.template.min.js
 
 Dependencies
 ~~~~~~~~~~~~
@@ -115,7 +103,7 @@ Node.js
 -------
 
 DOMBuilder can be installed as a `Node.js`_ module via `npm`_. The
-Node.js build includes `HTML mode`_ and has HTML as the default output
+Node.js build includes Template mode and has `HTML mode`_ as the default output
 format.
 
 Install::
@@ -129,22 +117,6 @@ Import::
 .. _`Node.js`: http://nodejs.org
 .. _`npm`: http://npmjs.org/
 .. _`HTML mode`: http://readthedocs.org/docs/dombuilder/en/latest/htmlmode.html
-
-Akshell
--------
-
-DOMBuilder is available as an `Akshell`_ app, which includes HTML Mode and
-has HTML as the default output format.
-
-Add the following to your app's ``manifest.json``::
-
-   "insin/DOMBuilder:2.0.0"
-
-Import::
-
-   var DOMBuilder = require('DOMBuilder')
-
-.. _`Akshell`: http://akshell.com
 
 Quick Guide
 ===========
