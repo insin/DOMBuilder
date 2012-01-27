@@ -1,4 +1,4 @@
-module('HTML', {
+QUnit.module('HTML', {
   setup: function() {
     DOMBuilder.mode = 'html';
   },
@@ -15,7 +15,7 @@ var elements = DOMBuilder.elements;
 var html = DOMBuilder.html;
 var htmlAPI = DOMBuilder.modes.html.api;
 
-test('MockElement', function() {
+QUnit.test('MockElement', function() {
   expect(30);
 
   equals(typeof htmlAPI.MockElement, 'function', 'MockElement is accessible via DOMBuilder.modes.html');
@@ -106,12 +106,12 @@ test('MockElement', function() {
   equal(el.toString(), '<input type="button">', ' Attributes which would have been handled by jQuery are ignored');
 });
 
-test('DOMBuilder.textNode', function() {
+QUnit.test('DOMBuilder.textNode', function() {
   var text = DOMBuilder.textNode('test');
   equal(typeof text, 'string', 'String returned as-is');
 });
 
-test('MockFragment', function() {
+QUnit.test('MockFragment', function() {
   expect(17);
 
   // MockFragment is available
@@ -156,7 +156,7 @@ test('MockFragment', function() {
   equal(f2.childNodes.length, 6, 'Appending an empty fragment has no effect');
 });
 
-test('HTML Escaping', function() {
+QUnit.test('HTML Escaping', function() {
   expect(9);
 
   var s = '< > & \' "';

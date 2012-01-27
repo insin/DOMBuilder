@@ -1,4 +1,4 @@
-module('Template', {
+QUnit.module('Template', {
   setup: function() {
     DOMBuilder.mode = 'html';
   }
@@ -17,7 +17,7 @@ function shallowCopy(a) {
   return b;
 }
 
-test('DOMBuilder.apply', function() {
+QUnit.test('DOMBuilder.apply', function() {
   var context = {};
   DOMBuilder.apply(context, 'template');
   var allTemplateFunctionsPresent = true;
@@ -30,7 +30,7 @@ test('DOMBuilder.apply', function() {
   ok(allTemplateFunctionsPresent, 'All expected template functions were added to context object');
 });
 
-test('getTemplate/selectTemplate', function() {
+QUnit.test('getTemplate/selectTemplate', function() {
   // Simulates templates allowing overriding and specialisation per content type
   // via the use of selectTemplate.
   templates.$template('override/widget/test_detail_page');
@@ -49,7 +49,7 @@ test('getTemplate/selectTemplate', function() {
         ]).name, 'override/test_detail_page', 'selectTemplate gets first matching template');
 });
 
-test('Context', function() {
+QUnit.test('Context', function() {
   // Instantiation with context
   var content = {test1: 1, test2: 2};
   var c = new templates.Context(content);
@@ -117,7 +117,7 @@ test('Context', function() {
   ok(c.get('test'), '"new" keyword is optional');
 });
 
-test('BlockContext', function() {
+QUnit.test('BlockContext', function() {
   var b = new templateAPI.BlockContext();
   deepEqual(b.blocks, {}, 'Initialised with empty lookup');
 
@@ -162,7 +162,7 @@ test('BlockContext', function() {
   }, 'Overriding block was popped off');
 });
 
-test('Variable', function() {
+QUnit.test('Variable', function() {
   // Variables resolve against contexts
   var v = new templateAPI.Variable('test');
   strictEqual(v.resolve(templates.Context({test: 42})), 42, 'Variable resolved');
@@ -214,7 +214,7 @@ test('Variable', function() {
   })), handler, '$func is a convenience function for variable lookup without Function calling');
 });
 
-test('Template', function() {
+QUnit.test('Template', function() {
   var c1 = {render: function(context) { return 'parent'; }};
   var c2 = {render: function(context) { return 'child'; }};
   var b1 = templates.$block('foo', c1);
@@ -269,7 +269,7 @@ test('Template', function() {
     'Missing parent template throws TemplateNotFoundError');
 });
 
-test('ForNode', function() {
+QUnit.test('ForNode', function() {
   var items, forloops = [];
   var f = templates.$for('item in items', {render: function(context) {
     forloops.push(shallowCopy(new templateAPI.Variable('forloop').resolve(context)));
@@ -416,7 +416,7 @@ test('ForNode', function() {
   ok(true, 'Valid: "person, in in things"');
 });
 
-test('IfNode', function() {
+QUnit.test('IfNode', function() {
   var c = templates.Context({a: 41, b: 42, c: 43, d: '43', e: 43, f: true});
 
   // Valid, supported expressions
@@ -471,7 +471,7 @@ test('IfNode', function() {
             'Returns $else contents when condition is false');
 });
 
-test('TextNode', function() {
+QUnit.test('TextNode', function() {
   var c = templates.Context({test: 42, foo: 'bar'});
 
   // Static text
@@ -503,7 +503,7 @@ test('TextNode', function() {
             'Variable lookup performed');
 });
 
-test('BlockNode', function() {
+QUnit.test('BlockNode', function() {
   var c1 = {render: function(context) { return 'parent'; }};
   var c2 = {render: function(context) { return 'child'; }};
   var b1 = templates.$block('foo', c1);
@@ -518,7 +518,7 @@ test('BlockNode', function() {
   deepEqual(b2.render(c), [['parent'], 'child'], 'block.super renders parent contents');
 });
 
-test('IncludeNode', function() {
+QUnit.test('IncludeNode', function() {
   with (templates) {
     $template('included'
     , '{{ arg }}'
@@ -557,7 +557,7 @@ test('IncludeNode', function() {
             'Context for templated included using "only" contains only given variables');
 });
 
-test('CycleNode', function() {
+QUnit.test('CycleNode', function() {
   // With constants and variables
   var cycle = new templateAPI.CycleNode(['a', templates.$var('b'), 'c']);
   equal(cycle.id, 'cycle1', ' Expected id generated');
@@ -583,7 +583,7 @@ test('CycleNode', function() {
   equal(c.get('bar'), 'a', 'Value added to context');
 });
 
-test('ElementNode', function() {
+QUnit.test('ElementNode', function() {
   var el = new templateAPI.ElementNode('p', {id: 'item{{ foo }}'}, ['Content']);
   strictEqual(el.dynamicAttrs, true, 'Dynamic attributes detected');
   var c = templates.Context({foo: 42});

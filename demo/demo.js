@@ -1,5 +1,5 @@
 var http = require("http"),
-    DOMBuilder = require("./index");
+    DOMBuilder = require("../lib/dombuilder");
 
 with (DOMBuilder.elements) {
   var fragment = DOMBuilder.fragment(STRONG("Hello from an ",

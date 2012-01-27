@@ -1,4 +1,4 @@
-module('Core', {
+QUnit.module('Core', {
   setup: function() {
     DOMBuilder.mode = null;
   },
@@ -35,7 +35,7 @@ var testMode = {
 
 DOMBuilder.addMode(testMode);
 
-test('DOMBuilder.addMode', 3, function() {
+QUnit.test('DOMBuilder.addMode', 3, function() {
   ok(DOMBuilder.modes.test,
      'Mode object added to DOMBuilder.modes');
   equal(Object.prototype.toString.call(DOMBuilder.test),
@@ -46,7 +46,7 @@ test('DOMBuilder.addMode', 3, function() {
               'Mode apply properties added to mode-specific element functions');
 });
 
-test('Element & fragment Array output', 9, function() {
+QUnit.test('Element & fragment Array output', 9, function() {
   deepEqual(el.DIV(), ['div']);
   deepEqual(el.DIV('1'), ['div', '1']);
   deepEqual(el.DIV({'1': '2'}), ['div', {'1': '2'}]);
@@ -84,7 +84,7 @@ test('Element & fragment Array output', 9, function() {
                ]);
 });
 
-test('Map Array output', 4, function() {
+QUnit.test('Map Array output', 4, function() {
   var items = [1, 2, 3];
   var loopStatus = [];
   var expectedLoopStatus = [{
@@ -121,7 +121,7 @@ test('Map Array output', 4, function() {
   deepEqual(loopStatus, expectedLoopStatus);
 });
 
-test('Building from Array', 2, function() {
+QUnit.test('Building from Array', 2, function() {
   var a = ['div', {'class': 'test'}
           , 'before'
           , ['span'

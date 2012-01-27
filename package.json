@@ -1,13 +1,22 @@
 {
-  "name": "DOMBuilder",
-  "description": "Builder library - generate HTML with an API which is also usable in the browser",
-  "version": "2.1.0alpha2",
-  "author": "Jonathan Buchanan <jonathan.buchanan@gmail.com> (https://github.com/insin)",
-  "tags": ["HTML", "builder"],
-  "homepage": "http://readthedocs.org/docs/dombuilder/en/latest/",
-  "main": "index",
+  "name": "DOMBuilder"
+, "description": "Builder library - generate HTML with an API which is also usable in the browser"
+, "version": "2.1.0"
+, "author": "Jonathan Buchanan <jonathan.buchanan@gmail.com> (https://github.com/insin)"
+, "tags": ["dualsided", "DOM", "HTML", "builder", "templates"]
+, "main": "./lib/dombuilder",
   "repository": {
-    "type": "git",
-    "url": "https://github.com/insin/DOMBuilder.git"
+    "type": "git"
+  , "url": "https://github.com/insin/DOMBuilder.git"
+  }
+, "dependencies": {
+    "isomorph": "0.1.x"
+  }
+, "devDependencies": {
+    "qunit": "0.2.x"
+  , "buildumb": "0.1.x"
+  }
+, "scripts": {
+    "test": "node tests/tests.js"
   }
 }
