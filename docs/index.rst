@@ -129,25 +129,24 @@ feature modes as plugins.
 
 The available components are:
 
-`DOMBuilder.js`_
+`core.js`_
    Core library
-`DOMBuilder.dom.js`_
+`dom.js`_
    DOM output mode - adds ``DOMBuilder.dom``
-`DOMBuilder.html.js`_
+`html.js`_
    HTML output mode - adds ``DOMBuilder.html``
-`DOMBuilder.template.js`_
+`template.js`_
    Template feature mode - adds ``DOMBuilder.template``
 
-.. _`DOMBuilder.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.js
-.. _`DOMBuilder.dom.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.dom.js
-.. _`DOMBuilder.html.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.html.js
-.. _`DOMBuilder.template.js`: https://github.com/insin/DOMBuilder/raw/master/lib/DOMBuilder.template.js
+.. _`core.js`: https://github.com/insin/DOMBuilder/tree/master/lib/dombuilder/core.js
+.. _`dom.js`: https://github.com/insin/DOMBuilder/tree/master/lib/dombuilder/dom.js
+.. _`html.js`: https://github.com/insin/DOMBuilder/tree/master/lib/dombuilder/html.js
+.. _`template.js`: https://github.com/insin/DOMBuilder/tree/master/lib/dombuilder/template.js
 
 Compressed Builds
 ~~~~~~~~~~~~~~~~~
 
-Multiple preconfigured, compressed builds of DOMBuilder are available to suit
-various needs:
+Compressed builds of DOMBuilder are available to suit various needs:
 
 `DOM and HTML`_
    For creation of mixed content, with :doc:`dommode` as the default output format.
@@ -155,26 +154,34 @@ various needs:
    For creation of DOM Elements, with :doc:`dommode` as the default output format.
 `HTML only`_
    For creation of HTML Strings, with :doc:`htmlmode` as the default output format.
+`Templates`_
+   For templating, with mixed output and :doc:`dommode` as the default output format.
 
 .. _`DOM and HTML`: https://github.com/insin/DOMBuilder/raw/master/dist/DOMBuilder.min.js
 .. _`DOM only`: https://github.com/insin/DOMBuilder/raw/master/dist/DOMBuilder.dom.min.js
 .. _`HTML only`: https://github.com/insin/DOMBuilder/raw/master/dist/DOMBuilder.html.min.js
+.. _`Templates`: https://github.com/insin/DOMBuilder/raw/master/dist/DOMBuilder.template.min.js
 
 Dependencies
 ~~~~~~~~~~~~
 
-There are no *required* dependencies, but if `jQuery`_ (>= 1.4) is
-available, DOMBuilder will make use of it when creating DOM Elements and
-setting up their attributes and event handlers.
+All required dependencies from `isomorph`_ are bundled into the builds above.
 
-If not, DOMBuilder will fall back to using some less comprehensive
-workarounds for cross-browser DOM issues and use the `traditional event
-registration model`_ for compatibility.
+If `jQuery`_ (>= 1.4) is available, DOMBuilder will make use of it when creating
+DOM Elements and setting up their attributes and event handlers. Otherwise,
+DOMBuilder will fall back to using some less comprehensive workarounds for
+cross-browser DOM issues and use the `traditional event registration model`_ for
+compatibility.
 
 .. versionchanged:: 1.4
    jQuery was made optional, with the caveat that cross-browser support will
    be less robust.
 
+.. versionchanged:: 2.1
+   There are now some required utility dependencies, which are bundled with the
+   browser builds.
+
+.. _`isomorph`: https://github.com/insin/isomorph
 .. _`jQuery`: http://jquery.com
 .. _`traditional event registration model`: http://www.quirksmode.org/js/events_tradmod.html
 
@@ -183,9 +190,9 @@ Node.js
 
 .. versionadded:: 1.4.1
 
-DOMBuilder can be installed as a `Node.js`_ module using `npm`_. The
-Node.js build includes :doc:`htmlmode` and has HTML as the default output
-format.
+DOMBuilder can be installed as a `Node.js`_ module using `npm`_. The Node.js
+build includes :doc:`templates` and :doc:`htmlmode`, and has HTML as the default
+output format.
 
 Install::
 
@@ -197,19 +204,3 @@ Import::
 
 .. _`Node.js`: http://nodejs.org
 .. _`npm`: http://npmjs.org/
-
-Akshell
--------
-
-DOMBuilder is available as an `Akshell`_ app, which includes HTML Mode and
-has HTML as the default output format.
-
-Add the following to your app's ``manifest.json``::
-
-   "insin/DOMBuilder:2.0.0"
-
-Import::
-
-   var DOMBuilder = require('DOMBuilder')
-
-.. _`Akshell`: http://akshell.com

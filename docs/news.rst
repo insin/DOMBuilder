@@ -1,6 +1,11 @@
 News for DOMBuilder
 ===================
 
+2.1.1 / 2012-02-01
+------------------
+
+* Fixed browser build - IE7/8 object.hasOwn incompatibility fixed in isomorph.
+
 2.1.0 / 2012-01-27
 ------------------
 

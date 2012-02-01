@@ -65,11 +65,10 @@ Yes, there are a million builder libraries about. DOMBuilder's goals are to:
 Installation
 ============
 
-Browserss
----------
+Browsers
+--------
 
-Multiple preconfigured, compressed builds of DOMBuilder are available to suit
-various needs:
+Compressed builds of DOMBuilder are available to suit various needs:
 
 `DOM and HTML`_
    For creation of mixed content, with DOM Mode as the default output format.

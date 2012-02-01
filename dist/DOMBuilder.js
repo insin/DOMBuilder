@@ -1,5 +1,5 @@
 /**
- * DOMBuilder 2.1.0 (modes: dom [default], html) - https://github.com/insin/DOMBuilder
+ * DOMBuilder 2.1.1 (modes: dom [default], html) - https://github.com/insin/DOMBuilder
  * MIT Licensed
  */
 ;(function() {
@@ -92,7 +92,10 @@ require.define("isomorph/lib/object", function(module, exports, require) {
  * Callbound version of Object.prototype.hasOwnProperty(), ready to be called
  * with an object and property name.
  */
-var hasOwn = Function.prototype.call.bind(Object.prototype.hasOwnProperty)
+var hasOwn = (function() {
+  var hasOwnProperty = Object.prototype.hasOwnProperty
+  return function(obj, prop) { return hasOwnProperty.call(obj, prop) }
+})()
 
 /**
  * Copies own properties from any given objects to a destination object.
@@ -159,6 +162,14 @@ function lookup(arr) {
   return obj
 }
 
+/**
+ * If the given object has the given property, returns its value, otherwise
+ * returns the given default value.
+ */
+function get(obj, prop, defaultValue) {
+  return (hasOwn(obj, prop) ? obj[prop] : defaultValue)
+}
+
 module.exports = {
   hasOwn: hasOwn
 , extend: extend
@@ -166,6 +177,7 @@ module.exports = {
 , items: items
 , fromItems: fromItems
 , lookup: lookup
+, get: get
 }
 })
 
@@ -453,7 +465,7 @@ function loopStatus(i, l) {
 // === DOMBuilder API ==========================================================
 
 var DOMBuilder = {
-  version: '2.1.0'
+  version: '2.1.1'
 
 // ------------------------------------------------------------------- Modes ---
 
