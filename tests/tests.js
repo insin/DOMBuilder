@@ -1,9 +1,14 @@
-var qunit = require('qunit')
-  , path = require('path')
+var path = require('path')
 
-qunit.run({ code: {path: path.join(__dirname, '../lib/dombuilder.js'), namespace: 'DOMBuilder'}
-          , tests: [ path.join(__dirname, 'core.js')
-                   , path.join(__dirname, 'html.js')
-                   , path.join(__dirname, 'template.js')
-                   ]
-          })
+var qqunit = require('qqunit')
+
+global.DOMBuilder = require('../lib/dombuilder')
+
+var tests = [ 'core.js'
+            , 'html.js'
+            , 'template.js'
+            ].map(function(t) { return path.join(__dirname, t) })
+
+qqunit.Runner.run(tests, function(stats) {
+  process.exit(stats.failed)
+})
