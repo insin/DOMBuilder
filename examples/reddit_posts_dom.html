@@ -14,7 +14,7 @@
   <script src="../dist/DOMBuilder.dom.js"></script>
   <!-- DOM code -->
   <script>
-  DOMBuilder.apply(window);
+  DOMBuilder.apply(window)
 
   function postTmpl(post) {
     return DIV({'class': 'post'}
@@ -31,7 +31,7 @@
         , post.num_comments + ' comments'
         )
       )
-    );
+    )
   }
 
   function postList(posts) {
@@ -40,20 +40,20 @@
         return [
           postTmpl(postData.data)
         , DIV({'class': 'clearleft'})
-        ];
+        ]
       })
-    );
+    )
   }
 
   function displayPosts(data) {
-    var stage = document.getElementById('stage');
-    var start = new Date().getTime();
-    stage.appendChild(postList(data.data.children));
-    var end = new Date().getTime();
+    var stage = document.getElementById('stage')
+    var start = new Date().getTime()
+    stage.appendChild(postList(data.data.children))
+    var end = new Date().getTime()
     stage.parentNode.insertBefore(
       DOMBuilder.dom.P('Template rendered in ' + (end-start) + ' ms'),
       stage
-    );
+    )
   }
   </script>
 </head>

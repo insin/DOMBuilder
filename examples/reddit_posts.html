@@ -14,7 +14,7 @@
   <script src="../dist/DOMBuilder.template.js"></script>
   <!-- Template code -->
   <script>
-  var template = DOMBuilder.template;
+  var template = DOMBuilder.template
   with (template) {
     $template('post'
     , DIV({'class': 'post'}
@@ -35,7 +35,7 @@
         )
       )
     , DIV({'class': 'clearleft'})
-    );
+    )
 
     $template('postList'
     , DIV({'class': 'hfeed'}
@@ -43,18 +43,18 @@
         , $include('post', {post: $var('postData.data')})
         )
       )
-    );
-  };
+    )
+  }
 
   function displayPosts(data) {
-    var stage = document.getElementById('stage');
-    var start = new Date().getTime();
-    stage.appendChild(template.renderTemplate('postList', {postList: data.data.children}));
-    var end = new Date().getTime();
+    var stage = document.getElementById('stage')
+    var start = new Date().getTime()
+    stage.appendChild(template.renderTemplate('postList', {postList: data.data.children}))
+    var end = new Date().getTime()
     stage.parentNode.insertBefore(
       DOMBuilder.dom.P('Template rendered in ' + (end-start) + ' ms'),
       stage
-    );
+    )
   }
   </script>
 </head>

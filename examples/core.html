@@ -9,27 +9,27 @@
       , ['h2', 'Article title']
       , ['p', 'Paragraph one']
       , ['p', 'Paragraph two']
-      ];
-  console.log(DOMBuilder.build(article, 'html').toString());
+      ]
+  console.log(DOMBuilder.build(article, 'html').toString())
 
-  var el = DOMBuilder.elements;
+  var el = DOMBuilder.elements
   var article = DOMBuilder.withMode(null, function() {
     return el.DIV({'class': 'article'}
            , el.H2('Article title')
            , el.P('Paragraph one')
            , el.P('Paragraph two')
-           );
-  });
+           )
+  })
 
   DOMBuilder.addMode({
     name: 'log'
   , createElement: function(tagName, attributes, children) {
-      console.log(tagName, attributes, children);
-      return tagName;
+      console.log(tagName, attributes, children)
+      return tagName
     }
-  });
+  })
 
-  DOMBuilder.build(article, 'log');
+  DOMBuilder.build(article, 'log')
   </script>
 </head>
 <body>
