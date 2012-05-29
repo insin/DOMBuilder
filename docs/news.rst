@@ -1,6 +1,12 @@
 News for DOMBuilder
 ===================
 
+2.1.2 / 2012-05-29
+------------------
+
+* Now using Concur to define TemplateNode so it can more easily be inherited
+  from.
+
 2.1.1 / 2012-02-01
 ------------------
 

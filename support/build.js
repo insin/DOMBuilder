@@ -6,10 +6,12 @@ var buildumb = require('buildumb')
 // Default configuration for all builds
 var root = path.normalize(path.join(__dirname, '..'))
 var baseModules = {
+  // isomorph
   'node_modules/isomorph/lib/is.js'     : ['isomorph/lib/is', './is']
 , 'node_modules/isomorph/lib/object.js' : 'isomorph/lib/object'
 , 'node_modules/isomorph/lib/array.js'  : 'isomorph/lib/array'
-, 'lib/dombuilder/core.js'              : ['./dombuilder/core', './core']
+  // DOMBuilder
+, 'lib/dombuilder/core.js' : ['./dombuilder/core', './core']
 }
 
 // Configuration for multiple feature builds
@@ -33,6 +35,10 @@ for (var i = 0, l = builds.length; i < l; i++) {
                                        features)
 
   var modules = object.extend({}, baseModules)
+  // Include Concur in the build only for plugin modules which use it
+  if (pluginModules.indexOf('template') != -1) {
+    modules['node_modules/Concur/lib/concur.js'] = 'Concur'
+  }
   pluginModules.forEach(function(pluginModule) {
     modules['lib/dombuilder/' + pluginModule + '.js'] = './dombuilder/' + pluginModule
   })
