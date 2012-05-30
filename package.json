@@ -11,7 +11,7 @@
   }
 , "dependencies": {
     "isomorph": "0.1.x"
-  , "concur": "0.2.x"
+  , "Concur": "0.2.x"
   }
 , "devDependencies": {
     "qqunit": "0.1.x"
