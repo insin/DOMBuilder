@@ -1,5 +1,5 @@
 /**
- * DOMBuilder 2.1.2 (modes: dom [default], html, template) - https://github.com/insin/DOMBuilder
+ * DOMBuilder 2.1.3 (modes: dom [default], html, template) - https://github.com/insin/DOMBuilder
  * MIT Licensed
  */
 ;(function() {
@@ -1584,7 +1584,7 @@ var slice = Array.prototype.slice
 /** Separator used for object lookups. */
 var VAR_LOOKUP_SEPARATOR = '.'
 /** RegExp for specifying the loop variable for a ForNode. */
-var FOR_RE = /( in )([\w_]+)$/
+var FOR_RE = /( in )([\.\w_]+)$/
 /** Separator for specifying multiple variable names to be unpacked. */
 var UNPACK_SEPARATOR_RE = /, ?/
 /** RegExp for template variables. */

@@ -1,6 +1,12 @@
 News for DOMBuilder
 ===================
 
+2.1.3 / 2012-05-31
+------------------
+
+* Periods are now allowed on the RHS of ForNode expressions, so it's possible to
+  look up items to be iterated over from another template context variable.
+
 2.1.2 / 2012-05-29
 ------------------
 

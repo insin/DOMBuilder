@@ -1,5 +1,5 @@
 /**
- * DOMBuilder 2.1.2 (modes: html [default]) - https://github.com/insin/DOMBuilder
+ * DOMBuilder 2.1.3 (modes: html [default]) - https://github.com/insin/DOMBuilder
  * MIT Licensed
  */
 ;(function() {

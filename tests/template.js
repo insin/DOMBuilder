@@ -281,7 +281,7 @@ QUnit.test('ForNode', function() {
   deepEqual(items, [], 'Zero items - item context as expected');
   deepEqual(forloops, [], 'Zero items - forloop context as expected');
 
-  // SIngle item
+  // Single item
   items = f.render(templates.Context({'items': [1]}));
   deepEqual(items, [1], 'Single item - item context as expected');
   deepEqual(forloops, [{
@@ -414,6 +414,12 @@ QUnit.test('ForNode', function() {
   // 'in' is a valid loop variable name
   templates.$for('person, in in things');
   ok(true, 'Valid: "person, in in things"');
+
+  // Should be able to look up items from other context variables
+  f = templates.$for('item in items.things', '{{ item }}');
+  deepEqual(f.render(templates.Context({items: {things: [1,2,3]}})),
+            [[1], [2], [3]],
+            'Valid: "item in items.things"');
 });
 
 QUnit.test('IfNode', function() {
