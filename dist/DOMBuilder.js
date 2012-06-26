@@ -582,7 +582,7 @@ var DOMBuilder = {
     }
     return (isFragment
             ? this.modes[mode].fragment(built)
-            : this.modes[mode].createElement(elementName, attrs, built))
+            : this.modes[mode].createElement(elementName, attrs || {}, built))
   }
 
   /**
