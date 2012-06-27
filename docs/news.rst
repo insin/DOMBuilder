@@ -1,6 +1,12 @@
 News for DOMBuilder
 ===================
 
+2.1.5 / 2012-06-27
+------------------
+
+* Fixed bug with ``DOMBuilder.build()`` not recognising tag names containing
+  numbers.
+
 2.1.4 / 2012-06-27
 ------------------
 

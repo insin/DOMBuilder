@@ -133,17 +133,19 @@ QUnit.test('Building from Array', 2, function() {
             ]
           , 'between'
           , ['br']
+          , ['i', 'i']
           , ['.div2'
+            , ['h2', 'test']
             , ['span#span1.class1']
             ]
           , 'after'
           ];
   equal(DOMBuilder.build(a, 'test'),
-'<div class=test id=div1 before<span class=class1 class2 stuff<#fragment <strong class=very things>here>>between<br><div class=div2 <span id=span1 class=class1>>after>',
+'<div class=test id=div1 before<span class=class1 class2 stuff<#fragment <strong class=very things>here>>between<br><i i><div class=div2 <h2 test><span id=span1 class=class1>>after>',
     'Builds using the specified mode');
   DOMBuilder.withMode('html', function() {
     equal(''+DOMBuilder.build(a),
-'<div class="test" id="div1">before<span class="class1 class2">stuff<strong class="very">things</strong>here</span>between<br><div class="div2"><span id="span1" class="class1"></span></div>after</div>',
+'<div class="test" id="div1">before<span class="class1 class2">stuff<strong class="very">things</strong>here</span>between<br><i>i</i><div class="div2"><h2>test</h2><span id="span1" class="class1"></span></div>after</div>',
       'Falls back to DOMBuilder.mode if a mode is not specified');
   });
 });

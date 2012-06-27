@@ -1,5 +1,5 @@
 /**
- * DOMBuilder 2.1.4 (modes: dom [default], html) - https://github.com/insin/DOMBuilder
+ * DOMBuilder 2.1.5 (modes: dom [default], html) - https://github.com/insin/DOMBuilder
  * MIT Licensed
  */
 ;(function() {
@@ -255,7 +255,7 @@ var FRAGMENT_NAME = '#document-fragment'
  * @type {RegExp}
  */
 var BUILD_TAG_RE = new RegExp(
-      '^([a-z]+)?'                       // tag name
+      '^([a-z][a-z0-9]*)?'               // tag name
     + '(?:#([a-z][-:\\w]*))?'            // id, excluding leading '#'
     + '(?:\\.([-\\w]+(?:\\.[-\\w]+)*))?' // class(es), excluding leading '.'
     , 'i'
