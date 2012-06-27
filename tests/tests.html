@@ -1,29 +1,24 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
+  <meta charset="UTF-8">
   <title>DOMBuilder QUnit Tests</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta name="Author" content="Jonathan Buchanan">
   <!-- Test framework -->
-  <link rel="stylesheet" href="lib/qunit.css" type="text/css" media="screen">
-  <script type="text/javascript" src="lib/qunit.js"></script>
+  <link rel="stylesheet" href="qunit/qunit.css">
+  <script src="qunit/qunit.js"></script>
   <!-- Code under test -->
-  <script type="text/javascript" src="../dist/DOMBuilder.template.js"></script>
+  <script src="../dist/DOMBuilder.template.js"></script>
   <!-- Test cases -->
-  <script type="text/javascript" src="core.js"></script>
-  <script type="text/javascript" src="dom.js"></script>
-  <script type="text/javascript" src="html.js"></script>
-  <script type="text/javascript" src="mixedmode.js"></script>
-  <script type="text/javascript" src="template.js"></script>
+  <script src="core.js"></script>
+  <script src="dom.js"></script>
+  <script src="html.js"></script>
+  <script src="mixedmode.js"></script>
+  <script src="template.js"></script>
   <!-- Load jQuery last so DOMBuilder uses its own DOM mode compatibility -->
-  <script type="text/javascript" src="lib/jquery-latest.js"></script>
+  <script src="lib/jquery.min.js"></script>
 </head>
 <body>
-  <h1 id="qunit-header">DOMBuilder QUnit Tests</h1>
-  <h2 id="qunit-banner"></h2>
-  <div id="qunit-testrunner-toolbar"></div>
-  <h2 id="qunit-userAgent"></h2>
-  <ol id="qunit-tests"></ol>
+  <div id="qunit"></div>
   <div id="qunit-fixture"></div>
 </body>
 </html>

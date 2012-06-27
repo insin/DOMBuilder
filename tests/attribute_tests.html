@@ -1,29 +1,28 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
+  <meta charset="UTF-8">
   <title>DOMBuilder Attribute Tests</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta name="Author" content="Jonathan Buchanan">
-  <style type="text/css">
+  <style>
   body { font-family: verdana; font-size: 12px; }
   th { background-color: #cdf; }
   .row1 { background-color: #f3f6f9; }
   .row2 { background-color: #f6f9fc; }
   </style>
-  <script type="text/javascript">
+  <script>
   if (location.hash == "#jQuery")
   {
-      document.write('<script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></s' + 'cript>');
+      document.write('<script type="text/javascript" src="lib/jquery.min.js"></s' + 'cript>');
   }
   </script>
-  <script type="text/javascript" src="../dist/DOMBuilder.template.js"></script>
-  <script type="text/javascript">
+  <script src="../dist/DOMBuilder.template.js"></script>
+  <script>
   if (location.hash != "#jQuery")
   {
-      document.write('<script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></s' + 'cript>');
+      document.write('<script type="text/javascript" src="lib/jquery.min.js"></s' + 'cript>');
   }
   </script>
-  <script type="text/javascript">
+  <script>
   var NBSP = "\u00A0";
 
   function runTests(testConfigs, testFunction)
