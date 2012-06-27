@@ -149,8 +149,8 @@ QUnit.test('BlockContext', function() {
   }, 'Base template example');
 
   // Get blocks
-  equals(b.getBlock('content'), 6, 'Getting an overriding block');
-  equals(b.pop('title'), 9, 'Popping an overriding block');
+  equal(b.getBlock('content'), 6, 'Getting an overriding block');
+  equal(b.pop('title'), 9, 'Popping an overriding block');
   deepEqual(b.blocks, {
       title: [2]
     , body_class: [4, 10]

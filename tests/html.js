@@ -18,7 +18,7 @@ var htmlAPI = DOMBuilder.modes.html.api;
 QUnit.test('MockElement', function() {
   expect(30);
 
-  equals(typeof htmlAPI.MockElement, 'function', 'MockElement is accessible via DOMBuilder.modes.html');
+  equal(typeof htmlAPI.MockElement, 'function', 'MockElement is accessible via DOMBuilder.modes.html');
 
   // No attributes or children
   var el = new htmlAPI.MockElement('A');
@@ -133,7 +133,7 @@ QUnit.test('MockFragment', function() {
   // Initialise with a fragment
   var f1 = new htmlAPI.MockFragment([elements.B('Zero'), f2, elements.B('Four')]);
   equal(f1.childNodes.length, 5,  'Fragment contents inlined on creation');
-  equals(f2.childNodes.length, 0, 'Fragment which was inlined was emptied');
+  equal(f2.childNodes.length, 0, 'Fragment which was inlined was emptied');
   equal(f1.toString(),
         '<b>Zero</b><h2>One</h2>Two<p>Three</p><b>Four</b>',
         'Rendering after initialising with a fragment');
