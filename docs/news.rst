@@ -1,6 +1,16 @@
 News for DOMBuilder
 ===================
 
+2.1.4 / 2012-06-27
+------------------
+
+* Added support for `jade`_-style definition of tags with id and classes to
+  ``DOMBuilder.build()``.
+* Fixed error creating tags without attributes using ``DOMBuilder.build()`` with
+  DOM mode.
+
+.. _`jade`: http://jade-lang.com/
+
 2.1.3 / 2012-05-31
 ------------------
 

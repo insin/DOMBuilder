@@ -551,7 +551,56 @@ To create content from a nested Array in this format, use:
    >>> DOMBuilder.build(article, 'html').toString()
    <div class="article"><h2>Article title</h2><p>Paragraph one</p><p>Paragraph two</p></div>
 
-You can also use the element function and core API to create array
+For convenience, ``id`` and ``class`` attributes can also be specified via the
+tag name, like so::
+
+   >>> DOMBuilder.build(['div#id', 'content'], 'html').toString()
+   <div id="id">content</div>
+
+   >>> DOMBuilder.build(['div.class', 'content'], 'html').toString()
+   <div class="class">content</div>
+
+You can specify multiple classes::
+
+   >>> DOMBuilder.build(['div.class1.class2', 'content'], 'html').toString()
+   <div class="class1 class2">content</div>
+
+If you want to specify both, the id must be specified first, or it will be
+skipped::
+
+   >>> DOMBuilder.build(['div#id.class', 'content'], 'html').toString()
+   <div id="id" class="class">content</div>
+
+   >>> DOMBuilder.build(['div.class#id', 'content'], 'html').toString()
+   <div class="class">content</div>
+
+If you omit a tag name but specify an id/class, the tag name will default to
+``'div'``::
+
+   >>> DOMBuilder.build(['#id.class', 'content'], 'html').toString()
+   <div id="id" class="class">content</div>
+
+You can create :ref:`document-fragments` by providing ``'#document-fragment'``
+as the tag name - this is useful if you want to insert a number of elements at
+the same time without needing to wrap them in another element
+
+::
+
+   var articles =
+     ['#document-fragment'
+     , ['div.article', 'Article 1']
+     , ['div.article', 'Article 2']
+     ]
+
+::
+
+   >>> DOMBuilder.build(articles, 'html').toString()
+   <div class="article">Article 1</div><div class="article">Article 2</div>
+
+   >>> DOMBuilder.build(articles, 'dom').toString()
+   [object DocumentFragment]
+
+You can also use the element functions and core API to create array
 representations of HTML elements, by setting :js:attr:`DOMBuilder.mode`
 to ``null`` and using :js:attr:`DOMBuilder.elements`, or directly by using
 the element functions defined in :js:attr:`DOMBuilder.array`:

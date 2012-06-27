@@ -122,9 +122,9 @@ QUnit.test('Map Array output', 4, function() {
 });
 
 QUnit.test('Building from Array', 2, function() {
-  var a = ['div', {'class': 'test'}
+  var a = ['#div1', {'class': 'test'}
           , 'before'
-          , ['span'
+          , ['span.class1.class2'
             , 'stuff'
             , ['#document-fragment'
               , ['strong', {'class': 'very'}, 'things']
@@ -133,15 +133,18 @@ QUnit.test('Building from Array', 2, function() {
             ]
           , 'between'
           , ['br']
+          , ['.div2'
+            , ['span#span1.class1']
+            ]
           , 'after'
           ];
   equal(DOMBuilder.build(a, 'test'),
-'<div class=test before<span stuff<#fragment <strong class=very things>here>>between<br>after>',
-        'Builds using the specified mode');
+'<div class=test id=div1 before<span class=class1 class2 stuff<#fragment <strong class=very things>here>>between<br><div class=div2 <span id=span1 class=class1>>after>',
+    'Builds using the specified mode');
   DOMBuilder.withMode('html', function() {
     equal(''+DOMBuilder.build(a),
-'<div class="test">before<span>stuff<strong class="very">things</strong>here</span>between<br>after</div>',
-          'Falls back to DOMBuilder.mode if a mode is not specified');
+'<div class="test" id="div1">before<span class="class1 class2">stuff<strong class="very">things</strong>here</span>between<br><div class="div2"><span id="span1" class="class1"></span></div>after</div>',
+      'Falls back to DOMBuilder.mode if a mode is not specified');
   });
 });
 
