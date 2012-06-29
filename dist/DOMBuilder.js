@@ -1,5 +1,5 @@
 /**
- * DOMBuilder 2.1.5 (modes: dom [default], html) - https://github.com/insin/DOMBuilder
+ * DOMBuilder 2.1.6 (modes: dom [default], html) - https://github.com/insin/DOMBuilder
  * MIT Licensed
  */
 ;(function() {
@@ -22,7 +22,7 @@
     }
   }
 
-require.define(["isomorph/lib/is","./is"], function(module, exports, require) {
+require.define(["isomorph/is","./is"], function(module, exports, require) {
 var toString = Object.prototype.toString
 
 // Type checks
@@ -87,7 +87,7 @@ module.exports = {
 }
 })
 
-require.define("isomorph/lib/object", function(module, exports, require) {
+require.define("isomorph/object", function(module, exports, require) {
 /**
  * Callbound version of Object.prototype.hasOwnProperty(), ready to be called
  * with an object and property name.
@@ -181,7 +181,7 @@ module.exports = {
 }
 })
 
-require.define("isomorph/lib/array", function(module, exports, require) {
+require.define("isomorph/array", function(module, exports, require) {
 var is = require('./is')
 
 var splice = Array.prototype.splice
@@ -213,9 +213,9 @@ module.exports = {
 })
 
 require.define(["./dombuilder/core","./core"], function(module, exports, require) {
-var is = require('isomorph/lib/is')
-  , object = require('isomorph/lib/object')
-  , array = require('isomorph/lib/array')
+var is = require('isomorph/is')
+  , object = require('isomorph/object')
+  , array = require('isomorph/array')
 
 // Native functions
 var toString = Object.prototype.toString
@@ -777,7 +777,7 @@ module.exports = DOMBuilder
 
 require.define("./dombuilder/dom", function(module, exports, require) {
 var DOMBuilder =require('./core')
-  , object = require('isomorph/lib/object')
+  , object = require('isomorph/object')
 
 var document = window.document
   // DOMBuilder utilities
@@ -1021,7 +1021,7 @@ DOMBuilder.addMode({
 
 require.define("./dombuilder/html", function(module, exports, require) {
 var DOMBuilder = require('./core')
-  , object = require('isomorph/lib/object')
+  , object = require('isomorph/object')
 
 // Native functions
 var splice = Array.prototype.splice

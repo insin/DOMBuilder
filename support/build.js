@@ -7,9 +7,9 @@ var buildumb = require('buildumb')
 var root = path.normalize(path.join(__dirname, '..'))
 var baseModules = {
   // isomorph
-  'node_modules/isomorph/lib/is.js'     : ['isomorph/lib/is', './is']
-, 'node_modules/isomorph/lib/object.js' : 'isomorph/lib/object'
-, 'node_modules/isomorph/lib/array.js'  : 'isomorph/lib/array'
+  'node_modules/isomorph/is.js'     : ['isomorph/is', './is']
+, 'node_modules/isomorph/object.js' : 'isomorph/object'
+, 'node_modules/isomorph/array.js'  : 'isomorph/array'
   // DOMBuilder
 , 'lib/dombuilder/core.js' : ['./dombuilder/core', './core']
 }

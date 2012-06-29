@@ -1,7 +1,7 @@
 {
   "name": "DOMBuilder"
 , "description": "Builder library - generate HTML with an API which is also usable in the browser"
-, "version": "2.1.5"
+, "version": "2.1.6"
 , "author": "Jonathan Buchanan <jonathan.buchanan@gmail.com> (https://github.com/insin)"
 , "tags": ["dualsided", "DOM", "HTML", "builder", "templates"]
 , "main": "./lib/dombuilder"
@@ -10,7 +10,7 @@
   , "url": "https://github.com/insin/DOMBuilder.git"
   }
 , "dependencies": {
-    "isomorph": "0.1.x"
+    "isomorph": "0.2.x"
   , "Concur": "0.2.x"
   }
 , "devDependencies": {
