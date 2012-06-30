@@ -248,7 +248,7 @@ be considered unstable until Version 2.2.
 `In this live example`_, template inheritance is being used to minimise
 the effort required to create basic admin CRUD screens using `Sacrum`_.
 
-.. _`In this live example`: http://jonathan.buchanan153.users.btopenworld.com/sacrum/fragile/fragile.html
+.. _`In this live example`: http://insin.github.com/sacrum/fragile.html
 .. _`Sacrum`: https://github.com/insin/sacrum
 
 **Version 2.0.1 released on August 6th, 2011**
