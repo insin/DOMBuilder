@@ -1,69 +1,52 @@
-==========================
-DOMBuilder |travis_status|
-==========================
+========================================
+DOMBuilder |travis_status| |qunit_tests|
+========================================
 
 .. |travis_status| image:: https://secure.travis-ci.org/insin/DOMBuilder.png
    :target: http://travis-ci.org/insin/DOMBuilder
+
+.. |qunit_tests| image:: http://insin.github.com/img/qunit-tests.png
+   :target: http://insin.github.com/DOMBuilder/tests.html
 
 DOMBuilder takes *some* of the pain out of dynamically creating HTML
 content in JavaScript and supports generating multiple types of output
 from the same inputs.
 
-**Next version: Introducing DOMBuilder.template**
-
-DOMBuilder is a modular library, which supports adding new output modes and
-feature modes as plugins.
-
-Version 2.1 will add Template mode to DOMBuilder and the templating API should
-be considered unstable until Version 2.2.
-
-- Based on Django templates, including their powerful template inheritance.
-- Templates are defined entirely in JavaScript code, still discovering the
-  pros and cons of this as I go:
-
-  **Pros**
-
-  - Easier to create new template tags, as there's no parsing step.
-  - You can spin template creation out into DSL-like functions, which is
-    expressive and very flexible, using functions to build up sections
-    using logically named functions which create template contents based on
-    data structures, rather than copying and pasting chunks of annotated
-    markup or trying to use includes.
-
-  **Cons**
-
-  - More unwieldy to edit than text-based templates, but manageable if you
-    follow some layout guidelines.
-  - More awkward to do things like optional attributes and arbitrary chunks
-    of HTML, since HTML is defined at the element level using DOMBuilder's
-    element functions.
-
-`In this live example`_, template inheritance is being used to minimise
-the effort required to create basic admin CRUD screens using `Sacrum`_.
-
-.. _`In this live example`: http://jonathan.buchanan153.users.btopenworld.com/sacrum/fragile/fragile.html
-.. _`Sacrum`: https://github.com/insin/sacrum
-
-**Version 2.0.1 released on August 6th, 2011**
-
-See `News for DOMBuilder`_ for what's new and backwards-incompatible
-changes since 1.4.*.
-
-.. _`News for DOMBuilder`: http://readthedocs.org/docs/dombuilder/en/latest/news.html
-
 Yes, there are a million builder libraries about. DOMBuilder's goals are to:
 
-* Make it easier to switch from DOM Element output to HTML String output
-  if performence becomes an issue, by providing mock DOM objects and event
-  registration helpers when generating HTML from the exact same input.
 * Make it easier to write JavaScript components which can be shared between
   the frontend and backend - `newforms`_ is an example of such a component,
   which aims to share validation code between the two.
+* Make it easier to switch from DOM Element output to HTML String output
+  if performence becomes an issue, by providing mock DOM objects and event
+  registration helpers when generating HTML from the exact same input.
 
 .. _`newforms`: https://github.com/insin/newforms
 
-Installation
-============
+Demos
+=====
+
+- `Fragile`_ - uses DOMBuilder's template mode and its template inheritance to
+  create a CRUD admin with templates which can also be rendered on the backend
+  with Node.js.
+- `DOMBuilder.build() sandbox`_ - play around with DOMBuilder.build(), with
+  switchable DOM and HTML output modes.
+- Reddit posts - uses JSONP to display a feed of posts from Reddit:
+
+  - `Element function Reddit posts`_ - uses element functions to generate
+    contents directly with the DOM output mode.
+  - `Templated Reddit posts`_ - uses Template mode with the DOM output mode.
+
+- `Demo page`_ - small examples of using the range of the DOMBuilder API
+
+.. _`Fragile`: http://insin.github.com/sacrum/fragile.html
+.. _`DOMBuilder.build() sandbox`: http://insin.github.com/DOMBuilder/build.html
+.. _`Element function Reddit posts`: http://insin.github.com/DOMBuilder/reddit_posts.html
+.. _`Templated Reddit posts`: http://insin.github.com/DOMBuilder/reddit_posts_template.html
+.. _`Demo page`: http://insin.github.com/DOMBuilder/demo.html
+
+Install
+=======
 
 Browsers
 --------
@@ -228,6 +211,52 @@ This is just a quick guide to what DOMBuilder can do - dive into the
 .. _`DocumentFragments`: http://readthedocs.org/docs/dombuilder/en/latest/dommode.html#document-fragments
 .. _`mock DOM objects`: http://readthedocs.org/docs/dombuilder/en/latest/htmlmode.html#mock-dom-objects
 .. _`HTML escaping`: http://readthedocs.org/docs/dombuilder/en/latest/htmlmode.html#html-escaping
+
+
+Development
+===========
+
+**Version 2.1: DOMBuilder.template**
+
+DOMBuilder is a modular library, which supports adding new output modes and
+feature modes as plugins.
+
+Version 2.1 will add Template mode to DOMBuilder and the templating API should
+be considered unstable until Version 2.2.
+
+- Based on Django templates, including their powerful template inheritance.
+- Templates are defined entirely in JavaScript code, still discovering the
+  pros and cons of this as I go:
+
+  **Pros**
+
+  - Easier to create new template tags, as there's no parsing step.
+  - You can spin template creation out into DSL-like functions, which is
+    expressive and very flexible, using functions to build up sections
+    using logically named functions which create template contents based on
+    data structures, rather than copying and pasting chunks of annotated
+    markup or trying to use includes.
+
+  **Cons**
+
+  - More unwieldy to edit than text-based templates, but manageable if you
+    follow some layout guidelines.
+  - More awkward to do things like optional attributes and arbitrary chunks
+    of HTML, since HTML is defined at the element level using DOMBuilder's
+    element functions.
+
+`In this live example`_, template inheritance is being used to minimise
+the effort required to create basic admin CRUD screens using `Sacrum`_.
+
+.. _`In this live example`: http://jonathan.buchanan153.users.btopenworld.com/sacrum/fragile/fragile.html
+.. _`Sacrum`: https://github.com/insin/sacrum
+
+**Version 2.0.1 released on August 6th, 2011**
+
+See `News for DOMBuilder`_ for what's new and backwards-incompatible
+changes since 1.4.*.
+
+.. _`News for DOMBuilder`: http://readthedocs.org/docs/dombuilder/en/latest/news.html
 
 MIT License
 ===========
